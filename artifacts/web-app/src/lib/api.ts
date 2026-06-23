@@ -1,10 +1,25 @@
 const BASE = "/api";
 
+async function getClerkToken(): Promise<string | null> {
+  try {
+    const clerk = (window as any).Clerk;
+    if (!clerk?.session) return null;
+    return await clerk.session.getToken();
+  } catch {
+    return null;
+  }
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = await getClerkToken();
   const res = await fetch(`${BASE}${path}`, {
     ...options,
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...options?.headers },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options?.headers,
+    },
   });
   if (!res.ok) {
     const text = await res.text();
