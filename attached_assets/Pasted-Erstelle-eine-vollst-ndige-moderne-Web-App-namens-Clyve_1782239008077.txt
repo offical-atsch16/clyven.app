@@ -1,0 +1,470 @@
+Erstelle eine vollständige moderne Web-App namens "Clyven".
+
+PRODUKTIDEE:
+
+Clyven ist ein minimalistischer persönlicher digitaler Workspace und ein privater Produktivitäts-Hub.
+
+Die Plattform darf sich NICHT wie ein Tutorial-Projekt anfühlen. Sie soll sich wie ein reales Premium-Startup-Produkt anfühlen, das Nutzer täglich öffnen möchten.
+
+Clyven kombiniert:
+
+- Second Brain
+- Fokus-System
+- Journal
+- Bookmark-Manager
+- Produktivitäts-Tracking
+- Achievement-System
+- kleine Überraschungen/Easter Eggs
+
+Die Plattform ist ausschließlich nach Login zugänglich.
+
+---------------------------------------
+
+TECH STACK:
+
+- Next.js (neueste Version, App Router)
+- TypeScript
+- Clerk Authentication
+- TailwindCSS
+- shadcn/ui
+- Prisma
+- PostgreSQL
+- Zustand
+- Framer Motion
+- Lucide Icons
+- Recharts
+
+---------------------------------------
+
+DESIGN SYSTEM:
+
+Designsprache:
+
+- Minimalistisch
+- Premium
+- Apple inspiriert
+- Linear inspiriert
+- Notion inspiriert
+- klare Typografie
+- extrem viel Weißraum
+- hochwertige Animationen
+- moderne Karten
+- weiche Schatten
+- Glassmorphism nur subtil
+- keine überladene UI
+- sanfte Übergänge
+- hochwertige Mikroanimationen
+
+Design Details:
+
+- Border Radius überall konsistent
+- Hover Animationen
+- sanfte Scale-Effekte
+- Skeleton Loader
+- schöne Empty States
+- dezente Blur-Effekte
+- moderne Inputs
+- animierte Statistiken
+- responsive Mobile/Desktop
+- Dark/Light Mode
+- Theme-Switcher
+
+---------------------------------------
+
+AUTHENTIFIZIERUNG
+
+Nutze Clerk.
+
+Öffentlich:
+
+- Landing Page
+- Login
+- Registrierung
+
+Geschützt:
+
+- Dashboard
+- Notes
+- Bookmarks
+- Focus
+- Journal
+- Analytics
+- Achievements
+- Profile
+- Settings
+
+Middleware-Schutz vollständig implementieren.
+
+---------------------------------------
+
+LANDING PAGE
+
+Hero:
+
+"Clyven — Your personal digital workspace"
+
+Untertitel:
+
+"Capture ideas, stay focused and organize your life in one place."
+
+Buttons:
+
+- Get Started
+- Login
+
+Sektionen:
+
+- Hero
+- Features
+- Vorteile
+- Screenshots
+- Produktivitätsstatistiken
+- FAQ
+- Footer
+
+Animationen:
+
+- Scroll Animationen
+- Fade-in Effekte
+- Floating Elemente
+- Parallax Details
+
+---------------------------------------
+
+DASHBOARD
+
+Zeige:
+
+"Willkommen zurück, {Name}"
+
+Widgets:
+
+- Fokuszeit heute
+- aktuelle Streak
+- Journal Status
+- letzte Notizen
+- letzte Bookmarks
+- heutige Aktivität
+- Wochenfortschritt
+- Motivationskarte
+- Schnellaktionen
+
+Quick Actions:
+
+- Notiz erstellen
+- Fokus starten
+- Journal öffnen
+- Bookmark speichern
+
+Zusätzliche kleine Funktionen:
+
+- zufälliges tägliches Zitat
+- "Today's Mission"
+- Produktivitätslevel
+- Fortschrittsring
+
+---------------------------------------
+
+NOTES
+
+Features:
+
+- Notiz erstellen
+- bearbeiten
+- löschen
+- Rich Text
+- Auto Save
+- Suche
+- Kategorien
+- Tags
+- Favoriten
+- Pin Funktion
+- Sortieren
+- Filter
+- zuletzt bearbeitet
+- Notizfarbe
+- Zeichenanzahl
+- Wortanzahl
+- geschätzte Lesedauer
+- Archiv
+- Duplizieren
+- Drag & Drop
+
+Kleine Features:
+
+- "/commands" wie Notion
+
+Beispiele:
+
+/todo
+/code
+/quote
+/checklist
+
+---------------------------------------
+
+BOOKMARK VAULT
+
+Features:
+
+- URL speichern
+- Titel automatisch laden
+- Beschreibung automatisch laden
+- Thumbnail automatisch laden
+- Website Name automatisch laden
+- Suche
+- Favoriten
+- Kategorien
+- Tags
+- Grid View
+- List View
+- Sortierung
+
+Zusatz:
+
+- "Read later"
+- zuletzt besucht
+- Klickanzahl
+- Bookmark Notizen
+
+---------------------------------------
+
+FOCUS MODE
+
+Features:
+
+- Pomodoro
+- Custom Timer
+- Pause
+- Reset
+- Hintergrundmusik optional
+- White Noise
+- Session Historie
+- Fokuszeit speichern
+- Fokusstatistik
+- Streaks
+
+Session Ende Popup:
+
+"Großartige Arbeit 🎉"
+
+Kleine Funktionen:
+
+- zufällige Motivation
+- Tagesziel
+- Konzentrationslevel
+
+---------------------------------------
+
+JOURNAL
+
+Features:
+
+- tägliche Einträge
+- Stimmungsauswahl
+
+Möglichkeiten:
+
+😀 😌 😐 😔 😴 🔥
+
+Bereiche:
+
+- Was lief gut?
+- Was habe ich gelernt?
+- Wofür bin ich dankbar?
+- Ziele für morgen
+- Freier Bereich
+
+Weitere Features:
+
+- Kalenderansicht
+- Auto Save
+- Journal Historie
+- Suchfunktion
+
+---------------------------------------
+
+ANALYTICS
+
+Charts:
+
+- Fokusstunden
+- Stimmungstrends
+- Notizen erstellt
+- Bookmarks gespeichert
+- Aktivitätsübersicht
+- Streak-Verlauf
+
+Zeige:
+
+- Produktivitätsscore
+- Durchschnittswerte
+- Tagesaktivität
+
+---------------------------------------
+
+PROFILE
+
+Zeige:
+
+- Profilbild
+- Benutzername
+- Mitglied seit
+- Gesamt-Fokuszeit
+- Gesamtanzahl Notizen
+- Gesamtanzahl Bookmarks
+- Streak
+- Produktivitätslevel
+
+Zusätzlicher Bereich:
+
+Achievements Showcase
+
+---------------------------------------
+
+ACHIEVEMENT SYSTEM
+
+Erstelle ein vollständiges Badge-System.
+
+Badges:
+
+🥇 First Steps
+Erste Notiz erstellt
+
+🧠 Brain Collector
+50 Notizen erstellt
+
+📚 Knowledge Hunter
+100 Bookmarks gespeichert
+
+🔥 On Fire
+7 Tage Streak
+
+⚡ Deep Worker
+10 Fokusstunden
+
+🌙 Night Owl
+Nach Mitternacht Fokus genutzt
+
+🚀 Productivity Machine
+30 Tage Streak
+
+👑 Clyven Master
+Alle Hauptbadges freigeschaltet
+
+Badges:
+
+- eigene Icons
+- Beschreibung
+- Freischaltdatum
+- Fortschrittsanzeige
+- Seltenheitsstufe
+
+Seltenheiten:
+
+Common
+Rare
+Epic
+Legendary
+
+---------------------------------------
+
+EASTER EGGS
+
+Easter Egg 1:
+
+Wenn ein Nutzer genau:
+
+42 Fokus-Sessions beendet
+
+erscheint eine geheime Animation:
+
+"Reality unlocked"
+
+und Nutzer bekommt:
+
+🌌 The Answer Badge
+
+Beschreibung:
+
+"You discovered the hidden answer."
+
+---------------------------------------
+
+Easter Egg 2:
+
+Wenn ein Nutzer:
+
+den Titel "hello world" als Notiz erstellt
+
+erscheint:
+
+ein kleines Retro-Pixel-Konfetti
+
+und Nutzer erhält:
+
+💾 Developer Soul Badge
+
+---------------------------------------
+
+COMMAND PALETTE
+
+Öffnen:
+
+CMD + K
+
+Funktionen:
+
+- neue Notiz
+- Fokus starten
+- Suche
+- Journal öffnen
+- neues Bookmark
+- Theme wechseln
+
+---------------------------------------
+
+SETTINGS
+
+- Profil bearbeiten
+- Theme wechseln
+- Benachrichtigungen
+- Account Einstellungen
+- Datenschutz
+- Logout
+
+---------------------------------------
+
+DATENBANK
+
+Prisma Models:
+
+User
+Note
+Bookmark
+FocusSession
+JournalEntry
+Achievement
+Streak
+Settings
+
+Alle Relationen sauber definieren.
+
+---------------------------------------
+
+CODE QUALITÄT
+
+- Production Ready
+- Type Safety
+- Server Actions
+- saubere Architektur
+- wiederverwendbare Komponenten
+- Custom Hooks
+- Error Handling
+- Loading States
+- Performance optimiert
+- moderne Ordnerstruktur
+
+Ziel:
+
+Beim Öffnen soll sich Clyven wie ein echtes Startup-Produkt anfühlen und nicht wie ein Übungsprojekt.

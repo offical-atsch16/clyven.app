@@ -1,0 +1,1 @@
+- [CLYVEN Architecture](clyven-architecture.md) — full stack, DB schema, API routes, frontend pages, key patterns for CLYVEN productivity platform

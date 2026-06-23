@@ -1,0 +1,216 @@
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  LayoutDashboard, FileText, Bookmark, Timer, BookOpen,
+  BarChart2, Trophy, User, Settings, ChevronLeft, ChevronRight,
+  Command, Menu, X,
+} from "lucide-react";
+import { useUser, useClerk } from "@clerk/react";
+import { useAppStore } from "../stores/useAppStore";
+import { cn } from "../lib/utils";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const NAV = [
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/notes", icon: FileText, label: "Notes" },
+  { href: "/bookmarks", icon: Bookmark, label: "Bookmarks" },
+  { href: "/focus", icon: Timer, label: "Focus" },
+  { href: "/journal", icon: BookOpen, label: "Journal" },
+  { href: "/analytics", icon: BarChart2, label: "Analytics" },
+  { href: "/achievements", icon: Trophy, label: "Achievements" },
+];
+
+const BOTTOM_NAV = [
+  { href: "/profile", icon: User, label: "Profile" },
+  { href: "/settings", icon: Settings, label: "Settings" },
+];
+
+function NavItem({ href, icon: Icon, label, collapsed, mobile, onMobileClose }: any) {
+  const [location] = useLocation();
+  const active = location === href || location.startsWith(href + "/");
+  return (
+    <Link href={href} onClick={mobile ? onMobileClose : undefined}>
+      <motion.div
+        whileHover={{ x: 2 }}
+        className={cn(
+          "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all cursor-pointer select-none",
+          active
+            ? "bg-white/[0.08] text-white"
+            : "text-white/40 hover:bg-white/[0.04] hover:text-white/80",
+          collapsed && !mobile && "justify-center px-2",
+        )}
+      >
+        <Icon className={cn("shrink-0", active ? "text-white" : "text-white/40 group-hover:text-white/70", collapsed && !mobile ? "h-5 w-5" : "h-4 w-4")} />
+        {(!collapsed || mobile) && <span className="truncate">{label}</span>}
+        {active && !collapsed && !mobile && (
+          <motion.div layoutId="sidebar-active" className="ml-auto h-1.5 w-1.5 rounded-full bg-white" />
+        )}
+      </motion.div>
+    </Link>
+  );
+}
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  const { user } = useUser();
+  const { signOut } = useClerk();
+  const { commandOpen, setCommandOpen, sidebarCollapsed, setSidebarCollapsed } = useAppStore();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCommandOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [setCommandOpen]);
+
+  const avatarUrl = user?.imageUrl;
+  const displayName = user?.firstName || user?.username || "User";
+
+  return (
+    <div className="flex h-[100dvh] overflow-hidden bg-[#080808]">
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar - desktop */}
+      <motion.aside
+        animate={{ width: sidebarCollapsed ? 64 : 240 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
+        className="relative hidden flex-col border-r border-white/[0.06] bg-[#0a0a0a] lg:flex"
+      >
+        <SidebarContent
+          collapsed={sidebarCollapsed}
+          displayName={displayName}
+          avatarUrl={avatarUrl}
+          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onCommandOpen={() => setCommandOpen(true)}
+          onSignOut={() => signOut({ redirectUrl: basePath + "/" })}
+        />
+      </motion.aside>
+
+      {/* Sidebar - mobile */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.aside
+            initial={{ x: -280 }}
+            animate={{ x: 0 }}
+            exit={{ x: -280 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col border-r border-white/[0.06] bg-[#0a0a0a] lg:hidden"
+          >
+            <SidebarContent
+              collapsed={false}
+              displayName={displayName}
+              avatarUrl={avatarUrl}
+              onToggle={() => setMobileOpen(false)}
+              onCommandOpen={() => { setCommandOpen(true); setMobileOpen(false); }}
+              onSignOut={() => signOut({ redirectUrl: basePath + "/" })}
+              mobile
+              onMobileClose={() => setMobileOpen(false)}
+            />
+          </motion.aside>
+        )}
+      </AnimatePresence>
+
+      {/* Main */}
+      <main className="flex flex-1 flex-col overflow-hidden">
+        {/* Mobile topbar */}
+        <div className="flex items-center gap-3 border-b border-white/[0.06] bg-[#0a0a0a] px-4 py-3 lg:hidden">
+          <button onClick={() => setMobileOpen(true)} className="text-white/50 hover:text-white">
+            <Menu className="h-5 w-5" />
+          </button>
+          <img src={`${basePath}/logo.svg`} alt="CLYVEN" className="h-5 w-5" />
+          <span className="text-sm font-bold tracking-[0.2em] text-white">CLYVEN</span>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">{children}</div>
+      </main>
+    </div>
+  );
+}
+
+function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommandOpen, onSignOut, mobile, onMobileClose }: any) {
+  return (
+    <div className="flex h-full flex-col p-3">
+      {/* Logo */}
+      <div className={cn("mb-6 flex items-center", collapsed && !mobile ? "justify-center" : "justify-between", "px-1 pt-1")}>
+        {(!collapsed || mobile) && (
+          <div className="flex items-center gap-2.5">
+            <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.svg`} alt="CLYVEN" className="h-6 w-6" />
+            <span className="text-sm font-bold tracking-[0.25em] text-white">CLYVEN</span>
+          </div>
+        )}
+        {collapsed && !mobile && (
+          <img src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/logo.svg`} alt="CLYVEN" className="h-6 w-6" />
+        )}
+        <button
+          onClick={onToggle}
+          className={cn("rounded-md p-1 text-white/30 hover:bg-white/[0.05] hover:text-white/70 transition-colors", mobile && "ml-auto")}
+        >
+          {mobile ? <X className="h-4 w-4" /> : collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </button>
+      </div>
+
+      {/* Search / Command */}
+      {(!collapsed || mobile) && (
+        <button
+          onClick={onCommandOpen}
+          className="mb-4 flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-sm text-white/30 hover:border-white/10 hover:text-white/50 transition-all"
+        >
+          <Command className="h-3.5 w-3.5" />
+          <span className="flex-1 text-left text-xs">Search...</span>
+          <span className="text-[10px] tracking-widest text-white/20">⌘K</span>
+        </button>
+      )}
+      {collapsed && !mobile && (
+        <button onClick={onCommandOpen} className="mb-4 flex justify-center rounded-lg p-2 text-white/30 hover:bg-white/[0.04] hover:text-white/70">
+          <Command className="h-4 w-4" />
+        </button>
+      )}
+
+      {/* Nav */}
+      <nav className="flex flex-1 flex-col gap-0.5">
+        {NAV.map((item) => (
+          <NavItem key={item.href} {...item} collapsed={collapsed} mobile={mobile} onMobileClose={onMobileClose} />
+        ))}
+      </nav>
+
+      {/* Bottom */}
+      <div className="mt-4 flex flex-col gap-0.5 border-t border-white/[0.06] pt-4">
+        {BOTTOM_NAV.map((item) => (
+          <NavItem key={item.href} {...item} collapsed={collapsed} mobile={mobile} onMobileClose={onMobileClose} />
+        ))}
+        {/* User */}
+        <div className={cn("mt-2 flex items-center gap-2.5 rounded-lg px-3 py-2.5 cursor-pointer hover:bg-white/[0.04] transition-colors", collapsed && !mobile && "justify-center px-2")}>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={displayName} className="h-6 w-6 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold text-white">
+              {displayName[0]?.toUpperCase()}
+            </div>
+          )}
+          {(!collapsed || mobile) && (
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <span className="truncate text-xs font-medium text-white/70">{displayName}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
