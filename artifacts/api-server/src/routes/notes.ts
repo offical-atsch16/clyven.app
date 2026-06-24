@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { db, notes } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, count } from "drizzle-orm";
 import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
 
 const router = Router();
+const FREE_LIMIT = 10;
 
 router.get("/", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
@@ -20,8 +21,23 @@ router.get("/", requireAuth, async (req, res) => {
 });
 
 router.post("/", requireAuth, async (req, res) => {
-  const { userId } = req as AuthenticatedRequest;
+  const { userId, isPremium } = req as AuthenticatedRequest;
   const { title, content, category, tags, color } = req.body;
+
+  if (!isPremium) {
+    const [{ count: existing }] = await db
+      .select({ count: count() })
+      .from(notes)
+      .where(and(eq(notes.userId, userId), eq(notes.isArchived, false)));
+    if (Number(existing) >= FREE_LIMIT) {
+      return res.status(403).json({
+        error: "LIMIT_REACHED",
+        limit: FREE_LIMIT,
+        message: `Free-Plan: Maximal ${FREE_LIMIT} Notizen. Upgrade auf CLYVEN PLUS für unbegrenzte Notizen.`,
+      });
+    }
+  }
+
   const wordCount = (content || "").trim().split(/\s+/).filter(Boolean).length;
   try {
     const [row] = await db

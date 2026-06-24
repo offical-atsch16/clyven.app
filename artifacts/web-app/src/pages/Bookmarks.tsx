@@ -1,24 +1,44 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Bookmark, Star, Trash2, Grid, List, ExternalLink, X, Globe } from "lucide-react";
+import { Plus, Search, Bookmark, Star, Trash2, Grid, List, ExternalLink, X, Globe, Crown } from "lucide-react";
 import { api } from "../lib/api";
 import { cn, formatRelative } from "../lib/utils";
+import { usePremium, FREE_LIMITS } from "../hooks/usePremium";
+import { UpgradeModal } from "../components/UpgradeModal";
 
 function AddBookmarkModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
-  const createBookmark = useMutation({ mutationFn: api.createBookmark, onSuccess: () => { qc.invalidateQueries({ queryKey: ["bookmarks"] }); onClose(); } });
+  const createBookmark = useMutation({
+    mutationFn: api.createBookmark,
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["bookmarks"] }); onClose(); },
+  });
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
+  const [limitError, setLimitError] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
     let domain = url;
     try { domain = new URL(url).hostname; } catch {}
-    createBookmark.mutate({ url, title: title || domain, siteName: domain, category });
+    try {
+      await createBookmark.mutateAsync({ url, title: title || domain, siteName: domain, category });
+    } catch (e: any) {
+      try {
+        const body = JSON.parse(e.message || "{}");
+        if (body?.error === "LIMIT_REACHED") { setLimitError(true); return; }
+      } catch {}
+    }
   };
+
+  if (limitError) return (
+    <UpgradeModal
+      onClose={onClose}
+      reason={`Du hast das Free-Limit von ${FREE_LIMITS.bookmarks} Bookmarks erreicht. Upgrade für unbegrenzte Bookmarks.`}
+    />
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -57,6 +77,7 @@ function AddBookmarkModal({ onClose }: { onClose: () => void }) {
 
 export function Bookmarks() {
   const qc = useQueryClient();
+  const { isPremium } = usePremium();
   const { data: bookmarks = [], isLoading } = useQuery({ queryKey: ["bookmarks"], queryFn: api.getBookmarks, retry: 1 });
   const updateBookmark = useMutation({ mutationFn: ({ id, ...data }: any) => api.updateBookmark(id, data), onSuccess: () => qc.invalidateQueries({ queryKey: ["bookmarks"] }) });
   const deleteBookmark = useMutation({ mutationFn: api.deleteBookmark, onSuccess: () => qc.invalidateQueries({ queryKey: ["bookmarks"] }) });
@@ -64,29 +85,56 @@ export function Bookmarks() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [addOpen, setAddOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [filter, setFilter] = useState("all");
 
-  const categories = ["all", ...Array.from(new Set(bookmarks.map((b: any) => b.category).filter(Boolean)))];
-  const filtered = bookmarks.filter((b: any) => {
+  const atLimit = !isPremium && bookmarks.length >= FREE_LIMITS.bookmarks;
+  const categories = ["all", ...Array.from(new Set((bookmarks as any[]).map((b: any) => b.category).filter(Boolean)))];
+  const filtered = (bookmarks as any[]).filter((b: any) => {
     const matchSearch = !search || b.title?.toLowerCase().includes(search.toLowerCase()) || b.url?.toLowerCase().includes(search.toLowerCase());
     const matchCat = filter === "all" || b.category === filter;
     return matchSearch && matchCat;
   });
 
+  const handleAdd = () => {
+    if (atLimit) { setUpgradeOpen(true); return; }
+    setAddOpen(true);
+  };
+
   return (
     <div className="min-h-full p-6 lg:p-8">
       {addOpen && <AddBookmarkModal onClose={() => setAddOpen(false)} />}
+      {upgradeOpen && (
+        <UpgradeModal
+          onClose={() => setUpgradeOpen(false)}
+          reason={`Du hast das Free-Limit von ${FREE_LIMITS.bookmarks} Bookmarks erreicht. Upgrade für unbegrenzte Bookmarks.`}
+        />
+      )}
 
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white">Bookmark Vault</h1>
-            <p className="mt-1 text-sm text-white/40">{bookmarks.length} gespeicherte Links</p>
+            <p className="mt-1 text-sm text-white/40">
+              {bookmarks.length} gespeichert
+              {!isPremium && ` · ${FREE_LIMITS.bookmarks - bookmarks.length} verbleibend`}
+            </p>
           </div>
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setAddOpen(true)}
-            className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-white/90 transition-colors">
-            <Plus className="h-4 w-4" /> Hinzufügen
-          </motion.button>
+          <div className="flex items-center gap-2">
+            {!isPremium && (
+              <div className="hidden sm:flex h-1.5 w-24 overflow-hidden rounded-full bg-white/[0.06]">
+                <div className={cn("h-full rounded-full transition-all", atLimit ? "bg-yellow-400/60" : "bg-white/30")}
+                  style={{ width: `${Math.min((bookmarks.length / FREE_LIMITS.bookmarks) * 100, 100)}%` }} />
+              </div>
+            )}
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleAdd}
+              className={cn("flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors",
+                atLimit
+                  ? "border border-yellow-400/20 bg-yellow-400/5 text-yellow-400/70 hover:bg-yellow-400/10"
+                  : "bg-white text-black hover:bg-white/90")}>
+              {atLimit ? <><Crown className="h-4 w-4" /> Upgrade</> : <><Plus className="h-4 w-4" /> Hinzufügen</>}
+            </motion.button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -125,7 +173,7 @@ export function Bookmarks() {
           <div className="flex flex-col items-center py-20 text-center">
             <Bookmark className="mb-3 h-8 w-8 text-white/10" />
             <p className="text-sm text-white/25">{search ? "Keine Ergebnisse" : "Noch keine Bookmarks"}</p>
-            {!search && <button onClick={() => setAddOpen(true)} className="mt-3 text-xs text-white/40 hover:text-white/70 underline">Erstes Bookmark hinzufügen</button>}
+            {!search && !atLimit && <button onClick={handleAdd} className="mt-3 text-xs text-white/40 hover:text-white/70 underline">Erstes Bookmark hinzufügen</button>}
           </div>
         ) : view === "grid" ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -142,7 +190,7 @@ export function Bookmarks() {
                         className={cn("rounded-lg p-1 transition-colors", b.isFavorite ? "text-yellow-400/70" : "text-white/25 hover:text-white/60")}>
                         <Star className="h-3.5 w-3.5" />
                       </button>
-                      <button onClick={() => { if (confirm("Löschen?")) deleteBookmark.mutate(b.id); }}
+                      <button onClick={() => deleteBookmark.mutate(b.id)}
                         className="rounded-lg p-1 text-white/25 hover:text-red-400/70 transition-colors">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>

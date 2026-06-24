@@ -19,6 +19,7 @@ import { Analytics } from "./pages/Analytics";
 import { Achievements } from "./pages/Achievements";
 import { Profile } from "./pages/Profile";
 import { Settings } from "./pages/Settings";
+import { Pricing } from "./pages/Pricing";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30000 } } });
 
@@ -221,6 +222,7 @@ function AppRoutes() {
           <Route path="/settings">
             <ProtectedLayout><Settings /></ProtectedLayout>
           </Route>
+          <Route path="/pricing" component={Pricing} />
           <Route>
             <Redirect to="/" />
           </Route>

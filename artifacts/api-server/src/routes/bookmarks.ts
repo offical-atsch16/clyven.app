@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { db, bookmarks } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, count } from "drizzle-orm";
 import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
 
 const router = Router();
+const FREE_LIMIT = 25;
 
 router.get("/", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
@@ -20,7 +21,22 @@ router.get("/", requireAuth, async (req, res) => {
 });
 
 router.post("/", requireAuth, async (req, res) => {
-  const { userId } = req as AuthenticatedRequest;
+  const { userId, isPremium } = req as AuthenticatedRequest;
+
+  if (!isPremium) {
+    const [{ count: existing }] = await db
+      .select({ count: count() })
+      .from(bookmarks)
+      .where(eq(bookmarks.userId, userId));
+    if (Number(existing) >= FREE_LIMIT) {
+      return res.status(403).json({
+        error: "LIMIT_REACHED",
+        limit: FREE_LIMIT,
+        message: `Free-Plan: Maximal ${FREE_LIMIT} Bookmarks. Upgrade auf CLYVEN PLUS für unbegrenzte Bookmarks.`,
+      });
+    }
+  }
+
   const { url, title, description, thumbnail, siteName, category, tags, isReadLater } = req.body;
   try {
     const [row] = await db

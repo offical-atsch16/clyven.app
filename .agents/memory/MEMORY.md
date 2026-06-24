@@ -1,1 +1,3 @@
 - [CLYVEN Architecture](clyven-architecture.md) — full stack, DB schema, API routes, frontend pages, key patterns for CLYVEN productivity platform
+- [Premium Plan Architecture](premium-plan.md) — `usePremium` hook checks `has({plan:'clyven_plus'})` + metadata fallbacks; API enforces limits server-side with LIMIT_REACHED error
+- [Supabase Connectivity](supabase-connectivity.md) — Replit sandbox blocks outbound TCP port 5432; drizzle-kit push must be run locally or from deployment
