@@ -104,7 +104,7 @@ export function Pricing() {
               <div className="mb-6">
                 <p className="mb-1 text-sm font-medium uppercase tracking-widest text-white/30">Free</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">€0</span>
+                  <span className="text-4xl font-bold text-white">$0</span>
                   <span className="text-sm text-white/30">/ Monat</span>
                 </div>
                 <p className="mt-2 text-sm text-white/40">Für immer kostenlos</p>
@@ -141,7 +141,7 @@ export function Pricing() {
                 </div>
                 <p className="mb-1 text-sm font-medium uppercase tracking-widest text-white/40">CLYVEN PLUS</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">€4.99</span>
+                  <span className="text-4xl font-bold text-white">$2</span>
                   <span className="text-sm text-white/30">/ Monat</span>
                 </div>
                 <p className="mt-2 text-sm text-white/40">Alles unbegrenzt</p>
