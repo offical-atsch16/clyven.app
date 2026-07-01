@@ -1,43 +1,12 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import {
-  Check, X, Zap, FileText, Bookmark, Timer, BarChart2,
-  Download, Brain, Trophy, Shield, ArrowLeft, Crown,
+  Zap, FileText, BarChart2, Download, Shield, ArrowLeft, Crown,
 } from "lucide-react";
-import { usePremium } from "../hooks/usePremium";
-import { useUser } from "@clerk/react";
+import { PricingTable, useUser } from "@clerk/react";
+import { PREMIUM_PLAN } from "../lib/billing";
 import { cn } from "../lib/utils";
-
-const FREE_FEATURES = [
-  { label: "Bis zu 10 Notizen", ok: true },
-  { label: "Bis zu 25 Bookmarks", ok: true },
-  { label: "Focus Timer (alle Modi)", ok: true },
-  { label: "Tägliches Journal", ok: true },
-  { label: "Analytics (7 Tage)", ok: true },
-  { label: "3 Achievements", ok: true },
-  { label: "Unbegrenzte Notizen", ok: false },
-  { label: "Unbegrenzte Bookmarks", ok: false },
-  { label: "Notizen exportieren", ok: false },
-  { label: "Analytics (30 Tage)", ok: false },
-  { label: "Fokus-Streak Tracking", ok: false },
-  { label: "Premium Profil-Badge", ok: false },
-];
-
-const PLUS_FEATURES = [
-  { label: "Unbegrenzte Notizen", ok: true },
-  { label: "Unbegrenzte Bookmarks", ok: true },
-  { label: "Focus Timer (alle Modi)", ok: true },
-  { label: "Tägliches Journal", ok: true },
-  { label: "Analytics (30 Tage)", ok: true },
-  { label: "Alle Achievements", ok: true },
-  { label: "Notizen als Markdown exportieren", ok: true },
-  { label: "Fokus-Streak Tracking", ok: true },
-  { label: "Premium Profil-Badge", ok: true },
-  { label: "Prioritäts-Support", ok: true },
-  { label: "Früher Zugang zu neuen Features", ok: true },
-  { label: "Alles aus dem Free-Plan", ok: true },
-];
 
 const FAQS = [
   { q: "Wann werde ich belastet?", a: "Du wirst sofort nach dem Upgrade belastet. Dein Zugang zu CLYVEN PLUS beginnt unmittelbar." },
@@ -46,8 +15,11 @@ const FAQS = [
   { q: "Gibt es eine kostenlose Testphase?", a: "Der Free-Plan ist dauerhaft kostenlos und hat keine Zeitbeschränkung." },
 ];
 
+function scrollToPlans() {
+  document.getElementById("plans")?.scrollIntoView({ behavior: "smooth" });
+}
+
 export function Pricing() {
-  const { isPremium, openUpgrade, openManage } = usePremium();
   const { user } = useUser();
   const [, navigate] = useLocation();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -96,75 +68,18 @@ export function Pricing() {
             </p>
           </motion.div>
 
-          {/* Pricing Cards */}
-          <div className="mb-16 grid gap-4 sm:grid-cols-2">
-            {/* Free */}
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
-              className="rounded-3xl border border-white/[0.08] bg-white/[0.02] p-8">
-              <div className="mb-6">
-                <p className="mb-1 text-sm font-medium uppercase tracking-widest text-white/30">Free</p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">$0</span>
-                  <span className="text-sm text-white/30">/ Monat</span>
-                </div>
-                <p className="mt-2 text-sm text-white/40">Für immer kostenlos</p>
-              </div>
-
-              <Link href={user ? "/dashboard" : "/sign-up"}>
-                <button className="mb-8 w-full rounded-2xl border border-white/[0.1] py-3 text-sm font-medium text-white/60 hover:bg-white/[0.05] hover:text-white transition-all">
-                  {user ? "Dein aktueller Plan" : "Kostenlos starten"}
-                </button>
-              </Link>
-
-              <ul className="space-y-3">
-                {FREE_FEATURES.map((f) => (
-                  <li key={f.label} className="flex items-center gap-3 text-sm">
-                    {f.ok
-                      ? <Check className="h-4 w-4 shrink-0 text-white/40" />
-                      : <X className="h-4 w-4 shrink-0 text-white/15" />}
-                    <span className={f.ok ? "text-white/60" : "text-white/20"}>{f.label}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            {/* PLUS */}
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
-              className="relative overflow-hidden rounded-3xl border border-yellow-400/20 bg-gradient-to-b from-yellow-400/[0.06] to-transparent p-8">
-              {/* Glow */}
-              <div className="pointer-events-none absolute -top-16 left-1/2 h-40 w-60 -translate-x-1/2 rounded-full bg-yellow-400/10 blur-3xl" />
-
-              <div className="relative mb-6">
-                <div className="mb-3 flex items-center gap-2">
-                  <Crown className="h-4 w-4 text-yellow-400" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-yellow-400">Empfohlen</span>
-                </div>
-                <p className="mb-1 text-sm font-medium uppercase tracking-widest text-white/40">CLYVEN PLUS</p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">$2</span>
-                  <span className="text-sm text-white/30">/ Monat</span>
-                </div>
-                <p className="mt-2 text-sm text-white/40">Alles unbegrenzt</p>
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                onClick={isPremium ? openManage : openUpgrade}
-                className="relative mb-8 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-yellow-400 to-yellow-500 py-3.5 text-sm font-bold text-black shadow-lg shadow-yellow-500/20 hover:from-yellow-300 hover:to-yellow-400 transition-all"
-              >
-                {isPremium ? "✓ Aktiver Plan – Verwalten" : "Jetzt upgraden"}
-              </motion.button>
-
-              <ul className="relative space-y-3">
-                {PLUS_FEATURES.map((f) => (
-                  <li key={f.label} className="flex items-center gap-3 text-sm">
-                    <Check className="h-4 w-4 shrink-0 text-yellow-400/70" />
-                    <span className="text-white/70">{f.label}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          </div>
+          {/* Plans + Checkout — powered by Clerk Billing.
+              Payment collection and checkout are handled entirely by Clerk. */}
+          <motion.div
+            id="plans"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            className="mb-16 scroll-mt-24"
+          >
+            <PricingTable
+              highlightedPlan={PREMIUM_PLAN}
+              newSubscriptionRedirectUrl={`${basePath}/dashboard`}
+            />
+          </motion.div>
 
           {/* Feature comparison */}
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
@@ -243,9 +158,9 @@ export function Pricing() {
             <h2 className="mb-3 text-2xl font-bold text-white">Bereit für CLYVEN PLUS?</h2>
             <p className="mb-8 text-white/40">Über 100% mehr Möglichkeiten. Jederzeit kündbar.</p>
             <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              onClick={isPremium ? openManage : openUpgrade}
+              onClick={scrollToPlans}
               className="rounded-2xl bg-gradient-to-r from-yellow-400 to-yellow-500 px-10 py-4 text-sm font-bold text-black shadow-xl shadow-yellow-500/20 hover:from-yellow-300 hover:to-yellow-400 transition-all">
-              {isPremium ? "Plan verwalten" : "Jetzt upgraden →"}
+              Plan wählen →
             </motion.button>
           </motion.div>
         </div>

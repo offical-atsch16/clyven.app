@@ -1,12 +1,15 @@
 import { motion } from "framer-motion";
-import { useUser } from "@clerk/react";
+import { useUser, useClerk } from "@clerk/react";
 import { useQuery } from "@tanstack/react-query";
+import { usePremium } from "../hooks/usePremium";
 import { api } from "../lib/api";
 import { formatMinutes, formatDate } from "../lib/utils";
-import { Timer, FileText, Bookmark, BookOpen, Trophy, Calendar } from "lucide-react";
+import { Timer, FileText, Bookmark, BookOpen, Trophy, Calendar, Crown, CreditCard } from "lucide-react";
 
 export function Profile() {
   const { user, isLoaded } = useUser();
+  const clerk = useClerk();
+  const { isPremium } = usePremium();
   const { data: stats } = useQuery({ queryKey: ["stats"], queryFn: api.getStats, retry: 1 });
 
   if (!isLoaded) return <div className="flex h-full items-center justify-center"><div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white/70" /></div>;
@@ -66,12 +69,30 @@ export function Profile() {
           ))}
         </div>
 
+        {/* Abo verwalten (Clerk Billing) */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
+          className="mb-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
+          <div className="mb-1 flex items-center gap-2">
+            <Crown className={isPremium ? "h-4 w-4 text-yellow-400/70" : "h-4 w-4 text-white/30"} />
+            <p className="text-sm font-medium text-white/60">Abo &amp; Zahlungen</p>
+          </div>
+          <p className="text-xs text-white/30 mb-4">
+            {isPremium
+              ? "Du bist auf CLYVEN PLUS. Abo kündigen, Zahlungsmethode ändern oder Rechnungen einsehen."
+              : "Verwalte dein Abo, deine Zahlungsmethode und Rechnungen im Billing-Bereich."}
+          </p>
+          <button onClick={() => clerk.openUserProfile()}
+            className="flex items-center gap-2 rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-sm text-white/60 hover:bg-white/[0.08] hover:text-white transition-all">
+            <CreditCard className="h-4 w-4" /> Abo verwalten
+          </button>
+        </motion.div>
+
         {/* Clerk manage */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
           className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
           <p className="text-sm font-medium text-white/60 mb-1">Account verwalten</p>
           <p className="text-xs text-white/30 mb-4">Passwort, E-Mail und Sicherheitseinstellungen über Clerk verwalten.</p>
-          <button onClick={() => (window as any).__clerk?.openUserProfile?.()}
+          <button onClick={() => clerk.openUserProfile()}
             className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-sm text-white/60 hover:bg-white/[0.08] hover:text-white transition-all">
             Account-Einstellungen öffnen
           </button>
