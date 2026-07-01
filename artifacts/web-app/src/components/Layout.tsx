@@ -120,8 +120,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommandOpen, onSignOut, mobile, onMobileClose }: any) {
-  const { isPremium, openUpgrade } = usePremium();
-  const [, navigate] = useLocation();
+  const { isPremium, planLabel, openUpgrade } = usePremium();
 
   return (
     <div className="flex h-full flex-col p-3">
@@ -150,7 +149,7 @@ function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommand
           <Link href="/pricing">
             <div className="mb-4 flex items-center gap-2 rounded-lg border border-yellow-400/20 bg-yellow-400/[0.07] px-3 py-2 cursor-pointer hover:bg-yellow-400/[0.1] transition-all">
               <Crown className="h-3.5 w-3.5 text-yellow-400/70 shrink-0" />
-              <span className="text-xs font-semibold text-yellow-400/70">CLYVEN PLUS</span>
+              <span className="text-xs font-semibold text-yellow-400/70">CLYVEN {planLabel ?? "PLUS"}</span>
             </div>
           </Link>
         ) : (
