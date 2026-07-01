@@ -5,6 +5,7 @@ interface AppStore {
   setTheme: (t: "dark" | "light") => void;
   commandOpen: boolean;
   setCommandOpen: (v: boolean) => void;
+  openCommandPalette: () => void;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (v: boolean) => void;
 }
@@ -19,6 +20,7 @@ export const useAppStore = create<AppStore>((set) => ({
   },
   commandOpen: false,
   setCommandOpen: (commandOpen) => set({ commandOpen }),
+  openCommandPalette: () => set({ commandOpen: true }),
   sidebarCollapsed: false,
   setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
 }));

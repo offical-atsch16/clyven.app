@@ -1,4 +1,6 @@
-import { useAuth, useUser } from "@clerk/react";
+import { useAuth, useClerk, useUser } from "@clerk/react";
+import { useLocation } from "wouter";
+import { PREMIUM_FEATURE, PREMIUM_PLAN } from "../lib/billing";
 
 export const FREE_LIMITS = {
   notes: 10,
@@ -7,36 +9,32 @@ export const FREE_LIMITS = {
 };
 
 export function usePremium() {
-  const { has } = useAuth();
+  const { has, isLoaded } = useAuth();
   const { user } = useUser();
+  const clerk = useClerk();
+  const [, navigate] = useLocation();
+
+  const hasPremium =
+    typeof has === "function" &&
+    (has({ plan: PREMIUM_PLAN }) || has({ feature: PREMIUM_FEATURE }));
 
   const isPremium =
-    (typeof has === "function" &&
-      (has({ plan: "clyven_plus" } as any) ||
-        has({ plan: "plus" } as any))) ||
+    hasPremium ||
     user?.publicMetadata?.plan === "premium" ||
     user?.publicMetadata?.clyven_plus === true ||
     user?.publicMetadata?.premium === true;
 
+  // Send users to the pricing page, where the Clerk <PricingTable /> handles
+  // plan selection, payment collection and checkout.
   function openUpgrade() {
-    const clerk = (window as any).Clerk;
-    if (clerk?.openCheckout) {
-      clerk.openCheckout({ planSlug: "clyven_plus" });
-    } else if (clerk?.openBillingPortal) {
-      clerk.openBillingPortal();
-    } else {
-      window.location.href = "/pricing";
-    }
+    navigate("/pricing");
   }
 
+  // Subscription management (cancel, change payment method, invoices) lives in
+  // the Billing tab of the Clerk <UserProfile /> modal.
   function openManage() {
-    const clerk = (window as any).Clerk;
-    if (clerk?.openBillingPortal) {
-      clerk.openBillingPortal();
-    } else {
-      window.location.href = "/pricing";
-    }
+    clerk.openUserProfile();
   }
 
-  return { isPremium: !!isPremium, openUpgrade, openManage, limits: FREE_LIMITS };
+  return { isPremium: !!isPremium, isLoaded, openUpgrade, openManage, limits: FREE_LIMITS };
 }
