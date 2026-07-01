@@ -1,6 +1,6 @@
 import { useAuth, useClerk, useUser } from "@clerk/react";
 import { useLocation } from "wouter";
-import { PREMIUM_FEATURE, PREMIUM_PLAN } from "../lib/billing";
+import { BUSINESS_PLAN, PREMIUM_FEATURE, PREMIUM_PLAN } from "../lib/billing";
 
 export const FREE_LIMITS = {
   notes: 10,
@@ -8,21 +8,32 @@ export const FREE_LIMITS = {
   focusModesCustom: 1,
 };
 
+export type PlanTier = "free" | "plus" | "business";
+
 export function usePremium() {
   const { has, isLoaded } = useAuth();
   const { user } = useUser();
   const clerk = useClerk();
   const [, navigate] = useLocation();
 
-  const hasPremium =
-    typeof has === "function" &&
-    (has({ plan: PREMIUM_PLAN }) || has({ feature: PREMIUM_FEATURE }));
+  const hasBusiness = typeof has === "function" && has({ plan: BUSINESS_PLAN });
+  const hasPlus =
+    typeof has === "function" && (has({ plan: PREMIUM_PLAN }) || has({ feature: PREMIUM_FEATURE }));
 
-  const isPremium =
-    hasPremium ||
-    user?.publicMetadata?.plan === "premium" ||
-    user?.publicMetadata?.clyven_plus === true ||
-    user?.publicMetadata?.premium === true;
+  // Determine plan tier from Clerk billing or metadata fallbacks
+  const planTier: PlanTier = hasBusiness
+    ? "business"
+    : hasPlus ||
+      user?.publicMetadata?.plan === "premium" ||
+      user?.publicMetadata?.clyven_plus === true ||
+      user?.publicMetadata?.premium === true ||
+      user?.publicMetadata?.plan === "plus"
+    ? "plus"
+    : "free";
+
+  const isPremium = planTier !== "free";
+
+  const planName = planTier === "business" ? "Business" : planTier === "plus" ? "Plus" : "Free";
 
   // Send users to the pricing page, where the Clerk <PricingTable /> handles
   // plan selection, payment collection and checkout.
@@ -36,5 +47,13 @@ export function usePremium() {
     clerk.openUserProfile();
   }
 
-  return { isPremium: !!isPremium, isLoaded, openUpgrade, openManage, limits: FREE_LIMITS };
+  return {
+    isPremium,
+    isLoaded,
+    planTier,
+    planName,
+    openUpgrade,
+    openManage,
+    limits: FREE_LIMITS,
+  };
 }
