@@ -3,21 +3,29 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+import { mockupPreviewPlugin } from "./mockupPreviewPlugin";
 
-// Falls PORT definiert ist (z.B. lokal), nutzen wir ihn, sonst Standard 5173
-const serverConfig = process.env.PORT 
-  ? { port: Number(process.env.PORT) } 
-  : { port: 5173 };
+const rawPort = process.env.PORT;
 
-export default defineConfig({
-  base: process.env.BASE_PATH || "/",
-  plugins: [
-    react(),
-    tailwindcss({ optimize: false }),
-    runtimeErrorOverlay(),
-  ],
-  server: serverConfig,
-});
+if (!rawPort) {
+  throw new Error(
+    "PORT environment variable is required but was not provided.",
+  );
+}
+
+const port = Number(rawPort);
+
+if (Number.isNaN(port) || port <= 0) {
+  throw new Error(`Invalid PORT value: "${rawPort}"`);
+}
+
+const basePath = process.env.BASE_PATH;
+
+if (!basePath) {
+  throw new Error(
+    "BASE_PATH environment variable is required but was not provided.",
+  );
+}
 
 export default defineConfig({
   base: basePath,
