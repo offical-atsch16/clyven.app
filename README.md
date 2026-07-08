@@ -54,5 +54,9 @@ Hast du eine Idee für ein Feature oder ein Feedback für uns? Wir freuen uns im
 
 *Clyven.app – Dein Dashboard. Deine Daten. Deine Entwicklung.*
 
+*Erstellt mit Liebe von einem kleinem Team aus Stuttgart*
+
+*Lizenz siehe LICENSE*
+
 
       
