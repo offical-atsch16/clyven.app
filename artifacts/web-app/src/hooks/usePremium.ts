@@ -1,6 +1,6 @@
 import { useAuth, useClerk, useUser } from "@clerk/react";
 import { useLocation } from "wouter";
-import { PLAN_TIERS, PLANS, type PlanTier } from "../lib/billing";
+import { BUSINESS_PLAN, PREMIUM_FEATURE, PREMIUM_PLAN } from "../lib/billing";
 
 export const FREE_LIMITS = {
   notes: 10,
@@ -8,28 +8,32 @@ export const FREE_LIMITS = {
   focusModesCustom: 1,
 };
 
+export type PlanTier = "free" | "plus" | "business";
+
 export function usePremium() {
   const { has, isLoaded } = useAuth();
   const { user } = useUser();
   const clerk = useClerk();
   const [, navigate] = useLocation();
 
-  // Resolve the highest tier the user holds (PLAN_TIERS is ordered high -> low).
-  let tier: PlanTier | null = null;
-  if (typeof has === "function") {
-    for (const t of PLAN_TIERS) {
-      const { slug, feature } = PLANS[t];
-      if (has({ plan: slug }) || (feature ? has({ feature }) : false)) {
-        tier = t;
-        break;
-      }
-    }
-  }
+  const hasBusiness = typeof has === "function" && has({ plan: BUSINESS_PLAN });
+  const hasPlus =
+    typeof has === "function" && (has({ plan: PREMIUM_PLAN }) || has({ feature: PREMIUM_FEATURE }));
 
-  const metadataPremium =
-    user?.publicMetadata?.plan === "premium" ||
-    user?.publicMetadata?.clyven_plus === true ||
-    user?.publicMetadata?.premium === true;
+  // Determine plan tier from Clerk billing or metadata fallbacks
+  const planTier: PlanTier = hasBusiness
+    ? "business"
+    : hasPlus ||
+      user?.publicMetadata?.plan === "premium" ||
+      user?.publicMetadata?.clyven_plus === true ||
+      user?.publicMetadata?.premium === true ||
+      user?.publicMetadata?.plan === "plus"
+    ? "plus"
+    : "free";
+
+  const isPremium = planTier !== "free";
+
+  const planName = planTier === "business" ? "Business" : planTier === "plus" ? "Plus" : "Free";
 
   const isPremium = tier !== null || metadataPremium;
   const planLabel = tier ? PLANS[tier].label : null;
@@ -46,5 +50,13 @@ export function usePremium() {
     clerk.openUserProfile();
   }
 
-  return { isPremium, isLoaded, tier, planLabel, openUpgrade, openManage, limits: FREE_LIMITS };
+  return {
+    isPremium,
+    isLoaded,
+    planTier,
+    planName,
+    openUpgrade,
+    openManage,
+    limits: FREE_LIMITS,
+  };
 }

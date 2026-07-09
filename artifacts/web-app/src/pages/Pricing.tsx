@@ -10,9 +10,10 @@ import { cn } from "../lib/utils";
 
 const FAQS = [
   { q: "Wann werde ich belastet?", a: "Du wirst sofort nach dem Upgrade belastet. Dein Zugang zu CLYVEN PLUS beginnt unmittelbar." },
-  { q: "Kann ich jederzeit kündigen?", a: "Ja, du kannst jederzeit über dein Account-Dashboard kündigen. Du behältst den Zugriff bis Ende des Abrechnungszeitraums." },
+  { q: "Kann ich jederzeit kündigen?", a: "Ja, du kannst jederzeit kündigen. Du behältst den Zugriff bis Ende des Abrechnungszeitraums." },
   { q: "Was passiert mit meinen Daten wenn ich downgrade?", a: "Deine Daten bleiben erhalten. Du kannst aber keine neuen Notizen erstellen wenn du das Limit überschreitest." },
-  { q: "Gibt es eine kostenlose Testphase?", a: "Der Free-Plan ist dauerhaft kostenlos und hat keine Zeitbeschränkung." },
+  { q: "Gibt es eine kostenlose Testphase?", a: "Ja, du kannst Clyven Plus 30 Tage lang kostenlos testen!" },
+  { q: "Was ist Clyven Buissnes?", a: "Clyven Buissnes ist eine speziell für Personen entwicklet die Clyven in Firmenumgebung nutzen möchten."},
 ];
 
 function scrollToPlans() {
@@ -114,7 +115,7 @@ export function Pricing() {
             {[
               { icon: FileText, title: "Kein Limit", desc: "Schreibe so viele Notizen wie du willst" },
               { icon: BarChart2, title: "Tiefe Insights", desc: "30-Tage Analyse deiner Produktivität" },
-              { icon: Download, title: "Deine Daten", desc: "Export all deiner Notizen als Markdown" },
+              { icon: Download, title: "Deine Daten", desc: "Export all deiner Notizen als Markdown u.o PDF" },
               { icon: Shield, title: "Premium Support", desc: "Schnelle Antworten vom CLYVEN Team" },
             ].map((item, i) => (
               <motion.div key={item.title}
