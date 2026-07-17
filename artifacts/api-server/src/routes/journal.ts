@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { supabase } from "../lib/supabase.js";
 import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
+import { snakeToCamel } from "../lib/snakeToCamel.js";
 
 const router = Router();
 
@@ -13,7 +14,7 @@ router.get("/", requireAuth, async (req, res) => {
       .eq("user_id", userId)
       .order("date", { ascending: false });
     if (error) throw error;
-    res.json(data || []);
+    res.json((data || []).map(snakeToCamel));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to fetch journal entries", detail: e.message });
   }
@@ -30,7 +31,7 @@ router.get("/:date", requireAuth, async (req, res) => {
       .eq("date", date)
       .maybeSingle();
     if (error) throw error;
-    res.json(data || null);
+    res.json(data ? snakeToCamel(data) : null);
   } catch (e: any) {
     res.status(500).json({ error: "Failed to fetch journal entry", detail: e.message });
   }
@@ -57,7 +58,7 @@ router.post("/", requireAuth, async (req, res) => {
         .select()
         .single();
       if (error) throw error;
-      return res.json(data);
+      return res.json(snakeToCamel(data));
     }
 
     const { data, error } = await supabase
@@ -66,7 +67,7 @@ router.post("/", requireAuth, async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-    res.json(data);
+    res.json(snakeToCamel(data));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to save journal entry", detail: e.message });
   }

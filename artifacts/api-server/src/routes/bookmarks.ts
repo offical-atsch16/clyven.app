@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { supabase } from "../lib/supabase.js";
 import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
+import { snakeToCamel } from "../lib/snakeToCamel.js";
 
 const router = Router();
 const FREE_LIMIT = 25;
@@ -14,7 +15,7 @@ router.get("/", requireAuth, async (req, res) => {
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
     if (error) throw error;
-    res.json(data || []);
+    res.json((data || []).map(snakeToCamel));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to fetch bookmarks", detail: e.message });
   }
@@ -45,7 +46,7 @@ router.post("/", requireAuth, async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-    res.json(data);
+    res.json(snakeToCamel(data));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to create bookmark", detail: e.message });
   }
@@ -65,7 +66,7 @@ router.put("/:id", requireAuth, async (req, res) => {
       .single();
     if (error) throw error;
     if (!data) return res.status(404).json({ error: "Not found" });
-    res.json(data);
+    res.json(snakeToCamel(data));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to update bookmark", detail: e.message });
   }

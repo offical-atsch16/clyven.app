@@ -86,4 +86,3 @@ timeoutMs = 20000
 
 [userenv.shared]
 SUPABASE_URL = "https://ubdyndpbayysjtevugjl.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViZHluZHBiYXl5c2p0ZXZ1Z2psIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjIzNDI2MywiZXhwIjoyMDk3ODEwMjYzfQ.s84whrdrFVyKlItkkEnc_qtFKHibmyDjEWVvO6NwfbM"

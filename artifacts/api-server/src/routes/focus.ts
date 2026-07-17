@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { supabase } from "../lib/supabase.js";
 import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
+import { snakeToCamel } from "../lib/snakeToCamel.js";
 
 const router = Router();
 
@@ -24,7 +25,7 @@ router.get("/", requireAuth, async (req, res) => {
       .reduce((acc: number, s: any) => acc + s.duration, 0);
     const totalMinutes = sessions.reduce((acc: number, s: any) => acc + s.duration, 0);
 
-    res.json({ sessions, todayMinutes, totalMinutes, totalSessions: sessions.length });
+    res.json({ sessions: sessions.map(snakeToCamel), todayMinutes, totalMinutes, totalSessions: sessions.length });
   } catch (e: any) {
     res.status(500).json({ error: "Failed to fetch focus data", detail: e.message });
   }
@@ -40,7 +41,7 @@ router.post("/", requireAuth, async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-    res.json(data);
+    res.json(snakeToCamel(data));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to save focus session", detail: e.message });
   }

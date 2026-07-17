@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { supabase } from "../lib/supabase.js";
 import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
+import { snakeToCamel } from "../lib/snakeToCamel.js";
 
 const router = Router();
 
@@ -59,7 +60,7 @@ router.get("/settings", requireAuth, async (req, res) => {
       .eq("user_id", userId)
       .maybeSingle();
     if (error) throw error;
-    res.json(data || { theme: "dark", daily_focus_goal: 120 });
+    res.json(data ? snakeToCamel(data) : { theme: "dark", dailyFocusGoal: 120 });
   } catch (e: any) {
     res.status(500).json({ error: "Failed to fetch settings", detail: e.message });
   }
@@ -83,7 +84,7 @@ router.post("/settings", requireAuth, async (req, res) => {
         .select()
         .single();
       if (error) throw error;
-      return res.json(data);
+      return res.json(snakeToCamel(data));
     }
 
     const { data, error } = await supabase
@@ -92,7 +93,7 @@ router.post("/settings", requireAuth, async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-    res.json(data);
+    res.json(snakeToCamel(data));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to save settings", detail: e.message });
   }
