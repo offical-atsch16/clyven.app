@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { db, notes, bookmarks, focusSessions, journalEntries, userAchievements, userSettings } from "@workspace/db";
-import { eq, count, sum } from "drizzle-orm";
+import { supabase } from "../lib/supabase.js";
 import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
 
 const router = Router();
@@ -8,43 +7,61 @@ const router = Router();
 router.get("/stats", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   try {
-    const [notesCount] = await db.select({ count: count() }).from(notes).where(eq(notes.userId, userId));
-    const [bookmarksCount] = await db.select({ count: count() }).from(bookmarks).where(eq(bookmarks.userId, userId));
-    const [focusData] = await db
-      .select({ total: sum(focusSessions.duration), sessions: count() })
-      .from(focusSessions)
-      .where(eq(focusSessions.userId, userId));
-    const [journalCount] = await db.select({ count: count() }).from(journalEntries).where(eq(journalEntries.userId, userId));
-    const achievements = await db.select().from(userAchievements).where(eq(userAchievements.userId, userId));
+    // Notes count
+    const { count: notesCount } = await supabase
+      .from("notes").select("*", { count: "exact", head: true }).eq("user_id", userId);
+
+    // Bookmarks count
+    const { count: bookmarksCount } = await supabase
+      .from("bookmarks").select("*", { count: "exact", head: true }).eq("user_id", userId);
+
+    // Focus sessions
+    const { data: focusSessions } = await supabase
+      .from("focus_sessions").select("duration, completed_at").eq("user_id", userId);
+
+    // Journal count
+    const { count: journalCount } = await supabase
+      .from("journal_entries").select("*", { count: "exact", head: true }).eq("user_id", userId);
+
+    // Achievements
+    const { data: achievements } = await supabase
+      .from("user_achievements").select("badge_id").eq("user_id", userId);
+
+    const sessions = focusSessions || [];
+    const totalFocusMinutes = sessions.reduce((acc: number, s: any) => acc + s.duration, 0);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const allFocusSessions = await db.select().from(focusSessions).where(eq(focusSessions.userId, userId));
-    const todayMinutes = allFocusSessions
-      .filter((s) => s.completedAt && new Date(s.completedAt) >= today)
-      .reduce((acc, s) => acc + s.duration, 0);
+    const todayMinutes = sessions
+      .filter((s: any) => s.completed_at && new Date(s.completed_at) >= today)
+      .reduce((acc: number, s: any) => acc + s.duration, 0);
 
     res.json({
-      notesCount: notesCount?.count ?? 0,
-      bookmarksCount: bookmarksCount?.count ?? 0,
-      totalFocusMinutes: Number(focusData?.total ?? 0),
-      totalFocusSessions: focusData?.sessions ?? 0,
-      journalCount: journalCount?.count ?? 0,
-      achievements: achievements.map((a) => a.badgeId),
+      notesCount: notesCount ?? 0,
+      bookmarksCount: bookmarksCount ?? 0,
+      totalFocusMinutes,
+      totalFocusSessions: sessions.length,
+      journalCount: journalCount ?? 0,
+      achievements: achievements?.map((a: any) => a.badge_id) ?? [],
       todayFocusMinutes: todayMinutes,
     });
-  } catch (e) {
-    res.status(500).json({ error: "Failed to fetch stats" });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch stats", detail: e.message });
   }
 });
 
 router.get("/settings", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   try {
-    const [settings] = await db.select().from(userSettings).where(eq(userSettings.userId, userId));
-    res.json(settings || { theme: "dark", dailyFocusGoal: 120 });
-  } catch (e) {
-    res.status(500).json({ error: "Failed to fetch settings" });
+    const { data, error } = await supabase
+      .from("user_settings")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) throw error;
+    res.json(data || { theme: "dark", daily_focus_goal: 120 });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch settings", detail: e.message });
   }
 });
 
@@ -52,22 +69,32 @@ router.post("/settings", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   const { theme, dailyFocusGoal, notificationsEnabled, timezone } = req.body;
   try {
-    const existing = await db.select().from(userSettings).where(eq(userSettings.userId, userId));
-    if (existing.length > 0) {
-      const [row] = await db
-        .update(userSettings)
-        .set({ theme, dailyFocusGoal, notificationsEnabled, timezone, updatedAt: new Date() })
-        .where(eq(userSettings.userId, userId))
-        .returning();
-      return res.json(row);
+    const { data: existing } = await supabase
+      .from("user_settings")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existing) {
+      const { data, error } = await supabase
+        .from("user_settings")
+        .update({ theme, daily_focus_goal: dailyFocusGoal, notifications_enabled: notificationsEnabled, timezone, updated_at: new Date().toISOString() })
+        .eq("user_id", userId)
+        .select()
+        .single();
+      if (error) throw error;
+      return res.json(data);
     }
-    const [row] = await db
-      .insert(userSettings)
-      .values({ userId, theme, dailyFocusGoal, notificationsEnabled, timezone })
-      .returning();
-    res.json(row);
-  } catch (e) {
-    res.status(500).json({ error: "Failed to save settings" });
+
+    const { data, error } = await supabase
+      .from("user_settings")
+      .insert({ user_id: userId, theme, daily_focus_goal: dailyFocusGoal, notifications_enabled: notificationsEnabled, timezone })
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to save settings", detail: e.message });
   }
 });
 

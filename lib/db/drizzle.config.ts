@@ -8,10 +8,21 @@ if (!rawUrl) {
 }
 
 // Clean up accidental spaces (e.g. "postgres: password" → "postgres:password")
-const cleanUrl = rawUrl.replace(/:\s+/g, ":").trim();
-const dbUrl = cleanUrl.includes("supabase") && !cleanUrl.includes("sslmode")
-  ? `${cleanUrl}?sslmode=disable`
-  : cleanUrl;
+let cleanUrl = rawUrl.replace(/:\s+/g, ":").trim();
+
+// Use Supabase Connection Pooler (port 6543) instead of direct 5432
+if (cleanUrl.includes("supabase") && !cleanUrl.includes("pooler")) {
+  try {
+    const u = new URL(cleanUrl);
+    u.hostname = "aws-0-eu-central-1.pooler.supabase.com";
+    u.port = "6543";
+    cleanUrl = u.toString();
+  } catch {
+    // fallback
+  }
+}
+
+const dbUrl = cleanUrl;
 
 export default defineConfig({
   schema: path.join(__dirname, "./src/schema/index.ts"),

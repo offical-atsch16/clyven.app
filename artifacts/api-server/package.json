@@ -13,6 +13,7 @@
     "@clerk/express": "^2.1.30",
     "@clerk/shared": "^4.20.0",
     "@prisma/client": "^7.8.0",
+    "@supabase/supabase-js": "^2.110.7",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "cookie-parser": "^1.4.7",

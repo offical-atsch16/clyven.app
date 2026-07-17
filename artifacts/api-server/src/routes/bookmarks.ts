@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { db, bookmarks } from "@workspace/db";
-import { eq, and, desc, count } from "drizzle-orm";
+import { supabase } from "../lib/supabase.js";
 import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
 
 const router = Router();
@@ -9,14 +8,15 @@ const FREE_LIMIT = 25;
 router.get("/", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   try {
-    const rows = await db
-      .select()
-      .from(bookmarks)
-      .where(eq(bookmarks.userId, userId))
-      .orderBy(desc(bookmarks.createdAt));
-    res.json(rows);
-  } catch (e) {
-    res.status(500).json({ error: "Failed to fetch bookmarks" });
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch bookmarks", detail: e.message });
   }
 });
 
@@ -24,11 +24,11 @@ router.post("/", requireAuth, async (req, res) => {
   const { userId, isPremium } = req as AuthenticatedRequest;
 
   if (!isPremium) {
-    const [{ count: existing }] = await db
-      .select({ count: count() })
-      .from(bookmarks)
-      .where(eq(bookmarks.userId, userId));
-    if (Number(existing) >= FREE_LIMIT) {
+    const { count } = await supabase
+      .from("bookmarks")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+    if ((count || 0) >= FREE_LIMIT) {
       return res.status(403).json({
         error: "LIMIT_REACHED",
         limit: FREE_LIMIT,
@@ -39,13 +39,15 @@ router.post("/", requireAuth, async (req, res) => {
 
   const { url, title, description, thumbnail, siteName, category, tags, isReadLater } = req.body;
   try {
-    const [row] = await db
-      .insert(bookmarks)
-      .values({ userId, url, title, description, thumbnail, siteName, category, tags, isReadLater })
-      .returning();
-    res.json(row);
-  } catch (e) {
-    res.status(500).json({ error: "Failed to create bookmark" });
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .insert({ user_id: userId, url, title, description, thumbnail, site_name: siteName, category, tags, is_read_later: isReadLater })
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to create bookmark", detail: e.message });
   }
 });
 
@@ -54,15 +56,18 @@ router.put("/:id", requireAuth, async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
   try {
-    const [row] = await db
-      .update(bookmarks)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(and(eq(bookmarks.id, id), eq(bookmarks.userId, userId)))
-      .returning();
-    if (!row) return res.status(404).json({ error: "Not found" });
-    res.json(row);
-  } catch (e) {
-    res.status(500).json({ error: "Failed to update bookmark" });
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("user_id", userId)
+      .select()
+      .single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: "Not found" });
+    res.json(data);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to update bookmark", detail: e.message });
   }
 });
 
@@ -70,10 +75,11 @@ router.delete("/:id", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   const { id } = req.params;
   try {
-    await db.delete(bookmarks).where(and(eq(bookmarks.id, id), eq(bookmarks.userId, userId)));
+    const { error } = await supabase.from("bookmarks").delete().eq("id", id).eq("user_id", userId);
+    if (error) throw error;
     res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ error: "Failed to delete bookmark" });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to delete bookmark", detail: e.message });
   }
 });
 
