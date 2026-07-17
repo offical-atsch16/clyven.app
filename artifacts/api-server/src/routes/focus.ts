@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { db, focusSessions } from "@workspace/db";
-import { eq, desc, gte, sum, count } from "drizzle-orm";
+import { supabase } from "../lib/supabase.js";
 import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
 
 const router = Router();
@@ -8,25 +7,26 @@ const router = Router();
 router.get("/", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   try {
-    const sessions = await db
-      .select()
-      .from(focusSessions)
-      .where(eq(focusSessions.userId, userId))
-      .orderBy(desc(focusSessions.completedAt))
+    const { data, error } = await supabase
+      .from("focus_sessions")
+      .select("*")
+      .eq("user_id", userId)
+      .order("completed_at", { ascending: false })
       .limit(50);
+    if (error) throw error;
 
+    const sessions = data || [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const todaySessions = sessions.filter(
-      (s) => s.completedAt && new Date(s.completedAt) >= today,
-    );
-    const todayMinutes = todaySessions.reduce((acc, s) => acc + s.duration, 0);
-    const totalMinutes = sessions.reduce((acc, s) => acc + s.duration, 0);
+    const todayMinutes = sessions
+      .filter((s: any) => s.completed_at && new Date(s.completed_at) >= today)
+      .reduce((acc: number, s: any) => acc + s.duration, 0);
+    const totalMinutes = sessions.reduce((acc: number, s: any) => acc + s.duration, 0);
 
     res.json({ sessions, todayMinutes, totalMinutes, totalSessions: sessions.length });
-  } catch (e) {
-    res.status(500).json({ error: "Failed to fetch focus data" });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch focus data", detail: e.message });
   }
 });
 
@@ -34,13 +34,15 @@ router.post("/", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   const { duration, type, label } = req.body;
   try {
-    const [row] = await db
-      .insert(focusSessions)
-      .values({ userId, duration, type: type || "pomodoro", label })
-      .returning();
-    res.json(row);
-  } catch (e) {
-    res.status(500).json({ error: "Failed to save focus session" });
+    const { data, error } = await supabase
+      .from("focus_sessions")
+      .insert({ user_id: userId, duration, type: type || "pomodoro", label })
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to save focus session", detail: e.message });
   }
 });
 

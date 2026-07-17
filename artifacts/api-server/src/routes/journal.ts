@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { db, journalEntries } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import { supabase } from "../lib/supabase.js";
 import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
 
 const router = Router();
@@ -8,14 +7,15 @@ const router = Router();
 router.get("/", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   try {
-    const rows = await db
-      .select()
-      .from(journalEntries)
-      .where(eq(journalEntries.userId, userId))
-      .orderBy(desc(journalEntries.date));
-    res.json(rows);
-  } catch (e) {
-    res.status(500).json({ error: "Failed to fetch journal entries" });
+    const { data, error } = await supabase
+      .from("journal_entries")
+      .select("*")
+      .eq("user_id", userId)
+      .order("date", { ascending: false });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch journal entries", detail: e.message });
   }
 });
 
@@ -23,13 +23,16 @@ router.get("/:date", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   const { date } = req.params;
   try {
-    const [row] = await db
-      .select()
-      .from(journalEntries)
-      .where(and(eq(journalEntries.userId, userId), eq(journalEntries.date, date)));
-    res.json(row || null);
-  } catch (e) {
-    res.status(500).json({ error: "Failed to fetch journal entry" });
+    const { data, error } = await supabase
+      .from("journal_entries")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("date", date)
+      .maybeSingle();
+    if (error) throw error;
+    res.json(data || null);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch journal entry", detail: e.message });
   }
 });
 
@@ -37,27 +40,35 @@ router.post("/", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
   const { date, mood, wentWell, learned, grateful, tomorrowGoals, freeText } = req.body;
   try {
-    const existing = await db
-      .select()
-      .from(journalEntries)
-      .where(and(eq(journalEntries.userId, userId), eq(journalEntries.date, date)));
+    // Check if entry exists
+    const { data: existing } = await supabase
+      .from("journal_entries")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("date", date)
+      .maybeSingle();
 
-    if (existing.length > 0) {
-      const [row] = await db
-        .update(journalEntries)
-        .set({ mood, wentWell, learned, grateful, tomorrowGoals, freeText, updatedAt: new Date() })
-        .where(and(eq(journalEntries.userId, userId), eq(journalEntries.date, date)))
-        .returning();
-      return res.json(row);
+    if (existing) {
+      const { data, error } = await supabase
+        .from("journal_entries")
+        .update({ mood, went_well: wentWell, learned, grateful, tomorrow_goals: tomorrowGoals, free_text: freeText, updated_at: new Date().toISOString() })
+        .eq("user_id", userId)
+        .eq("date", date)
+        .select()
+        .single();
+      if (error) throw error;
+      return res.json(data);
     }
 
-    const [row] = await db
-      .insert(journalEntries)
-      .values({ userId, date, mood, wentWell, learned, grateful, tomorrowGoals, freeText })
-      .returning();
-    res.json(row);
-  } catch (e) {
-    res.status(500).json({ error: "Failed to save journal entry" });
+    const { data, error } = await supabase
+      .from("journal_entries")
+      .insert({ user_id: userId, date, mood, went_well: wentWell, learned, grateful, tomorrow_goals: tomorrowGoals, free_text: freeText })
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to save journal entry", detail: e.message });
   }
 });
 

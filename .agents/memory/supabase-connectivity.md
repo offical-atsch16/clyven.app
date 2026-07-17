@@ -1,24 +1,28 @@
 ---
 name: Supabase Connectivity
-description: Why drizzle-kit push to Supabase fails in Replit sandbox
+description: How CLYVEN connects to Supabase via REST API
 ---
 
-## Problem
-Replit's sandbox environment blocks outbound TCP connections to external hosts on port 5432 (standard PostgreSQL port).
-`drizzle-kit push` hangs at "Pulling schema from database..." and exits with code 1 (no detailed error shown by drizzle-kit).
+## Architecture
+CLYVEN uses **Supabase REST API** (not direct PostgreSQL) for all data operations:
+- Backend: `@supabase/supabase-js` with **Service Role Key** (server-side, bypasses RLS)
+- URL: `https://ubdyndpbayysjtevugjl.supabase.co`
+- Service Role Key stored in `SUPABASE_SERVICE_ROLE_KEY` secret
 
-## Workaround
-Run `drizzle-kit push` from:
-1. Local machine with `SUPABASE_DATABASE_URL` set
-2. After deployment (Replit deployments can reach external DBs)
-3. Via Supabase web SQL editor — paste schema manually
+## Why REST API instead of pg Pool?
+Replit's sandbox blocks:
+- DNS resolution for `*.supabase.co` hostnames
+- TCP connections to port 5432 (PostgreSQL)
 
-## DB code
-`lib/db/src/index.ts` and `lib/db/drizzle.config.ts` both use:
-```
-SUPABASE_DATABASE_URL || DATABASE_URL
-```
-with space-cleaning: `.replace(/:\s+/g, ':').trim()` in case URL has formatting spaces.
-SSL: `{ rejectUnauthorized: false }` added when URL contains "supabase".
+HTTPS/443 (REST API) works without restrictions.
 
-**Why:** The app falls back to Replit's built-in PostgreSQL (`DATABASE_URL`) automatically when Supabase is unreachable.
+## Files
+- `artifacts/api-server/src/lib/supabase.ts` — shared Supabase client
+- `artifacts/api-server/src/routes/*.ts` — all routes use Supabase queries
+- `lib/db/supabase-schema.sql` — SQL to create tables (run in Supabase SQL Editor)
+
+## Schema already exists
+Tables were created by previous `drizzle-kit push` or manual execution:
+`notes`, `bookmarks`, `focus_sessions`, `journal_entries`, `user_achievements`, `user_settings`
+
+**Why:** REST API is reliable, no connection pooling issues, works everywhere.
