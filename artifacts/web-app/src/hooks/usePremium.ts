@@ -32,11 +32,7 @@ export function usePremium() {
     : "free";
 
   const isPremium = planTier !== "free";
-
   const planName = planTier === "business" ? "Business" : planTier === "plus" ? "Plus" : "Free";
-
-  const isPremium = tier !== null || metadataPremium;
-  const planLabel = tier ? PLANS[tier].label : null;
 
   // Send users to the pricing page, where the Clerk <PricingTable /> handles
   // plan selection, payment collection and checkout.
