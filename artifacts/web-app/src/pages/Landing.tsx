@@ -1,9 +1,9 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link } from "wouter";
 import {
   FileText, Bookmark, Timer, BookOpen, BarChart2, Trophy,
-  ArrowRight, ChevronDown, Star, Zap, Shield, Globe,
+  ArrowRight, ChevronDown, Star, Zap, Shield, Globe, Check, Sparkles, Lock,
 } from "lucide-react";
 import { useUser } from "@clerk/react";
 
@@ -18,12 +18,116 @@ const FEATURES = [
   { icon: Trophy, title: "Achievements", desc: "Unlock badges and rewards as you build habits. Rare and legendary achievements make every milestone meaningful." },
 ];
 
-const FAQS = [
-  { q: "Ist Clyven kostenlos?", a: "Clyven ist für persönliche Nutzung kostenlos. Alle Kernfunktionen sind ohne Einschränkungen verfügbar." },
-  { q: "Werden meine Daten sicher gespeichert?", a: "Ja. Deine Daten werden verschlüsselt gespeichert und niemals an Dritte weitergegeben. Du behältst die volle Kontrolle." },
-  { q: "Kann ich Clyven auf mehreren Geräten nutzen?", a: "Ja. Clyven synchronisiert deine Daten automatisch auf allen deinen Geräten." },
-  { q: "Gibt es eine Mobile-App?", a: "Clyven ist vollständig responsive und funktioniert perfekt auf jedem Gerät. Eine native App ist in Planung." },
+const PLANS = [
+  {
+    name: "Free",
+    price: "$0",
+    period: "forever",
+    description: "Perfect for getting started",
+    features: ["10 notes", "25 bookmarks", "1 custom focus mode", "Basic analytics", "All core features"],
+    cta: "Get Started",
+    highlight: false,
+  },
+  {
+    name: "CLYVEN PLUS",
+    price: "$2",
+    period: "/month",
+    description: "Unlimited productivity",
+    features: ["Unlimited notes", "Unlimited bookmarks", "Unlimited focus modes", "Advanced analytics", "Priority support", "Export as Markdown"],
+    cta: "Upgrade Now",
+    highlight: true,
+  },
 ];
+
+const FAQS = [
+  { q: "Ist Clyven kostenlos?", a: "Ja — der Free-Plan ist kostenlos und enthält alle Kernfunktionen. Für unbegrenzte Nutzung gibt es CLYVEN PLUS für nur $2/Monat." },
+  { q: "Werden meine Daten sicher gespeichert?", a: "Ja. Deine Daten werden verschlüsselt in der Cloud gespeichert. Wir verkaufen keine Daten und geben nichts an Dritte weiter." },
+  { q: "Kann ich Clyven auf mehreren Geräten nutzen?", a: "Ja. Clyven synchronisiert deine Daten automatisch auf allen deinen Geräten — Desktop, Tablet, Smartphone." },
+  { q: "Wie kann ich kündigen?", a: "Du kannst jederzeit über dein Profil kündigen. Es gibt keine Mindestlaufzeit und keine versteckten Kosten." },
+];
+
+/* ─── Silktide Cookie Banner (injected only on landing) ─── */
+function useCookieBanner() {
+  useEffect(() => {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.id = "silktide-consent-manager-css";
+    css.href = "https://cdn.jsdelivr.net/gh/silktide/consent-manager@v2.0.1/silktide-consent-manager.css";
+    css.crossOrigin = "anonymous";
+    document.head.appendChild(css);
+
+    const style = document.createElement("style");
+    style.id = "silktide-consent-manager-overrides";
+    style.textContent = `
+      #stcm-wrapper {
+        --boxShadow: -5px 5px 10px 0px #00000012, 0px 0px 50px 0px #0000001a;
+        --fontFamily: Helvetica Neue, Segoe UI, Arial, sans-serif;
+        --primaryColor: #AFE3FF;
+        --backgroundColor: #070219;
+        --textColor: #E5F6FA;
+        --backdropBackgroundColor: #00000033;
+        --backdropBackgroundBlur: 0px;
+        --iconColor: #070219;
+        --iconBackgroundColor: #AFE3FF;
+      }
+    `;
+    document.head.appendChild(style);
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/gh/silktide/consent-manager@v2.0.1/silktide-consent-manager.js";
+    script.crossOrigin = "anonymous";
+    script.onload = () => {
+      (window as any).silktideConsentManager.init({
+        backdrop: { show: true },
+        icon: { position: "bottomRight" },
+        prompt: { position: "bottomRight" },
+        consentTypes: [
+          {
+            id: "essential",
+            label: "Essential",
+            description: "<p>Diese Cookies sind notwendig, damit die Website ordnungsgemäß funktioniert und können nicht ausgeschaltet werden.</p>",
+            required: true,
+          },
+          {
+            id: "analytics",
+            label: "Analytics",
+            description: "<p>Diese Cookies helfen uns, die Website zu verbessern, indem sie verfolgen, welche Seiten am beliebtesten sind.</p>",
+            defaultValue: true,
+          },
+          {
+            id: "marketing",
+            label: "Marketing",
+            description: "<p>Diese Cookies werden verwendet, um dir relevante Werbung zu zeigen und Kampagnen zu messen.</p>",
+          },
+        ],
+        text: {
+          prompt: {
+            description: "<p>Wir verwenden Cookies, um deine Nutzererfahrung zu verbessern, personalisierte Inhalte bereitzustellen und unseren Traffic zu analysieren.</p>",
+            acceptAllButtonText: "Alle akzeptieren",
+            acceptAllButtonAccessibleLabel: "Alle Cookies akzeptieren",
+            rejectNonEssentialButtonText: "Nicht-essenzielle ablehnen",
+            rejectNonEssentialButtonAccessibleLabel: "Alle nicht-essentiellen Cookies ablehnen",
+            preferencesButtonText: "Einstellungen",
+            preferencesButtonAccessibleLabel: "Einstellungen öffnen",
+          },
+          preferences: {
+            title: "Cookie-Einstellungen",
+            description: "<p>Wir respektieren dein Recht auf Privatsphäre. Du kannst wählen, welche Cookies du erlauben möchtest.</p>",
+            saveButtonText: "Speichern und schließen",
+            saveButtonAccessibleLabel: "Einstellungen speichern",
+          },
+        },
+      });
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      css.remove();
+      style.remove();
+      script.remove();
+    };
+  }, []);
+}
 
 export function Landing() {
   const { user } = useUser();
@@ -33,6 +137,8 @@ export function Landing() {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [pos, setPos] = useState({ x: 50, y: 50 });
+
+  useCookieBanner();
 
   return (
     <div className="min-h-[100dvh] overflow-x-hidden bg-[#080808] text-white"
@@ -80,13 +186,13 @@ export function Landing() {
         <motion.div style={{ y, opacity }} className="relative z-10 flex flex-col items-center text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-1.5 text-xs text-white/50">
-            <Zap className="h-3 w-3" />
+            <Sparkles className="h-3 w-3" />
             Dein persönlicher digitaler Workspace
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-6 max-w-4xl text-5xl font-bold leading-tight tracking-tight sm:text-6xl lg:text-7xl">
-            <span className="text-white">Clyven —{" "}</span>
+            <span className="text-white">Clyven — </span>
             <span className="bg-gradient-to-r from-white/80 to-white/30 bg-clip-text text-transparent">
               Your personal digital workspace
             </span>
@@ -94,7 +200,8 @@ export function Landing() {
 
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-10 max-w-xl text-lg text-white/40 leading-relaxed">
-            Capture ideas, stay focused and organize your life in one place.
+            Capture ideas, stay focused and organize your life in one place. 
+            Second Brain, Focus Timer, Journal & Bookmarks — alles vereint.
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
@@ -166,6 +273,69 @@ export function Landing() {
         </div>
       </section>
 
+      {/* Pricing */}
+      <section className="px-6 py-24">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-16 text-center">
+            <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+              className="mb-3 text-xs font-medium uppercase tracking-widest text-white/30">Pricing</motion.p>
+            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+              className="text-3xl font-bold text-white sm:text-4xl">Einfach & fair</motion.h2>
+            <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
+              className="mt-4 text-white/40">Starte kostenlos. Upgrade nur wenn du mehr brauchst.</motion.p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            {PLANS.map((plan, i) => (
+              <motion.div key={plan.name}
+                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className={`relative rounded-3xl border p-8 ${
+                  plan.highlight
+                    ? "border-white/20 bg-white/[0.04]"
+                    : "border-white/[0.08] bg-white/[0.02]"
+                }`}>
+                {plan.highlight && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-1 text-xs font-semibold text-black">
+                    Beliebt
+                  </div>
+                )}
+
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
+                  <p className="mt-1 text-sm text-white/40">{plan.description}</p>
+                </div>
+
+                <div className="mb-6 flex items-baseline gap-1">
+                  <span className="text-4xl font-bold text-white">{plan.price}</span>
+                  <span className="text-sm text-white/40">{plan.period}</span>
+                </div>
+
+                <ul className="mb-8 space-y-3">
+                  {plan.features.map((feat) => (
+                    <li key={feat} className="flex items-start gap-2.5 text-sm text-white/60">
+                      <Check className={`mt-0.5 h-4 w-4 shrink-0 ${plan.highlight ? "text-white" : "text-white/40"}`} />
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link href="/sign-up">
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    className={`w-full rounded-xl py-3 text-sm font-semibold transition-colors ${
+                      plan.highlight
+                        ? "bg-white text-black hover:bg-white/90"
+                        : "border border-white/[0.1] bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                    }`}>
+                    {plan.cta}
+                  </motion.button>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="px-6 py-24">
         <div className="mx-auto max-w-2xl">
@@ -219,7 +389,11 @@ export function Landing() {
             <img src={`${basePath}/logo.svg`} alt="CLYVEN" className="h-5 w-5" />
             <span className="text-xs font-bold tracking-[0.2em] text-white/40">CLYVEN</span>
           </div>
-          <p className="text-xs text-white/20">© 2026 CLYVEN. Alle Rechte vorbehalten.</p>
+          <div className="flex gap-6 text-xs text-white/30">
+            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Datenschutz</span></Link>
+            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Impressum</span></Link>
+          </div>
+          <p className="text-xs text-white/20">© 2026 CLYVEN</p>
         </div>
       </footer>
     </div>

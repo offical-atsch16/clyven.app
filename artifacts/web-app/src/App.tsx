@@ -20,6 +20,8 @@ import { Achievements } from "./pages/Achievements";
 import { Profile } from "./pages/Profile";
 import { Settings } from "./pages/Settings";
 import { Pricing } from "./pages/Pricing";
+import { Privacy } from "./pages/Privacy";
+import { Impressum } from "./pages/Impressum";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30000 } } });
 
@@ -223,6 +225,8 @@ function AppRoutes() {
             <ProtectedLayout><Settings /></ProtectedLayout>
           </Route>
           <Route path="/pricing" component={Pricing} />
+          <Route path="/privacy" component={Privacy} />
+          <Route path="/impressum" component={Impressum} />
           <Route>
             <Redirect to="/" />
           </Route>
