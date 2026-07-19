@@ -2,7 +2,7 @@ import pg from "pg";
 const { Client } = pg;
 
 const client = new Client({
-  connectionString: process.env.SUPABASE_DATABASE_URL,
+  connectionString: process.env.DATABASE_URL || process.env.SUPABASE_DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
@@ -40,6 +40,7 @@ CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
 CREATE INDEX IF NOT EXISTS idx_tickets_email ON tickets(email);
 CREATE INDEX IF NOT EXISTS idx_tickets_number ON tickets(ticket_number);
 CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket_id ON ticket_messages(ticket_id);
+CREATE SEQUENCE IF NOT EXISTS ticket_number_seq START 1;
 `;
 
 async function run() {
@@ -49,20 +50,26 @@ async function run() {
     await client.query(sql);
     console.log("Migration executed successfully");
 
-    // Seed default admin if not exists
-    const { rows } = await client.query("SELECT id FROM admin_users WHERE email = 'admin@clyven.app'");
-    if (rows.length === 0) {
-      const bcrypt = await import("bcryptjs");
-      const hash = await bcrypt.default.hash("admin123", 12);
-      await client.query(
-        "INSERT INTO admin_users (email, password_hash) VALUES ($1, $2)",
-        ["admin@clyven.app", hash]
-      );
-      console.log("Default admin created: admin@clyven.app / admin123");
+    // Optional seed from env vars (never hardcoded)
+    const seedEmail = process.env.ADMIN_INITIAL_EMAIL;
+    const seedPassword = process.env.ADMIN_INITIAL_PASSWORD;
+    if (seedEmail && seedPassword) {
+      const { rows } = await client.query("SELECT id FROM admin_users WHERE email = $1", [seedEmail]);
+      if (rows.length === 0) {
+        const bcrypt = await import("bcryptjs");
+        const hash = await bcrypt.default.hash(seedPassword, 12);
+        await client.query(
+          "INSERT INTO admin_users (email, password_hash) VALUES ($1, $2)",
+          [seedEmail, hash]
+        );
+        console.log("Initial admin created from env vars");
+      } else {
+        console.log("Admin already exists");
+      }
     } else {
-      console.log("Default admin already exists");
+      console.log("No ADMIN_INITIAL_EMAIL/PASSWORD set — skipping admin seed");
     }
-  } catch (e) {
+  } catch (e: any) {
     console.error("Migration error:", e.message);
   } finally {
     await client.end();

@@ -3,8 +3,8 @@ import { pool } from "../lib/db.js";
 
 const router = Router();
 
-function generateTicketNumber(count: number): string {
-  return `TICKET-${String(count + 1).padStart(6, "0")}`;
+function generateTicketNumber(seq: number): string {
+  return `TICKET-${String(seq).padStart(6, "0")}`;
 }
 
 function snakeToCamel(obj: Record<string, any>): Record<string, any> {
@@ -16,7 +16,7 @@ function snakeToCamel(obj: Record<string, any>): Record<string, any> {
   return result;
 }
 
-// Create a new ticket (public, no auth)
+// Create a new ticket (public, no auth) — collision-safe via DB sequence
 router.post("/", async (req, res) => {
   const { name, email, subject, message } = req.body;
   if (!name || !email || !subject || !message) {
@@ -24,8 +24,9 @@ router.post("/", async (req, res) => {
   }
   const client = await pool.connect();
   try {
-    const { rows: countRows } = await client.query("SELECT COUNT(*)::int AS c FROM tickets");
-    const ticketNumber = generateTicketNumber(countRows[0].c);
+    await client.query("BEGIN");
+    const { rows: seqRows } = await client.query("SELECT nextval('ticket_number_seq') AS n");
+    const ticketNumber = generateTicketNumber(seqRows[0].n);
 
     const { rows: ticketRows } = await client.query(
       `INSERT INTO tickets (ticket_number, name, email, subject, message, status)
@@ -40,8 +41,10 @@ router.post("/", async (req, res) => {
       [ticket.id, name, message]
     );
 
+    await client.query("COMMIT");
     res.json(snakeToCamel(ticket));
   } catch (e: any) {
+    await client.query("ROLLBACK").catch(() => {});
     res.status(500).json({ error: "Failed to create ticket", detail: e.message });
   } finally {
     client.release();

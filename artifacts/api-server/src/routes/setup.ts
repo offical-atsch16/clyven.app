@@ -44,17 +44,23 @@ router.post("/", async (_req, res) => {
     await client.query("CREATE INDEX IF NOT EXISTS idx_tickets_number ON tickets(ticket_number)");
     await client.query("CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket_id ON ticket_messages(ticket_id)");
 
-    // Seed default admin
-    const { rows } = await client.query("SELECT id FROM admin_users WHERE email='admin@clyven.app'");
-    if (!rows.length) {
-      const hash = await bcrypt.hash("admin123", 12);
-      await client.query(
-        "INSERT INTO admin_users (email, password_hash) VALUES ($1, $2)",
-        ["admin@clyven.app", hash]
-      );
+    await client.query("CREATE SEQUENCE IF NOT EXISTS ticket_number_seq START 1");
+
+    // Optional seed from env (never hardcoded)
+    const seedEmail = process.env.ADMIN_INITIAL_EMAIL;
+    const seedPassword = process.env.ADMIN_INITIAL_PASSWORD;
+    if (seedEmail && seedPassword) {
+      const { rows } = await client.query("SELECT id FROM admin_users WHERE email=$1", [seedEmail]);
+      if (!rows.length) {
+        const hash = await bcrypt.hash(seedPassword, 12);
+        await client.query(
+          "INSERT INTO admin_users (email, password_hash) VALUES ($1, $2)",
+          [seedEmail, hash]
+        );
+      }
     }
 
-    res.json({ success: true, message: "Setup complete. Default admin: admin@clyven.app / admin123" });
+    res.json({ success: true, message: "Setup complete" });
   } catch (e: any) {
     res.status(500).json({ error: "Setup failed", detail: e.message });
   } finally {
