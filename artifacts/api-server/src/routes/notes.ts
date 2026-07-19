@@ -36,7 +36,7 @@ router.post("/", requireAuth, async (req, res) => {
       return res.status(403).json({
         error: "LIMIT_REACHED",
         limit: FREE_LIMIT,
-        message: `Free-Plan: Maximal ${FREE_LIMIT} Notizen. Upgrade auf CLYVEN PLUS für unbegrenzte Notizen.`,
+        message: `Free plan: Maximum ${FREE_LIMIT} notes reached. Upgrade to CLYVEN PLUS for unlimited notes.`,
       });
     }
   }

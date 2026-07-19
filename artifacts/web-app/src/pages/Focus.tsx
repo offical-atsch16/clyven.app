@@ -7,26 +7,26 @@ import { cn, formatMinutes } from "../lib/utils";
 
 const MODES = [
   { key: "pomodoro", label: "Pomodoro", work: 25, break: 5 },
-  { key: "short", label: "Kurz", work: 15, break: 3 },
+  { key: "short", label: "Short", work: 15, break: 3 },
   { key: "deep", label: "Deep Work", work: 50, break: 10 },
   { key: "custom", label: "Custom", work: 30, break: 5 },
 ];
 
 const AMBIENT_SOUNDS = [
-  { key: "rain", label: "Regen", icon: CloudRain, url: "https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3" },
-  { key: "forest", label: "Wald", icon: Trees, url: "https://cdn.pixabay.com/download/audio/2021/08/09/audio_dc39a0b8eb.mp3" },
+  { key: "rain", label: "Rain", icon: CloudRain, url: "https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3" },
+  { key: "forest", label: "Forest", icon: Trees, url: "https://cdn.pixabay.com/download/audio/2021/08/09/audio_dc39a0b8eb.mp3" },
   { key: "cafe", label: "Café", icon: Coffee, url: "https://cdn.pixabay.com/download/audio/2022/10/25/audio_7c5e3b9c4a.mp3" },
-  { key: "fireplace", label: "Kamin", icon: FlameIcon, url: "https://cdn.pixabay.com/download/audio/2022/03/10/audio_8e0f5e7c8e.mp3" },
-  { key: "waves", label: "Wellen", icon: Waves, url: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_9f5f5e3e9d.mp3" },
+  { key: "fireplace", label: "Fireplace", icon: FlameIcon, url: "https://cdn.pixabay.com/download/audio/2022/03/10/audio_8e0f5e7c8e.mp3" },
+  { key: "waves", label: "Waves", icon: Waves, url: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_9f5f5e3e9d.mp3" },
   { key: "wind", label: "Wind", icon: Wind, url: "https://cdn.pixabay.com/download/audio/2022/02/23/audio_b6b0e6e0f9.mp3" },
 ];
 
 const MOTIVATIONS = [
-  "Jede Minute zählt. Du schaffst das! 🚀",
-  "Tief fokussiert — im Flow-Zustand. ⚡",
-  "Konzentration ist Superkraft. 🧠",
-  "Produktivität ist eine Entscheidung. ✨",
-  "Dieser Block bringt dich weiter. 🎯",
+  "Every minute counts. You've got this! 🚀",
+  "Deep focus — in the flow state. ⚡",
+  "Concentration is a superpower. 🧠",
+  "Productivity is a choice. ✨",
+  "This block moves you forward. 🎯",
 ];
 
 export function Focus() {
@@ -139,7 +139,7 @@ export function Focus() {
       <div className="mx-auto max-w-4xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white">Focus Mode</h1>
-          <p className="mt-1 text-sm text-white/40">Tief konzentriert arbeiten, Pausen nicht vergessen.</p>
+          <p className="mt-1 text-sm text-white/40">Work deeply — don't skip breaks.</p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
@@ -158,7 +158,7 @@ export function Focus() {
 
             {/* Phase */}
             <div className="mb-6 text-xs font-medium uppercase tracking-widest text-white/30">
-              {phase === "work" ? "🎯 Fokuszeit" : "☕ Pause"}
+              {phase === "work" ? "🎯 Focus Time" : "☕ Break"}
             </div>
 
             {/* SVG Circle Timer */}
@@ -203,11 +203,11 @@ export function Focus() {
 
             {mode.key === "custom" && (
               <div className="mt-6 flex items-center gap-3">
-                <span className="text-xs text-white/40">Dauer:</span>
+                <span className="text-xs text-white/40">Duration:</span>
                 <input type="number" value={customWork} onChange={(e) => setCustomWork(Number(e.target.value))}
                   min={1} max={120}
                   className="w-16 rounded-lg border border-white/[0.1] bg-white/[0.05] px-2 py-1 text-center text-sm text-white outline-none" />
-                <span className="text-xs text-white/40">Minuten</span>
+                <span className="text-xs text-white/40">minutes</span>
               </div>
             )}
 
@@ -217,7 +217,7 @@ export function Focus() {
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
                   className="mt-6 flex items-center gap-2 rounded-xl border border-green-500/20 bg-green-950/20 px-4 py-2.5">
                   <CheckCircle className="h-4 w-4 text-green-400/70" />
-                  <span className="text-sm text-green-400/70">Großartige Arbeit! Session gespeichert 🎉</span>
+                  <span className="text-sm text-green-400/70">Great work! Session saved 🎉</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -262,11 +262,11 @@ export function Focus() {
 
             {/* Today stats */}
             <div className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
-              <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/25">Heute</p>
+              <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/25">Today</p>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm text-white/50">
-                    <Timer className="h-4 w-4" /> Fokuszeit
+                    <Timer className="h-4 w-4" /> Focus time
                   </div>
                   <span className="text-sm font-semibold text-white">{formatMinutes(focusData?.todayMinutes ?? 0)}</span>
                 </div>
@@ -281,7 +281,7 @@ export function Focus() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm text-white/50">
-                    <Clock className="h-4 w-4" /> Gesamt
+                    <Clock className="h-4 w-4" /> Total
                   </div>
                   <span className="text-sm font-semibold text-white">{formatMinutes(focusData?.totalMinutes ?? 0)}</span>
                 </div>
@@ -290,9 +290,9 @@ export function Focus() {
 
             {/* Recent sessions */}
             <div className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
-              <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/25">Letzte Sessions</p>
+              <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/25">Recent Sessions</p>
               {!focusData?.sessions?.length ? (
-                <p className="py-4 text-center text-sm text-white/20">Noch keine Sessions</p>
+                <p className="py-4 text-center text-sm text-white/20">No sessions yet</p>
               ) : (
                 <div className="space-y-2">
                   {(focusData?.sessions ?? []).slice(0, 6).map((s: any) => (

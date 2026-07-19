@@ -17,69 +17,69 @@ export function Privacy() {
           </Link>
           <Link href="/">
             <button className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors">
-              <ArrowLeft className="h-4 w-4" /> Zurück
+              <ArrowLeft className="h-4 w-4" /> Back
             </button>
           </Link>
         </div>
       </nav>
 
       <main className="mx-auto max-w-3xl px-6 pt-24 pb-16">
-        <h1 className="mb-8 text-3xl font-bold text-white">Datenschutzerklärung</h1>
+        <h1 className="mb-8 text-3xl font-bold text-white">Privacy Policy</h1>
 
         <div className="space-y-8 text-sm text-white/60 leading-relaxed">
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">1. Verantwortlicher</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">1. Controller</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Name und Kontaktdaten des Verantwortlichen einfügen]
+              [Insert name and contact details of the controller]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">2. Erhebung und Verarbeitung personenbezogener Daten</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">2. Collection and Processing of Personal Data</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Beschreibung der erhobenen Daten einfügen — z.B. E-Mail, Nutzungsdaten, etc.]
+              [Describe the data collected — e.g. email, usage data, etc.]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">3. Zweck der Datenverarbeitung</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">3. Purpose of Data Processing</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Zweck der Verarbeitung einfügen — z.B. Bereitstellung des Dienstes, Analyse, etc.]
+              [Describe the purpose — e.g. providing the service, analytics, etc.]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">4. Rechtsgrundlage</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">4. Legal Basis</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Rechtsgrundlage nach DSGVO einfügen — z.B. Art. 6 Abs. 1 lit. a, b, f DSGVO]
+              [Insert legal basis — e.g. Art. 6 para. 1 lit. a, b, f GDPR]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">5. Speicherdauer</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">5. Storage Period</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Dauer der Datenspeicherung einfügen]
+              [Insert data retention period]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">6. Ihre Rechte</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">6. Your Rights</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Rechte der betroffenen Personen einfügen — Auskunft, Berichtigung, Löschung, etc.]
+              [Insert data subject rights — access, rectification, erasure, etc.]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">7. Cookies und Tracking</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">7. Cookies and Tracking</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Informationen zu Cookies und Tracking-Technologien einfügen]
+              [Insert cookie and tracking technology information]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">8. Kontakt</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">8. Contact</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Kontaktdaten für Datenschutzanfragen einfügen]
+              [Insert contact details for privacy inquiries]
             </p>
           </section>
         </div>
@@ -89,8 +89,8 @@ export function Privacy() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <p className="text-xs text-white/20">© 2026 CLYVEN</p>
           <div className="flex gap-4 text-xs text-white/30">
-            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Datenschutz</span></Link>
-            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Impressum</span></Link>
+            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Privacy</span></Link>
+            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Legal Notice</span></Link>
           </div>
         </div>
       </footer>

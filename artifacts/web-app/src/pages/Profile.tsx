@@ -18,19 +18,19 @@ export function Profile() {
   const joinedAt = user?.createdAt ? formatDate(user.createdAt) : "—";
 
   const statItems = [
-    { icon: Timer, label: "Fokuszeit gesamt", value: formatMinutes(stats?.totalFocusMinutes ?? 0) },
-    { icon: FileText, label: "Notizen erstellt", value: stats?.notesCount ?? 0 },
-    { icon: Bookmark, label: "Bookmarks gespeichert", value: stats?.bookmarksCount ?? 0 },
-    { icon: BookOpen, label: "Journal-Einträge", value: stats?.journalCount ?? 0 },
+    { icon: Timer, label: "Total focus time", value: formatMinutes(stats?.totalFocusMinutes ?? 0) },
+    { icon: FileText, label: "Notes created", value: stats?.notesCount ?? 0 },
+    { icon: Bookmark, label: "Bookmarks saved", value: stats?.bookmarksCount ?? 0 },
+    { icon: BookOpen, label: "Journal entries", value: stats?.journalCount ?? 0 },
     { icon: Trophy, label: "Achievements", value: stats?.achievements?.length ?? 0 },
-    { icon: Timer, label: "Focus-Sessions", value: stats?.totalFocusSessions ?? 0 },
+    { icon: Timer, label: "Focus sessions", value: stats?.totalFocusSessions ?? 0 },
   ];
 
   return (
     <div className="min-h-full p-6 lg:p-8">
       <div className="mx-auto max-w-2xl">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Profil</h1>
+          <h1 className="text-2xl font-bold text-white">Profile</h1>
         </div>
 
         {/* Profile card */}
@@ -50,7 +50,7 @@ export function Profile() {
               <p className="mt-1 text-sm text-white/40">{user?.primaryEmailAddress?.emailAddress}</p>
               <div className="mt-3 flex items-center gap-2 justify-center sm:justify-start">
                 <Calendar className="h-3.5 w-3.5 text-white/30" />
-                <span className="text-xs text-white/30">Mitglied seit {joinedAt}</span>
+                <span className="text-xs text-white/30">Member since {joinedAt}</span>
               </div>
             </div>
           </div>
@@ -69,32 +69,32 @@ export function Profile() {
           ))}
         </div>
 
-        {/* Abo verwalten (Clerk Billing) */}
+        {/* Subscription */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
           className="mb-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
           <div className="mb-1 flex items-center gap-2">
             <Crown className={isPremium ? "h-4 w-4 text-yellow-400/70" : "h-4 w-4 text-white/30"} />
-            <p className="text-sm font-medium text-white/60">Abo &amp; Zahlungen</p>
+            <p className="text-sm font-medium text-white/60">Subscription &amp; Billing</p>
           </div>
           <p className="text-xs text-white/30 mb-4">
             {isPremium
-              ? "Du bist auf CLYVEN PLUS. Abo kündigen, Zahlungsmethode ändern oder Rechnungen einsehen."
-              : "Verwalte dein Abo, deine Zahlungsmethode und Rechnungen im Billing-Bereich."}
+              ? "You are on CLYVEN PLUS. Cancel subscription, change payment method or view invoices."
+              : "Manage your subscription, payment method and invoices in the billing area."}
           </p>
           <button onClick={() => clerk.openUserProfile()}
             className="flex items-center gap-2 rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-sm text-white/60 hover:bg-white/[0.08] hover:text-white transition-all">
-            <CreditCard className="h-4 w-4" /> Abo verwalten
+            <CreditCard className="h-4 w-4" /> Manage Subscription
           </button>
         </motion.div>
 
-        {/* Clerk manage */}
+        {/* Account */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
           className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
-          <p className="text-sm font-medium text-white/60 mb-1">Account verwalten</p>
-          <p className="text-xs text-white/30 mb-4">Passwort, E-Mail und Sicherheitseinstellungen über Clerk verwalten.</p>
+          <p className="text-sm font-medium text-white/60 mb-1">Manage Account</p>
+          <p className="text-xs text-white/30 mb-4">Manage password, email and security settings via Clerk.</p>
           <button onClick={() => clerk.openUserProfile()}
             className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-sm text-white/60 hover:bg-white/[0.08] hover:text-white transition-all">
-            Account-Einstellungen öffnen
+            Open Account Settings
           </button>
         </motion.div>
       </div>

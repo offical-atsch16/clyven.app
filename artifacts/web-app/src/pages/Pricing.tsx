@@ -9,11 +9,11 @@ import { PREMIUM_PLAN } from "../lib/billing";
 import { cn } from "../lib/utils";
 
 const FAQS = [
-  { q: "Wann werde ich belastet?", a: "Du wirst sofort nach dem Upgrade belastet. Dein Zugang zu CLYVEN PLUS beginnt unmittelbar." },
-  { q: "Kann ich jederzeit kündigen?", a: "Ja, du kannst jederzeit kündigen. Du behältst den Zugriff bis Ende des Abrechnungszeitraums." },
-  { q: "Was passiert mit meinen Daten wenn ich downgrade?", a: "Deine Daten bleiben erhalten. Du kannst aber keine neuen Notizen erstellen wenn du das Limit überschreitest." },
-  { q: "Gibt es eine kostenlose Testphase?", a: "Ja, du kannst Clyven Plus 30 Tage lang kostenlos testen!" },
-  { q: "Was ist Clyven Buissnes?", a: "Clyven Buissnes ist eine speziell für Personen entwicklet die Clyven in Firmenumgebung nutzen möchten."},
+  { q: "When will I be charged?", a: "You will be charged immediately after upgrading. Your access to CLYVEN PLUS begins right away." },
+  { q: "Can I cancel anytime?", a: "Yes, you can cancel anytime. You will keep access until the end of your billing period." },
+  { q: "What happens to my data when I downgrade?", a: "Your data stays preserved. However, you won't be able to create new notes if you exceed the free limit." },
+  { q: "Is there a free trial?", a: "Yes, you can try Clyven Plus free for 30 days!" },
+  { q: "What is Clyven Business?", a: "Clyven Business is designed for people who want to use Clyven in a corporate environment."},
 ];
 
 function scrollToPlans() {
@@ -33,7 +33,7 @@ export function Pricing() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <button onClick={() => navigate("/dashboard")}
             className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors">
-            <ArrowLeft className="h-4 w-4" /> Zurück
+            <ArrowLeft className="h-4 w-4" /> Back
           </button>
           <div className="flex items-center gap-2.5">
             <img src={`${basePath}/logo.svg`} alt="CLYVEN" className="h-5 w-5" />
@@ -61,11 +61,11 @@ export function Pricing() {
               <Zap className="h-3 w-3" /> CLYVEN PLUS
             </div>
             <h1 className="mb-4 text-5xl font-bold tracking-tight sm:text-6xl">
-              Einfache, faire<br />
-              <span className="bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">Preisgestaltung</span>
+              Simple, fair<br />
+              <span className="bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">pricing</span>
             </h1>
             <p className="text-lg text-white/40">
-              Starte kostenlos. Upgrade wenn du bereit bist.
+              Start for free. Upgrade when you're ready.
             </p>
           </motion.div>
 
@@ -91,16 +91,16 @@ export function Pricing() {
               <p className="text-center text-sm font-medium text-yellow-400/70">PLUS</p>
             </div>
             {[
-              { label: "Notizen", free: "10", plus: "Unbegrenzt" },
-              { label: "Bookmarks", free: "25", plus: "Unbegrenzt" },
+              { label: "Notes", free: "10", plus: "Unlimited" },
+              { label: "Bookmarks", free: "25", plus: "Unlimited" },
               { label: "Focus Timer", free: "✓", plus: "✓" },
               { label: "Journal", free: "✓", plus: "✓" },
-              { label: "Analytics", free: "7 Tage", plus: "30 Tage" },
+              { label: "Analytics", free: "7 days", plus: "30 days" },
               { label: "Export (Markdown)", free: "—", plus: "✓" },
               { label: "Streak Tracking", free: "—", plus: "✓" },
               { label: "Premium Badge", free: "—", plus: "✓" },
-              { label: "Alle Achievements", free: "Basis", plus: "✓" },
-              { label: "Support", free: "Community", plus: "Priorität" },
+              { label: "All Achievements", free: "Basic", plus: "✓" },
+              { label: "Support", free: "Community", plus: "Priority" },
             ].map((row, i) => (
               <div key={row.label} className={cn("grid grid-cols-3 px-6 py-3.5 text-sm", i % 2 === 0 && "bg-white/[0.01]")}>
                 <span className="text-white/50">{row.label}</span>
@@ -113,10 +113,10 @@ export function Pricing() {
           {/* Why PLUS */}
           <div className="mb-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: FileText, title: "Kein Limit", desc: "Schreibe so viele Notizen wie du willst" },
-              { icon: BarChart2, title: "Tiefe Insights", desc: "30-Tage Analyse deiner Produktivität" },
-              { icon: Download, title: "Deine Daten", desc: "Export all deiner Notizen als Markdown u.o PDF" },
-              { icon: Shield, title: "Premium Support", desc: "Schnelle Antworten vom CLYVEN Team" },
+              { icon: FileText, title: "No Limit", desc: "Write as many notes as you want" },
+              { icon: BarChart2, title: "Deep Insights", desc: "30-day analysis of your productivity" },
+              { icon: Download, title: "Your Data", desc: "Export all your notes as Markdown or PDF" },
+              { icon: Shield, title: "Premium Support", desc: "Fast responses from the CLYVEN team" },
             ].map((item, i) => (
               <motion.div key={item.title}
                 initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
@@ -133,7 +133,7 @@ export function Pricing() {
 
           {/* FAQ */}
           <div className="mb-16">
-            <h2 className="mb-8 text-center text-2xl font-bold text-white">Häufige Fragen</h2>
+            <h2 className="mb-8 text-center text-2xl font-bold text-white">Common Questions</h2>
             <div className="mx-auto max-w-2xl space-y-2">
               {FAQS.map((faq, i) => (
                 <div key={i} className="overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.02]">
@@ -156,12 +156,12 @@ export function Pricing() {
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="rounded-3xl border border-yellow-400/10 bg-gradient-to-b from-yellow-400/[0.05] to-transparent p-12 text-center">
             <Crown className="mx-auto mb-4 h-8 w-8 text-yellow-400/60" />
-            <h2 className="mb-3 text-2xl font-bold text-white">Bereit für CLYVEN PLUS?</h2>
-            <p className="mb-8 text-white/40">Über 100% mehr Möglichkeiten. Jederzeit kündbar.</p>
+            <h2 className="mb-3 text-2xl font-bold text-white">Ready for CLYVEN PLUS?</h2>
+            <p className="mb-8 text-white/40">Over 100% more possibilities. Cancel anytime.</p>
             <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
               onClick={scrollToPlans}
               className="rounded-2xl bg-gradient-to-r from-yellow-400 to-yellow-500 px-10 py-4 text-sm font-bold text-black shadow-xl shadow-yellow-500/20 hover:from-yellow-300 hover:to-yellow-400 transition-all">
-              Plan wählen →
+              Choose Plan →
             </motion.button>
           </motion.div>
         </div>

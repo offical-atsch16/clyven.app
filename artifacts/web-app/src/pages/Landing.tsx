@@ -40,15 +40,19 @@ const PLANS = [
 ];
 
 const FAQS = [
-  { q: "Ist Clyven kostenlos?", a: "Ja — der Free-Plan ist kostenlos und enthält alle Kernfunktionen. Für unbegrenzte Nutzung gibt es CLYVEN PLUS für nur $2/Monat." },
-  { q: "Werden meine Daten sicher gespeichert?", a: "Ja. Deine Daten werden verschlüsselt in der Cloud gespeichert. Wir verkaufen keine Daten und geben nichts an Dritte weiter." },
-  { q: "Kann ich Clyven auf mehreren Geräten nutzen?", a: "Ja. Clyven synchronisiert deine Daten automatisch auf allen deinen Geräten — Desktop, Tablet, Smartphone." },
-  { q: "Wie kann ich kündigen?", a: "Du kannst jederzeit über dein Profil kündigen. Es gibt keine Mindestlaufzeit und keine versteckten Kosten." },
+  { q: "Is Clyven free?", a: "Yes — the Free plan is free and includes all core features. For unlimited usage, there's CLYVEN PLUS for just $2/month." },
+  { q: "Is my data stored securely?", a: "Yes. Your data is stored encrypted in the cloud. We don't sell data and don't share anything with third parties." },
+  { q: "Can I use Clyven on multiple devices?", a: "Yes. Clyven automatically syncs your data across all your devices — desktop, tablet, and smartphone." },
+  { q: "How can I cancel?", a: "You can cancel anytime via your profile. There is no minimum contract period and no hidden fees." },
 ];
 
 /* ─── Silktide Cookie Banner (injected only on landing) ─── */
 function useCookieBanner() {
   useEffect(() => {
+    // Prevent duplicate initialization on HMR
+    if ((window as any).__clyvenCookieBannerInit) return;
+    (window as any).__clyvenCookieBannerInit = true;
+
     const css = document.createElement("link");
     css.rel = "stylesheet";
     css.id = "silktide-consent-manager-css";
@@ -85,36 +89,36 @@ function useCookieBanner() {
           {
             id: "essential",
             label: "Essential",
-            description: "<p>Diese Cookies sind notwendig, damit die Website ordnungsgemäß funktioniert und können nicht ausgeschaltet werden.</p>",
+            description: "<p>These cookies are necessary for the website to function properly and cannot be switched off.</p>",
             required: true,
           },
           {
             id: "analytics",
             label: "Analytics",
-            description: "<p>Diese Cookies helfen uns, die Website zu verbessern, indem sie verfolgen, welche Seiten am beliebtesten sind.</p>",
+            description: "<p>These cookies help us improve the website by tracking which pages are most popular.</p>",
             defaultValue: true,
           },
           {
             id: "marketing",
             label: "Marketing",
-            description: "<p>Diese Cookies werden verwendet, um dir relevante Werbung zu zeigen und Kampagnen zu messen.</p>",
+            description: "<p>These cookies are used to show you relevant advertising and measure campaigns.</p>",
           },
         ],
         text: {
           prompt: {
-            description: "<p>Wir verwenden Cookies, um deine Nutzererfahrung zu verbessern, personalisierte Inhalte bereitzustellen und unseren Traffic zu analysieren.</p>",
-            acceptAllButtonText: "Alle akzeptieren",
-            acceptAllButtonAccessibleLabel: "Alle Cookies akzeptieren",
-            rejectNonEssentialButtonText: "Nicht-essenzielle ablehnen",
-            rejectNonEssentialButtonAccessibleLabel: "Alle nicht-essentiellen Cookies ablehnen",
-            preferencesButtonText: "Einstellungen",
-            preferencesButtonAccessibleLabel: "Einstellungen öffnen",
+            description: "<p>We use cookies to enhance your experience, deliver personalized content, and analyze our traffic.</p>",
+            acceptAllButtonText: "Accept all",
+            acceptAllButtonAccessibleLabel: "Accept all cookies",
+            rejectNonEssentialButtonText: "Reject non-essential",
+            rejectNonEssentialButtonAccessibleLabel: "Reject all non-essential cookies",
+            preferencesButtonText: "Preferences",
+            preferencesButtonAccessibleLabel: "Open preferences",
           },
           preferences: {
-            title: "Cookie-Einstellungen",
-            description: "<p>Wir respektieren dein Recht auf Privatsphäre. Du kannst wählen, welche Cookies du erlauben möchtest.</p>",
-            saveButtonText: "Speichern und schließen",
-            saveButtonAccessibleLabel: "Einstellungen speichern",
+            title: "Cookie Preferences",
+            description: "<p>We respect your right to privacy. You can choose which cookies you allow.</p>",
+            saveButtonText: "Save and close",
+            saveButtonAccessibleLabel: "Save preferences",
           },
         },
       });
@@ -187,7 +191,7 @@ export function Landing() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-1.5 text-xs text-white/50">
             <Sparkles className="h-3 w-3" />
-            Dein persönlicher digitaler Workspace
+            Your personal digital workspace
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
@@ -201,7 +205,7 @@ export function Landing() {
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-10 max-w-xl text-lg text-white/40 leading-relaxed">
             Capture ideas, stay focused and organize your life in one place. 
-            Second Brain, Focus Timer, Journal & Bookmarks — alles vereint.
+            Second Brain, Focus Timer, Journal & Bookmarks — all in one.
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
@@ -222,7 +226,7 @@ export function Landing() {
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
             className="mt-16 flex animate-bounce flex-col items-center gap-2 text-white/20">
-            <span className="text-xs tracking-widest uppercase">Entdecken</span>
+            <span className="text-xs tracking-widest uppercase">Explore</span>
             <ChevronDown className="h-4 w-4" />
           </motion.div>
         </motion.div>
@@ -235,7 +239,7 @@ export function Landing() {
             <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
               className="mb-3 text-xs font-medium uppercase tracking-widest text-white/30">Features</motion.p>
             <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="text-3xl font-bold text-white sm:text-4xl">Alles was du brauchst</motion.h2>
+              className="text-3xl font-bold text-white sm:text-4xl">Everything you need</motion.h2>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -259,10 +263,10 @@ export function Landing() {
       <section className="border-y border-white/[0.06] px-6 py-20">
         <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
           {[
-            { value: "∞", label: "Notizen" },
+            { value: "∞", label: "Notes" },
             { value: "7+", label: "Features" },
-            { value: "100%", label: "Privat" },
-            { value: "0", label: "Ablenkungen" },
+            { value: "100%", label: "Private" },
+            { value: "0", label: "Distractions" },
           ].map((s, i) => (
             <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="text-center">
@@ -280,9 +284,9 @@ export function Landing() {
             <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
               className="mb-3 text-xs font-medium uppercase tracking-widest text-white/30">Pricing</motion.p>
             <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              className="text-3xl font-bold text-white sm:text-4xl">Einfach & fair</motion.h2>
+              className="text-3xl font-bold text-white sm:text-4xl">Simple & fair</motion.h2>
             <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
-              className="mt-4 text-white/40">Starte kostenlos. Upgrade nur wenn du mehr brauchst.</motion.p>
+              className="mt-4 text-white/40">Start for free. Upgrade only when you need more.</motion.p>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
@@ -297,7 +301,7 @@ export function Landing() {
                 }`}>
                 {plan.highlight && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-1 text-xs font-semibold text-black">
-                    Beliebt
+                    Popular
                   </div>
                 )}
 
@@ -341,7 +345,7 @@ export function Landing() {
         <div className="mx-auto max-w-2xl">
           <div className="mb-12 text-center">
             <p className="mb-3 text-xs font-medium uppercase tracking-widest text-white/30">FAQ</p>
-            <h2 className="text-3xl font-bold text-white">Häufige Fragen</h2>
+            <h2 className="text-3xl font-bold text-white">Common Questions</h2>
           </div>
           <div className="space-y-2">
             {FAQS.map((faq, i) => (
@@ -370,12 +374,12 @@ export function Landing() {
         <div className="mx-auto max-w-2xl text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="rounded-3xl border border-white/[0.08] bg-white/[0.02] p-12">
-            <h2 className="mb-4 text-3xl font-bold text-white">Bereit loszulegen?</h2>
-            <p className="mb-8 text-white/40">Erstelle deinen kostenlosen Account und starte in Sekunden.</p>
+            <h2 className="mb-4 text-3xl font-bold text-white">Ready to get started?</h2>
+            <p className="mb-8 text-white/40">Create your free account and get started in seconds.</p>
             <Link href="/sign-up">
               <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                 className="rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-black hover:bg-white/90 transition-colors">
-                Jetzt starten — kostenlos
+                Get started — for free
               </motion.button>
             </Link>
           </motion.div>
@@ -390,8 +394,8 @@ export function Landing() {
             <span className="text-xs font-bold tracking-[0.2em] text-white/40">CLYVEN</span>
           </div>
           <div className="flex gap-6 text-xs text-white/30">
-            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Datenschutz</span></Link>
-            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Impressum</span></Link>
+            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Privacy</span></Link>
+            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Legal Notice</span></Link>
           </div>
           <p className="text-xs text-white/20">© 2026 CLYVEN</p>
         </div>

@@ -5,16 +5,16 @@ import { cn } from "../lib/utils";
 import { Lock } from "lucide-react";
 
 const BADGES = [
-  { id: "first_steps", emoji: "🥇", name: "First Steps", desc: "Erste Notiz erstellt", rarity: "Common", check: (s: any) => s.notesCount >= 1, goal: 1, getProgress: (s: any) => s.notesCount },
-  { id: "brain_collector", emoji: "🧠", name: "Brain Collector", desc: "50 Notizen erstellt", rarity: "Rare", check: (s: any) => s.notesCount >= 50, goal: 50, getProgress: (s: any) => s.notesCount },
-  { id: "knowledge_hunter", emoji: "📚", name: "Knowledge Hunter", desc: "100 Bookmarks gespeichert", rarity: "Rare", check: (s: any) => s.bookmarksCount >= 100, goal: 100, getProgress: (s: any) => s.bookmarksCount },
-  { id: "deep_worker", emoji: "⚡", name: "Deep Worker", desc: "10 Stunden Fokuszeit", rarity: "Epic", check: (s: any) => s.totalFocusMinutes >= 600, goal: 600, getProgress: (s: any) => s.totalFocusMinutes },
-  { id: "night_owl", emoji: "🌙", name: "Night Owl", desc: "Nach Mitternacht fokussiert", rarity: "Rare", check: (_: any) => false, goal: 1, getProgress: () => 0 },
-  { id: "on_fire", emoji: "🔥", name: "On Fire", desc: "7 Tage Streak", rarity: "Epic", check: (_: any) => false, goal: 7, getProgress: () => 0 },
-  { id: "productivity_machine", emoji: "🚀", name: "Productivity Machine", desc: "30 Tage Streak", rarity: "Legendary", check: (_: any) => false, goal: 30, getProgress: () => 0 },
-  { id: "the_answer", emoji: "🌌", name: "The Answer", desc: "42 Focus-Sessions abgeschlossen — Reality unlocked", rarity: "Legendary", check: (s: any) => s.totalFocusSessions >= 42, goal: 42, getProgress: (s: any) => s.totalFocusSessions },
-  { id: "developer_soul", emoji: "💾", name: "Developer Soul", desc: "Notiz mit Titel 'hello world' erstellt", rarity: "Epic", check: (_: any) => false, goal: 1, getProgress: () => 0 },
-  { id: "clyven_master", emoji: "👑", name: "Clyven Master", desc: "Alle Hauptbadges freigeschaltet", rarity: "Legendary", check: (_: any) => false, goal: 6, getProgress: () => 0 },
+  { id: "first_steps", emoji: "🥇", name: "First Steps", desc: "Created your first note", rarity: "Common", check: (s: any) => s.notesCount >= 1, goal: 1, getProgress: (s: any) => s.notesCount },
+  { id: "brain_collector", emoji: "🧠", name: "Brain Collector", desc: "Created 50 notes", rarity: "Rare", check: (s: any) => s.notesCount >= 50, goal: 50, getProgress: (s: any) => s.notesCount },
+  { id: "knowledge_hunter", emoji: "📚", name: "Knowledge Hunter", desc: "Saved 100 bookmarks", rarity: "Rare", check: (s: any) => s.bookmarksCount >= 100, goal: 100, getProgress: (s: any) => s.bookmarksCount },
+  { id: "deep_worker", emoji: "⚡", name: "Deep Worker", desc: "10 hours of focus time", rarity: "Epic", check: (s: any) => s.totalFocusMinutes >= 600, goal: 600, getProgress: (s: any) => s.totalFocusMinutes },
+  { id: "night_owl", emoji: "🌙", name: "Night Owl", desc: "Focused past midnight", rarity: "Rare", check: (_: any) => false, goal: 1, getProgress: () => 0 },
+  { id: "on_fire", emoji: "🔥", name: "On Fire", desc: "7-day streak", rarity: "Epic", check: (_: any) => false, goal: 7, getProgress: () => 0 },
+  { id: "productivity_machine", emoji: "🚀", name: "Productivity Machine", desc: "30-day streak", rarity: "Legendary", check: (_: any) => false, goal: 30, getProgress: () => 0 },
+  { id: "the_answer", emoji: "🌌", name: "The Answer", desc: "42 focus sessions completed — reality unlocked", rarity: "Legendary", check: (s: any) => s.totalFocusSessions >= 42, goal: 42, getProgress: (s: any) => s.totalFocusSessions },
+  { id: "developer_soul", emoji: "💾", name: "Developer Soul", desc: "Created a note titled 'hello world'", rarity: "Epic", check: (_: any) => false, goal: 1, getProgress: () => 0 },
+  { id: "clyven_master", emoji: "👑", name: "Clyven Master", desc: "All main badges unlocked", rarity: "Legendary", check: (_: any) => false, goal: 6, getProgress: () => 0 },
 ];
 
 const RARITY_STYLES: Record<string, string> = {
@@ -43,13 +43,13 @@ export function Achievements() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white">Achievements</h1>
-          <p className="mt-1 text-sm text-white/40">{unlocked.length} von {BADGES.length} Badges freigeschaltet</p>
+          <p className="mt-1 text-sm text-white/40">{unlocked.length} of {BADGES.length} badges unlocked</p>
         </div>
 
         {/* Progress bar */}
         <div className="mb-8 rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
           <div className="mb-2 flex justify-between text-xs text-white/30">
-            <span>Gesamtfortschritt</span>
+            <span>Overall progress</span>
             <span>{unlocked.length}/{BADGES.length}</span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
@@ -61,7 +61,7 @@ export function Achievements() {
         {/* Unlocked */}
         {unlocked.length > 0 && (
           <div className="mb-8">
-            <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/30">Freigeschaltet</p>
+            <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/30">Unlocked</p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {unlocked.map((b, i) => (
                 <motion.div key={b.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
@@ -81,7 +81,7 @@ export function Achievements() {
 
         {/* Locked */}
         <div>
-          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/30">Gesperrt</p>
+          <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/30">Locked</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {locked.map((b, i) => {
               const progress = stats ? Math.min(b.getProgress(stats) / b.goal, 1) : 0;

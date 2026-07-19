@@ -3,14 +3,14 @@ import { X, Zap, Check } from "lucide-react";
 import { usePremium } from "../hooks/usePremium";
 
 const PERKS = [
-  "Unbegrenzte Notizen",
-  "Unbegrenzte Bookmarks",
-  "Vollständige Analytics (30 Tage)",
-  "Notizen als Markdown exportieren",
-  "Fokus-Streak Tracking",
-  "Premium Profil-Badge",
-  "Alle Focus-Modi",
-  "Prioritäts-Support",
+  "Unlimited notes",
+  "Unlimited bookmarks",
+  "Full analytics (30 days)",
+  "Export notes as Markdown",
+  "Focus streak tracking",
+  "Premium profile badge",
+  "All focus modes",
+  "Priority support",
 ];
 
 interface Props {
@@ -51,7 +51,7 @@ export function UpgradeModal({ onClose, reason }: Props) {
             </div>
             <h2 className="text-xl font-bold text-white">CLYVEN PLUS</h2>
             <p className="mt-1.5 text-sm text-white/40 leading-relaxed">
-              {reason || "Schalte alle Premium-Features frei."}
+              {reason || "Unlock all premium features."}
             </p>
           </div>
 
@@ -70,11 +70,11 @@ export function UpgradeModal({ onClose, reason }: Props) {
             onClick={() => { openUpgrade(); onClose(); }}
             className="w-full rounded-2xl bg-gradient-to-r from-yellow-400 to-yellow-500 py-3.5 text-sm font-bold text-black hover:from-yellow-300 hover:to-yellow-400 transition-all shadow-lg shadow-yellow-500/20"
           >
-            Jetzt upgraden →
+            Upgrade now →
           </motion.button>
 
           <p className="mt-3 text-center text-[10px] text-white/20">
-            Jederzeit kündbar · Sofortiger Zugriff
+            Cancel anytime · Instant access
           </p>
         </div>
       </motion.div>

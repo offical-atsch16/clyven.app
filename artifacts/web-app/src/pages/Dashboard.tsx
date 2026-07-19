@@ -62,27 +62,27 @@ export function Dashboard() {
 
         {/* Header */}
         <motion.div variants={fade}>
-          <p className="text-xs text-white/25 uppercase tracking-widest mb-1">{new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}</p>
-          <h1 className="text-2xl font-bold text-white">Willkommen zurück, {displayName} 👋</h1>
+          <p className="text-xs text-white/25 uppercase tracking-widest mb-1">{new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" })}</p>
+          <h1 className="text-2xl font-bold text-white">Welcome back, {displayName} 👋</h1>
         </motion.div>
 
         {/* Daily Quote */}
         <motion.div variants={fade}
           className="rounded-2xl border border-white/[0.06] bg-gradient-to-r from-white/[0.03] to-white/[0.01] p-5">
-          <p className="text-xs uppercase tracking-widest text-white/25 mb-2">Tägliche Inspiration</p>
+          <p className="text-xs uppercase tracking-widest text-white/25 mb-2">Daily Inspiration</p>
           <p className="text-sm text-white/70 italic leading-relaxed">"{getDailyQuote()}"</p>
         </motion.div>
 
         {/* Stats Grid */}
         <motion.div variants={container} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard icon={Timer} label="Fokuszeit heute" value={formatMinutes(todayFocus)}
-            sub={`Ziel: ${formatMinutes(goalMinutes)}`} onClick={() => navigate("/focus")} />
-          <StatCard icon={FileText} label="Notizen" value={stats?.notesCount ?? "—"}
-            sub="Gesamt erstellt" onClick={() => navigate("/notes")} />
+          <StatCard icon={Timer} label="Focus today" value={formatMinutes(todayFocus)}
+            sub={`Goal: ${formatMinutes(goalMinutes)}`} onClick={() => navigate("/focus")} />
+          <StatCard icon={FileText} label="Notes" value={stats?.notesCount ?? "—"}
+            sub="Total created" onClick={() => navigate("/notes")} />
           <StatCard icon={Bookmark} label="Bookmarks" value={stats?.bookmarksCount ?? "—"}
-            sub="Gespeichert" onClick={() => navigate("/bookmarks")} />
+            sub="Saved" onClick={() => navigate("/bookmarks")} />
           <StatCard icon={BookOpen} label="Journal" value={journalEntry ? "✓" : "—"}
-            sub={journalEntry ? "Heute geschrieben" : "Noch offen"} onClick={() => navigate("/journal")} />
+            sub={journalEntry ? "Written today" : "Still open"} onClick={() => navigate("/journal")} />
         </motion.div>
 
         {/* Focus Progress */}
@@ -91,7 +91,7 @@ export function Dashboard() {
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-white/40" />
-              <span className="text-sm font-medium text-white/70">Tages-Fokusziel</span>
+              <span className="text-sm font-medium text-white/70">Daily Focus Goal</span>
             </div>
             <span className="text-xs text-white/30">{formatMinutes(todayFocus)} / {formatMinutes(goalMinutes)}</span>
           </div>
@@ -99,17 +99,17 @@ export function Dashboard() {
             <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 1, ease: "easeOut" }}
               className="h-full rounded-full bg-white/60" />
           </div>
-          <p className="mt-2 text-xs text-white/25">{progress.toFixed(0)}% erreicht</p>
+          <p className="mt-2 text-xs text-white/25">{progress.toFixed(0)}% reached</p>
         </motion.div>
 
         {/* Quick Actions */}
         <motion.div variants={fade}>
-          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-white/25">Schnellaktionen</p>
+          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-white/25">Quick Actions</p>
           <motion.div variants={container} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <QuickAction icon={Plus} label="Neue Notiz" onClick={() => navigate("/notes?new=1")} />
-            <QuickAction icon={Timer} label="Fokus starten" onClick={() => navigate("/focus?start=1")} />
-            <QuickAction icon={BookOpen} label="Journal öffnen" onClick={() => navigate("/journal")} />
-            <QuickAction icon={Bookmark} label="Bookmark speichern" onClick={() => navigate("/bookmarks?new=1")} />
+            <QuickAction icon={Plus} label="New Note" onClick={() => navigate("/notes?new=1")} />
+            <QuickAction icon={Timer} label="Start Focus" onClick={() => navigate("/focus?start=1")} />
+            <QuickAction icon={BookOpen} label="Open Journal" onClick={() => navigate("/journal")} />
+            <QuickAction icon={Bookmark} label="Save Bookmark" onClick={() => navigate("/bookmarks?new=1")} />
           </motion.div>
         </motion.div>
 
@@ -119,19 +119,19 @@ export function Dashboard() {
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-white/40" />
-                <span className="text-sm font-medium text-white/70">Letzte Notizen</span>
+                <span className="text-sm font-medium text-white/70">Recent Notes</span>
               </div>
-              <button onClick={() => navigate("/notes")} className="text-xs text-white/30 hover:text-white/60 transition-colors">Alle →</button>
+              <button onClick={() => navigate("/notes")} className="text-xs text-white/30 hover:text-white/60 transition-colors">All →</button>
             </div>
             {recentNotes.length === 0 ? (
-              <div className="py-6 text-center text-sm text-white/20">Noch keine Notizen</div>
+              <div className="py-6 text-center text-sm text-white/20">No notes yet</div>
             ) : (
               <div className="space-y-2">
                 {recentNotes.map((n: any) => (
                   <div key={n.id} onClick={() => navigate("/notes")}
                     className="cursor-pointer rounded-lg px-3 py-2.5 hover:bg-white/[0.04] transition-colors">
                     <p className="truncate text-sm font-medium text-white/70">{n.title}</p>
-                    <p className="mt-0.5 line-clamp-1 text-xs text-white/30">{n.content || "Kein Inhalt"}</p>
+                    <p className="mt-0.5 line-clamp-1 text-xs text-white/30">{n.content || "No content"}</p>
                   </div>
                 ))}
               </div>
@@ -142,12 +142,12 @@ export function Dashboard() {
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bookmark className="h-4 w-4 text-white/40" />
-                <span className="text-sm font-medium text-white/70">Letzte Bookmarks</span>
+                <span className="text-sm font-medium text-white/70">Recent Bookmarks</span>
               </div>
-              <button onClick={() => navigate("/bookmarks")} className="text-xs text-white/30 hover:text-white/60 transition-colors">Alle →</button>
+              <button onClick={() => navigate("/bookmarks")} className="text-xs text-white/30 hover:text-white/60 transition-colors">All →</button>
             </div>
             {recentBookmarks.length === 0 ? (
-              <div className="py-6 text-center text-sm text-white/20">Noch keine Bookmarks</div>
+              <div className="py-6 text-center text-sm text-white/20">No bookmarks yet</div>
             ) : (
               <div className="space-y-2">
                 {recentBookmarks.map((b: any) => (
@@ -170,18 +170,18 @@ export function Dashboard() {
           <motion.div variants={fade} className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
             <div className="flex items-center gap-2 mb-2">
               <Flame className="h-4 w-4 text-orange-400/60" />
-              <span className="text-sm text-white/50">Fokus-Sessions</span>
+              <span className="text-sm text-white/50">Focus Sessions</span>
             </div>
             <div className="text-3xl font-bold text-white">{stats?.totalFocusSessions ?? 0}</div>
-            <p className="text-xs text-white/25 mt-1">Abgeschlossen</p>
+            <p className="text-xs text-white/25 mt-1">Completed</p>
           </motion.div>
           <motion.div variants={fade} className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="h-4 w-4 text-white/40" />
-              <span className="text-sm text-white/50">Gesamt-Fokuszeit</span>
+              <span className="text-sm text-white/50">Total Focus Time</span>
             </div>
             <div className="text-3xl font-bold text-white">{formatMinutes(stats?.totalFocusMinutes ?? 0)}</div>
-            <p className="text-xs text-white/25 mt-1">Über alle Sessions</p>
+            <p className="text-xs text-white/25 mt-1">Across all sessions</p>
           </motion.div>
         </motion.div>
 
@@ -189,4 +189,3 @@ export function Dashboard() {
     </div>
   );
 }
-

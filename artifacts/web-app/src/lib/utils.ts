@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(date: string | Date) {
-  return new Date(date).toLocaleDateString("de-DE", { year: "numeric", month: "long", day: "numeric" });
+  return new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
 export function formatRelative(date: string | Date) {
@@ -15,10 +15,10 @@ export function formatRelative(date: string | Date) {
   const mins = Math.floor(diff / 60000);
   const hrs = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
-  if (mins < 1) return "gerade eben";
-  if (mins < 60) return `vor ${mins} Min.`;
-  if (hrs < 24) return `vor ${hrs} Std.`;
-  if (days < 7) return `vor ${days} Tagen`;
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  if (hrs < 24) return `${hrs} hrs ago`;
+  if (days < 7) return `${days} days ago`;
   return formatDate(d);
 }
 
@@ -39,12 +39,12 @@ export function getTodayISO() {
 }
 
 export const QUOTES = [
-  "Der einzige Weg, großartige Arbeit zu leisten, ist, das zu lieben, was man tut.",
-  "Produktivität ist niemals ein Zufall. Sie ist immer das Ergebnis eines Engagements.",
-  "Fokus ist nicht das, was du tust — es ist das, was du weglässt.",
-  "Deine Zeit ist begrenzt. Verschwende sie nicht damit, das Leben eines anderen zu leben.",
-  "Kleine tägliche Verbesserungen führen zu atemberaubenden Ergebnissen.",
-  "Die Kunst der Ruhe ist ebenso wichtig wie die Kunst der Arbeit.",
+  "The only way to do great work is to love what you do.",
+  "Productivity is never an accident. It is always the result of commitment.",
+  "Focus is not what you do — it is what you say no to.",
+  "Your time is limited. Don't waste it living someone else's life.",
+  "Small daily improvements lead to stunning results.",
+  "The art of rest is as important as the art of work.",
 ];
 
 export function getDailyQuote() {

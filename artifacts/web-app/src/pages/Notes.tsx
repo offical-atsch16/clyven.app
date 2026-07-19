@@ -77,7 +77,7 @@ export function Notes() {
   const handleNew = async () => {
     if (atLimit) { setUpgradeOpen(true); return; }
     try {
-      const note = await createNote.mutateAsync({ title: "Neue Notiz", content: "" });
+      const note = await createNote.mutateAsync({ title: "New Note", content: "" });
       selectNote(note);
     } catch {}
   };
@@ -107,7 +107,7 @@ export function Notes() {
       {upgradeOpen && (
         <UpgradeModal
           onClose={() => setUpgradeOpen(false)}
-          reason={`Du hast das Free-Limit von ${FREE_LIMITS.notes} Notizen erreicht. Upgrade für unbegrenzte Notizen.`}
+          reason={`You've reached the free limit of ${FREE_LIMITS.notes} notes. Upgrade for unlimited notes.`}
         />
       )}
 
@@ -119,7 +119,7 @@ export function Notes() {
             <div className="flex items-center gap-1.5">
               {isPremium && (
                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={exportMarkdown}
-                  title="Als Markdown exportieren"
+                  title="Export as Markdown"
                   className="flex items-center gap-1 rounded-lg bg-yellow-400/10 border border-yellow-400/20 px-2 py-1.5 text-xs font-medium text-yellow-400/70 hover:bg-yellow-400/20 transition-all">
                   <Download className="h-3 w-3" />
                 </motion.button>
@@ -129,7 +129,7 @@ export function Notes() {
                   atLimit
                     ? "bg-yellow-400/10 border border-yellow-400/20 text-yellow-400/70 hover:bg-yellow-400/20"
                     : "bg-white/[0.07] text-white/70 hover:bg-white/10 hover:text-white")}>
-                {atLimit ? <><Crown className="h-3.5 w-3.5" /> Limit</> : <><Plus className="h-3.5 w-3.5" /> Neu</>}
+                {atLimit ? <><Crown className="h-3.5 w-3.5" /> Limit</> : <><Plus className="h-3.5 w-3.5" /> New</>}
               </motion.button>
             </div>
           </div>
@@ -138,7 +138,7 @@ export function Notes() {
           {!isPremium && (
             <div className="mb-3">
               <div className="mb-1 flex justify-between text-[10px] text-white/25">
-                <span>{notes.length}/{FREE_LIMITS.notes} Notizen</span>
+                <span>{notes.length}/{FREE_LIMITS.notes} notes</span>
                 {atLimit && (
                   <button onClick={() => setUpgradeOpen(true)} className="text-yellow-400/60 hover:text-yellow-400">
                     Upgrade →
@@ -154,7 +154,7 @@ export function Notes() {
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/25" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Suchen..."
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..."
               className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] py-2 pl-9 pr-3 text-sm text-white/70 outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
           </div>
         </div>
@@ -167,8 +167,8 @@ export function Notes() {
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <FileText className="mb-3 h-8 w-8 text-white/10" />
-              <p className="text-sm text-white/25">{search ? "Keine Ergebnisse" : "Noch keine Notizen"}</p>
-              {!search && !atLimit && <button onClick={handleNew} className="mt-3 text-xs text-white/40 hover:text-white/70 underline">Erste Notiz erstellen</button>}
+              <p className="text-sm text-white/25">{search ? "No results" : "No notes yet"}</p>
+              {!search && !atLimit && <button onClick={handleNew} className="mt-3 text-xs text-white/40 hover:text-white/70 underline">Create your first note</button>}
             </div>
           ) : (
             <AnimatePresence initial={false}>
@@ -181,7 +181,7 @@ export function Notes() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 overflow-hidden">
                       <p className="truncate text-sm font-medium text-white/80">{note.title}</p>
-                      <p className="mt-0.5 line-clamp-2 text-xs text-white/35 leading-relaxed">{note.content || "Kein Inhalt"}</p>
+                      <p className="mt-0.5 line-clamp-2 text-xs text-white/35 leading-relaxed">{note.content || "No content"}</p>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
                       {note.isPinned && <Pin className="h-3 w-3 text-white/30" />}
@@ -218,7 +218,7 @@ export function Notes() {
                 <Star className="h-4 w-4" />
               </button>
               {isPremium && (
-                <button title="Diese Notiz exportieren"
+                <button title="Export this note"
                   onClick={() => {
                     const md = `# ${editTitle}\n\n${editContent}`;
                     const blob = new Blob([md], { type: "text/markdown" });
@@ -228,13 +228,13 @@ export function Notes() {
                   <Download className="h-4 w-4" />
                 </button>
               )}
-              <button onClick={() => { if (confirm("Notiz löschen?")) deleteNote.mutate(selected.id); }}
+              <button onClick={() => { if (confirm("Delete note?")) deleteNote.mutate(selected.id); }}
                 className="rounded-lg p-1.5 text-white/25 hover:text-red-400/70 transition-colors">
                 <Trash2 className="h-4 w-4" />
               </button>
               <div className="flex items-center gap-1.5 text-xs text-white/20">
                 {saving ? <Save className="h-3.5 w-3.5 animate-pulse" /> : <span>✓</span>}
-                {saving ? "Speichern..." : "Gespeichert"}
+                {saving ? "Saving..." : "Saved"}
               </div>
             </div>
           </div>
@@ -242,14 +242,14 @@ export function Notes() {
           <div className={cn("flex flex-1 flex-col overflow-hidden p-6 lg:p-8", COLORS.find((c) => c.key === editColor)?.cls)}>
             <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
               className="mb-4 w-full bg-transparent text-2xl font-bold text-white outline-none placeholder:text-white/20"
-              placeholder="Titel..." />
+              placeholder="Title..." />
             <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)}
               className="flex-1 resize-none bg-transparent text-sm text-white/70 outline-none placeholder:text-white/20 leading-relaxed"
-              placeholder="Beginne zu schreiben..." />
+              placeholder="Start writing..." />
             <div className="mt-4 flex items-center gap-4 text-xs text-white/20">
-              <span>{countWords(editContent)} Wörter</span>
-              <span>{editContent.length} Zeichen</span>
-              <span>~{Math.ceil(countWords(editContent) / 200)} Min. Lesezeit</span>
+              <span>{countWords(editContent)} words</span>
+              <span>{editContent.length} characters</span>
+              <span>~{Math.ceil(countWords(editContent) / 200)} min read</span>
             </div>
           </div>
         </div>
@@ -257,17 +257,17 @@ export function Notes() {
         <div className="hidden flex-1 items-center justify-center lg:flex">
           <div className="text-center">
             <FileText className="mx-auto mb-4 h-10 w-10 text-white/10" />
-            <p className="text-sm text-white/25">Wähle eine Notiz aus oder erstelle eine neue</p>
+            <p className="text-sm text-white/25">Select a note or create a new one</p>
             {!atLimit && (
               <button onClick={handleNew}
                 className="mt-4 flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-sm text-white/50 hover:text-white mx-auto transition-colors">
-                <Plus className="h-4 w-4" /> Neue Notiz
+                <Plus className="h-4 w-4" /> New Note
               </button>
             )}
             {atLimit && (
               <button onClick={() => setUpgradeOpen(true)}
                 className="mt-4 flex items-center gap-2 rounded-lg border border-yellow-400/20 bg-yellow-400/5 px-4 py-2 text-sm text-yellow-400/70 hover:bg-yellow-400/10 mx-auto transition-colors">
-                <Crown className="h-4 w-4" /> Upgrade für mehr Notizen
+                <Crown className="h-4 w-4" /> Upgrade for more notes
               </button>
             )}
           </div>

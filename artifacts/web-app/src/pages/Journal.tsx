@@ -6,20 +6,20 @@ import { api } from "../lib/api";
 import { cn, getTodayISO } from "../lib/utils";
 
 const MOODS = [
-  { key: "amazing", emoji: "🔥", label: "Fantastisch" },
-  { key: "happy", emoji: "😀", label: "Gut" },
-  { key: "calm", emoji: "😌", label: "Ruhig" },
+  { key: "amazing", emoji: "🔥", label: "Amazing" },
+  { key: "happy", emoji: "😀", label: "Good" },
+  { key: "calm", emoji: "😌", label: "Calm" },
   { key: "neutral", emoji: "😐", label: "Neutral" },
-  { key: "sad", emoji: "😔", label: "Schlecht" },
-  { key: "tired", emoji: "😴", label: "Müde" },
+  { key: "sad", emoji: "😔", label: "Down" },
+  { key: "tired", emoji: "😴", label: "Tired" },
 ];
 
 const SECTIONS = [
-  { key: "wentWell", label: "Was lief gut heute?", placeholder: "Etwas das du erreicht oder genossen hast..." },
-  { key: "learned", label: "Was habe ich gelernt?", placeholder: "Eine Erkenntnis oder neue Fähigkeit..." },
-  { key: "grateful", label: "Wofür bin ich dankbar?", placeholder: "Drei Dinge, die du schätzt..." },
-  { key: "tomorrowGoals", label: "Ziele für morgen", placeholder: "Was möchtest du morgen erreichen..." },
-  { key: "freeText", label: "Freier Bereich", placeholder: "Gedanken, Gefühle, Notizen..." },
+  { key: "wentWell", label: "What went well today?", placeholder: "Something you achieved or enjoyed..." },
+  { key: "learned", label: "What did I learn?", placeholder: "An insight or new skill..." },
+  { key: "grateful", label: "What am I grateful for?", placeholder: "Three things you appreciate..." },
+  { key: "tomorrowGoals", label: "Goals for tomorrow", placeholder: "What do you want to achieve tomorrow..." },
+  { key: "freeText", label: "Free space", placeholder: "Thoughts, feelings, notes..." },
 ];
 
 function addDays(dateStr: string, days: number) {
@@ -31,9 +31,9 @@ function addDays(dateStr: string, days: number) {
 function formatDisplayDate(dateStr: string) {
   const d = new Date(dateStr + "T12:00:00");
   const today = getTodayISO();
-  if (dateStr === today) return "Heute";
-  if (dateStr === addDays(today, -1)) return "Gestern";
-  return d.toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" });
+  if (dateStr === today) return "Today";
+  if (dateStr === addDays(today, -1)) return "Yesterday";
+  return d.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" });
 }
 
 function getMonthDays(year: number, month: number) {
@@ -101,7 +101,7 @@ export function Journal() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white">Journal</h1>
-            <p className="mt-1 text-sm text-white/40">Täglich reflektieren und wachsen.</p>
+            <p className="mt-1 text-sm text-white/40">Reflect daily and grow.</p>
           </div>
           <div className="flex items-center gap-2">
             {view === "entry" && (
@@ -136,7 +136,7 @@ export function Journal() {
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <span className="text-sm font-medium text-white/70">
-                {new Date(calendarMonth.year, calendarMonth.month).toLocaleDateString("de-DE", { month: "long", year: "numeric" })}
+                {new Date(calendarMonth.year, calendarMonth.month).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </span>
               <button onClick={() => setCalendarMonth(({ year, month }) => month === 11 ? { year: year + 1, month: 0 } : { year, month: month + 1 })}
                 className="rounded-lg p-2 text-white/40 hover:bg-white/[0.06] hover:text-white transition-colors">
@@ -148,7 +148,7 @@ export function Journal() {
             <div className="rounded-2xl border border-white/[0.07] bg-[#111111] p-4">
               {/* Weekday headers */}
               <div className="mb-2 grid grid-cols-7 text-center">
-                {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map((d) => (
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
                   <div key={d} className="py-2 text-[10px] font-medium uppercase text-white/30">{d}</div>
                 ))}
               </div>
@@ -187,7 +187,7 @@ export function Journal() {
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl border border-white/[0.07] bg-[#111111] p-4">
-                <p className="text-xs text-white/40 mb-1">Einträge diesen Monat</p>
+                <p className="text-xs text-white/40 mb-1">Entries this month</p>
                 <p className="text-2xl font-bold text-white">
                   {(allEntries as any[]).filter((e: any) => {
                     const d = new Date(e.date);
@@ -196,7 +196,7 @@ export function Journal() {
                 </p>
               </div>
               <div className="rounded-xl border border-white/[0.07] bg-[#111111] p-4">
-                <p className="text-xs text-white/40 mb-1">Häufigste Stimmung</p>
+                <p className="text-xs text-white/40 mb-1">Most common mood</p>
                 <p className="text-2xl">
                   {(() => {
                     const monthEntries = (allEntries as any[]).filter((e: any) => {
@@ -218,7 +218,7 @@ export function Journal() {
           isFuture ? (
             <div className="flex flex-col items-center py-20 text-center">
               <BookOpen className="mb-3 h-8 w-8 text-white/10" />
-              <p className="text-sm text-white/25">Zukünftige Einträge nicht verfügbar</p>
+              <p className="text-sm text-white/25">Future entries are not available</p>
             </div>
           ) : isLoading ? (
             <div className="space-y-4">
@@ -228,7 +228,7 @@ export function Journal() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} key={date} className="space-y-4">
               {/* Mood */}
               <div className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
-                <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/30">Wie war dein Tag?</p>
+                <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/30">How was your day?</p>
                 <div className="flex gap-3 flex-wrap">
                   {MOODS.map((m) => (
                     <motion.button key={m.key} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }}
@@ -256,12 +256,12 @@ export function Journal() {
               {/* Save */}
               <div className="flex items-center justify-between">
                 <p className="text-xs text-white/25">
-                  {saved ? "✓ Gespeichert" : saving ? "Speichern..." : "Auto-speichert nach 2 Sek."}
+                  {saved ? "✓ Saved" : saving ? "Saving..." : "Auto-saved after 2s"}
                 </p>
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={save}
                   className="flex items-center gap-2 rounded-xl bg-white/[0.07] px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all">
                   <Save className="h-3.5 w-3.5" />
-                  Speichern
+                  Save
                 </motion.button>
               </div>
             </motion.div>

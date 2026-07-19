@@ -17,80 +17,80 @@ export function Impressum() {
           </Link>
           <Link href="/">
             <button className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors">
-              <ArrowLeft className="h-4 w-4" /> Zurück
+              <ArrowLeft className="h-4 w-4" /> Back
             </button>
           </Link>
         </div>
       </nav>
 
       <main className="mx-auto max-w-3xl px-6 pt-24 pb-16">
-        <h1 className="mb-8 text-3xl font-bold text-white">Impressum</h1>
+        <h1 className="mb-8 text-3xl font-bold text-white">Legal Notice</h1>
 
         <div className="space-y-8 text-sm text-white/60 leading-relaxed">
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Angaben gemäß § 5 TMG</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">Information according to § 5 TMG</h2>
             <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic space-y-2">
-              <p>[Name des Unternehmens / Betreibers einfügen]</p>
-              <p>[Straße und Hausnummer einfügen]</p>
-              <p>[PLZ und Ort einfügen]</p>
-              <p>[Land einfügen]</p>
+              <p>[Insert company / operator name]</p>
+              <p>[Insert street and house number]</p>
+              <p>[Insert postal code and city]</p>
+              <p>[Insert country]</p>
             </div>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Kontakt</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">Contact</h2>
             <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic space-y-2">
-              <p>Telefon: [Telefonnummer einfügen]</p>
-              <p>E-Mail: [E-Mail-Adresse einfügen]</p>
+              <p>Phone: [Insert phone number]</p>
+              <p>Email: [Insert email address]</p>
             </div>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Vertreten durch</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">Represented by</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Geschäftsführer / Inhaber einfügen]
+              [Insert managing director / owner]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Registereintrag</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">Register Entry</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Handelsregister / Vereinsregister einfügen, falls zutreffend]
+              [Insert commercial / association register if applicable]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Umsatzsteuer-ID</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">VAT ID</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [USt-IdNr. einfügen, falls zutreffend]
+              [Insert VAT ID if applicable]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Verantwortlich für Inhalte nach § 55 Abs. 2 RStV</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">Responsible for content according to § 55 Abs. 2 RStV</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Name und Adresse des Verantwortlichen einfügen]
+              [Insert name and address of responsible person]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Streitschlichtung</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">Dispute Resolution</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Hinweis zur Streitschlichtung einfügen]
+              [Insert dispute resolution note]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Haftung für Inhalte</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">Liability for Content</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Haftungsausschluss für Inhalte einfügen]
+              [Insert content liability disclaimer]
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Haftung für Links</h2>
+            <h2 className="mb-3 text-lg font-semibold text-white">Liability for Links</h2>
             <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Haftungsausschluss für externe Links einfügen]
+              [Insert external links liability disclaimer]
             </p>
           </section>
         </div>
@@ -100,8 +100,8 @@ export function Impressum() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <p className="text-xs text-white/20">© 2026 CLYVEN</p>
           <div className="flex gap-4 text-xs text-white/30">
-            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Datenschutz</span></Link>
-            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Impressum</span></Link>
+            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Privacy</span></Link>
+            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Legal Notice</span></Link>
           </div>
         </div>
       </footer>

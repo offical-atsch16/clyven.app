@@ -36,7 +36,7 @@ function AddBookmarkModal({ onClose }: { onClose: () => void }) {
   if (limitError) return (
     <UpgradeModal
       onClose={onClose}
-      reason={`Du hast das Free-Limit von ${FREE_LIMITS.bookmarks} Bookmarks erreicht. Upgrade für unbegrenzte Bookmarks.`}
+      reason={`You've reached the free limit of ${FREE_LIMITS.bookmarks} bookmarks. Upgrade for unlimited bookmarks.`}
     />
   );
 
@@ -46,7 +46,7 @@ function AddBookmarkModal({ onClose }: { onClose: () => void }) {
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
         className="relative w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#111111] p-6">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-semibold text-white">Bookmark speichern</h2>
+          <h2 className="font-semibold text-white">Save Bookmark</h2>
           <button onClick={onClose} className="text-white/40 hover:text-white"><X className="h-4 w-4" /></button>
         </div>
         <form onSubmit={submit} className="space-y-4">
@@ -56,18 +56,18 @@ function AddBookmarkModal({ onClose }: { onClose: () => void }) {
               className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/20" />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs text-white/40">Titel (optional)</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Automatisch erkannt..."
+            <label className="mb-1.5 block text-xs text-white/40">Title (optional)</label>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Auto-detected..."
               className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/20" />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs text-white/40">Kategorie</label>
-            <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="z.B. Design, Dev, Lesen..."
+            <label className="mb-1.5 block text-xs text-white/40">Category</label>
+            <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Design, Dev, Reading..."
               className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/20" />
           </div>
           <button type="submit" disabled={createBookmark.isPending}
             className="w-full rounded-xl bg-white py-2.5 text-sm font-semibold text-black hover:bg-white/90 transition-colors disabled:opacity-60">
-            {createBookmark.isPending ? "Speichern..." : "Bookmark speichern"}
+            {createBookmark.isPending ? "Saving..." : "Save Bookmark"}
           </button>
         </form>
       </motion.div>
@@ -107,7 +107,7 @@ export function Bookmarks() {
       {upgradeOpen && (
         <UpgradeModal
           onClose={() => setUpgradeOpen(false)}
-          reason={`Du hast das Free-Limit von ${FREE_LIMITS.bookmarks} Bookmarks erreicht. Upgrade für unbegrenzte Bookmarks.`}
+          reason={`You've reached the free limit of ${FREE_LIMITS.bookmarks} bookmarks. Upgrade for unlimited bookmarks.`}
         />
       )}
 
@@ -116,8 +116,8 @@ export function Bookmarks() {
           <div>
             <h1 className="text-2xl font-bold text-white">Bookmark Vault</h1>
             <p className="mt-1 text-sm text-white/40">
-              {bookmarks.length} gespeichert
-              {!isPremium && ` · ${FREE_LIMITS.bookmarks - bookmarks.length} verbleibend`}
+              {bookmarks.length} saved
+              {!isPremium && ` · ${FREE_LIMITS.bookmarks - bookmarks.length} remaining`}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -132,7 +132,7 @@ export function Bookmarks() {
                 atLimit
                   ? "border border-yellow-400/20 bg-yellow-400/5 text-yellow-400/70 hover:bg-yellow-400/10"
                   : "bg-white text-black hover:bg-white/90")}>
-              {atLimit ? <><Crown className="h-4 w-4" /> Upgrade</> : <><Plus className="h-4 w-4" /> Hinzufügen</>}
+              {atLimit ? <><Crown className="h-4 w-4" /> Upgrade</> : <><Plus className="h-4 w-4" /> Add</>}
             </motion.button>
           </div>
         </div>
@@ -144,14 +144,14 @@ export function Bookmarks() {
               <button key={c} onClick={() => setFilter(c)}
                 className={cn("shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
                   filter === c ? "bg-white/[0.1] text-white" : "text-white/35 hover:text-white/60")}>
-                {c === "all" ? "Alle" : c}
+                {c === "all" ? "All" : c}
               </button>
             ))}
           </div>
           <div className="flex items-center gap-2">
             <div className="relative flex-1 sm:w-48">
               <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/25" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Suchen..."
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..."
                 className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] py-2 pl-9 pr-3 text-sm text-white/70 outline-none placeholder:text-white/20" />
             </div>
             <button onClick={() => setView("grid")}
@@ -172,8 +172,8 @@ export function Bookmarks() {
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center py-20 text-center">
             <Bookmark className="mb-3 h-8 w-8 text-white/10" />
-            <p className="text-sm text-white/25">{search ? "Keine Ergebnisse" : "Noch keine Bookmarks"}</p>
-            {!search && !atLimit && <button onClick={handleAdd} className="mt-3 text-xs text-white/40 hover:text-white/70 underline">Erstes Bookmark hinzufügen</button>}
+            <p className="text-sm text-white/25">{search ? "No results" : "No bookmarks yet"}</p>
+            {!search && !atLimit && <button onClick={handleAdd} className="mt-3 text-xs text-white/40 hover:text-white/70 underline">Add your first bookmark</button>}
           </div>
         ) : view === "grid" ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -238,4 +238,3 @@ export function Bookmarks() {
     </div>
   );
 }
-

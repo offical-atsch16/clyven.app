@@ -151,7 +151,7 @@ function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommand
           <button onClick={openUpgrade}
             className="mb-4 flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.02] px-3 py-2 hover:border-yellow-400/20 hover:bg-yellow-400/[0.05] transition-all group">
             <Zap className="h-3.5 w-3.5 text-white/25 group-hover:text-yellow-400/60 shrink-0 transition-colors" />
-            <span className="text-xs text-white/30 group-hover:text-yellow-400/60 transition-colors">Upgrade zu PLUS</span>
+            <span className="text-xs text-white/30 group-hover:text-yellow-400/60 transition-colors">Upgrade to PLUS</span>
           </button>
         )
       )}
@@ -172,7 +172,7 @@ function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommand
         <button onClick={onCommandOpen}
           className="mb-4 flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-sm text-white/30 hover:border-white/10 hover:text-white/50 transition-all">
           <Command className="h-3.5 w-3.5" />
-          <span className="flex-1 text-left text-xs">Suchen...</span>
+          <span className="flex-1 text-left text-xs">Search...</span>
           <span className="text-[10px] tracking-widest text-white/20">⌘K</span>
         </button>
       )}
@@ -196,7 +196,7 @@ function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommand
         ))}
         {/* User info */}
         <div className={cn("mt-2 flex items-center gap-2.5 rounded-lg px-3 py-2.5 cursor-pointer hover:bg-white/[0.04] transition-colors", collapsed && !mobile && "justify-center px-2")}
-          onClick={onSignOut} title="Abmelden">
+          onClick={onSignOut} title="Sign Out">
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName} className="h-6 w-6 rounded-full object-cover" />
           ) : (
@@ -210,7 +210,7 @@ function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommand
                 <span className="truncate text-xs font-medium text-white/70">{displayName}</span>
                 {isPremium && <Crown className="h-2.5 w-2.5 text-yellow-400 shrink-0" />}
               </div>
-              <span className="text-[10px] text-white/25">Abmelden</span>
+              <span className="text-[10px] text-white/25">Sign Out</span>
             </div>
           )}
         </div>

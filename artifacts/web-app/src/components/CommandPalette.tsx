@@ -49,7 +49,7 @@ export function CommandPalette() {
                   <Command.Input
                     value={query}
                     onValueChange={setQuery}
-                    placeholder="Suchen oder Befehl eingeben..."
+                    placeholder="Search or enter a command..."
                     className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/25"
                   />
                   <kbd className="rounded border border-white/[0.08] px-1.5 py-0.5 text-[10px] text-white/20">ESC</kbd>
@@ -57,29 +57,29 @@ export function CommandPalette() {
 
                 <Command.List className="max-h-72 overflow-y-auto p-2">
                   <Command.Empty className="py-6 text-center text-sm text-white/30">
-                    Keine Ergebnisse gefunden
+                    No results found
                   </Command.Empty>
 
                   <CmdGroup heading="Navigation">
                     <CmdItem icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" onSelect={() => go("/dashboard")} />
                     <CmdItem icon={<FileText className="h-4 w-4" />} label="Notes" onSelect={() => go("/notes")} />
                     <CmdItem icon={<Bookmark className="h-4 w-4" />} label="Bookmarks" onSelect={() => go("/bookmarks")} />
-                    <CmdItem icon={<Timer className="h-4 w-4" />} label="Focus starten" onSelect={() => go("/focus")} />
-                    <CmdItem icon={<BookOpen className="h-4 w-4" />} label="Journal öffnen" onSelect={() => go("/journal")} />
+                    <CmdItem icon={<Timer className="h-4 w-4" />} label="Start Focus" onSelect={() => go("/focus")} />
+                    <CmdItem icon={<BookOpen className="h-4 w-4" />} label="Open Journal" onSelect={() => go("/journal")} />
                     <CmdItem icon={<BarChart2 className="h-4 w-4" />} label="Analytics" onSelect={() => go("/analytics")} />
                     <CmdItem icon={<Trophy className="h-4 w-4" />} label="Achievements" onSelect={() => go("/achievements")} />
                   </CmdGroup>
 
-                  <CmdGroup heading="Aktionen">
-                    <CmdItem icon={<Plus className="h-4 w-4" />} label="Neue Notiz" onSelect={() => go("/notes?new=1")} />
-                    <CmdItem icon={<Bookmark className="h-4 w-4" />} label="Neues Bookmark" onSelect={() => go("/bookmarks?new=1")} />
-                    <CmdItem icon={<Timer className="h-4 w-4" />} label="Fokus starten" onSelect={() => go("/focus?start=1")} />
+                  <CmdGroup heading="Actions">
+                    <CmdItem icon={<Plus className="h-4 w-4" />} label="New Note" onSelect={() => go("/notes?new=1")} />
+                    <CmdItem icon={<Bookmark className="h-4 w-4" />} label="New Bookmark" onSelect={() => go("/bookmarks?new=1")} />
+                    <CmdItem icon={<Timer className="h-4 w-4" />} label="Start Focus" onSelect={() => go("/focus?start=1")} />
                   </CmdGroup>
 
                   <CmdGroup heading="Design">
                     <CmdItem
                       icon={theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                      label={theme === "dark" ? "Light Mode aktivieren" : "Dark Mode aktivieren"}
+                      label={theme === "dark" ? "Enable Light Mode" : "Enable Dark Mode"}
                       onSelect={() => run(() => setTheme(theme === "dark" ? "light" : "dark"))}
                     />
                   </CmdGroup>

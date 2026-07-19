@@ -33,7 +33,7 @@ router.post("/", requireAuth, async (req, res) => {
       return res.status(403).json({
         error: "LIMIT_REACHED",
         limit: FREE_LIMIT,
-        message: `Free-Plan: Maximal ${FREE_LIMIT} Bookmarks. Upgrade auf CLYVEN PLUS für unbegrenzte Bookmarks.`,
+        message: `Free plan: Maximum ${FREE_LIMIT} bookmarks reached. Upgrade to CLYVEN PLUS for unlimited bookmarks.`,
       });
     }
   }

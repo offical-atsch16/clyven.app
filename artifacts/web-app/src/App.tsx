@@ -183,8 +183,8 @@ function AppRoutes() {
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
       localization={{
-        signIn: { start: { title: "Willkommen zurück", subtitle: "Melde dich bei CLYVEN an" } },
-        signUp: { start: { title: "Konto erstellen", subtitle: "Werde Teil von CLYVEN" } },
+        signIn: { start: { title: "Welcome back", subtitle: "Sign in to CLYVEN" } },
+        signUp: { start: { title: "Create account", subtitle: "Join CLYVEN" } },
       }}
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
