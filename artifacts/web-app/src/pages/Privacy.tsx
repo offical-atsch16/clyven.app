@@ -24,8 +24,8 @@ export function Privacy() {
       </nav>
 
       <main className="mx-auto max-w-3xl px-6 pt-24 pb-16">
-        <h1 className="mb-2 text-3xl font-bold text-white">Datenschutzerklärung</h1>
-        <p className="mb-8 text-xs text-white/40">Stand: Juli 2026</p>
+        <h1 className="mb-2 text-3xl font-bold text-white">Datenschutzerklärung gemäß DSGVO</h1>
+        <p className="mb-8 text-xs text-white/40">Stand: 19 Juli 2026</p>
 
         <div className="space-y-8 text-sm text-white/60 leading-relaxed">
           
@@ -36,11 +36,11 @@ export function Privacy() {
               Verantwortlich für die Erhebung, Verarbeitung und Nutzung Ihrer personenbezogenen Daten im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
             </p>
             <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/70 space-y-1">
-              <p className="font-medium text-white">CLYVEN Project Team</p>
+              <p className="font-medium text-white">CLYVEN Project Owner</p>
               <p>Arien Tschemeris</p>
               <p>Ludwig-Herr-Strasse. 9</p>
-              <p>[70806, Kornwestheim, Deutschland</p>
-              <p className="pt-2">E-Mail: a.tschemeris@atomicmail.io Betreff: Datenschutz @ clyven</p>
+              <p>70806, Kornwestheim, Deutschland</p>
+              <p className="pt-2">E-Mail: a.tschemeris@atomicmail.io</p>
             </div>
           </section>
 
