@@ -168,7 +168,7 @@ export function Privacy() {
           <section>
             <h2 className="mb-3 text-lg font-semibold text-white">9. Fragen und Kontakt</h2>
             <p>
-              Bei jeglichen Fragen zum Datenschutz bezüglich CLYVEN, Supabase, Clerk oder dem Cookie-Board können Sie sich jederzeit direkt per E-Mail an uns wenden: a.tschemeris@atomicmail.io Betreff: Datenschutz @ clyven <span className="text-white font-medium">privacy@clyven.com</span>.
+              Bei jeglichen Fragen zum Datenschutz bezüglich CLYVEN, Supabase, Clerk oder dem Cookie-Board können Sie sich jederzeit direkt per E-Mail an uns wenden: a.tschemeris@atomicmail.io <span className="text-white font-medium">privacy@clyven.com</span>.
             </p>
           </section>
 
