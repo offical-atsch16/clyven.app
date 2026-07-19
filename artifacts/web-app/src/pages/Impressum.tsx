@@ -24,73 +24,79 @@ export function Impressum() {
       </nav>
 
       <main className="mx-auto max-w-3xl px-6 pt-24 pb-16">
-        <h1 className="mb-8 text-3xl font-bold text-white">Legal Notice</h1>
+        <h1 className="mb-8 text-3xl font-bold text-white">Impressum</h1>
 
         <div className="space-y-8 text-sm text-white/60 leading-relaxed">
+          
+          {/* Angaben gemäß § 5 DDG */}
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Information according to § 5 TMG</h2>
-            <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic space-y-2">
-              <p>[Insert company / operator name]</p>
-              <p>[Insert street and house number]</p>
-              <p>[Insert postal code and city]</p>
-              <p>[Insert country]</p>
+            <h2 className="mb-3 text-lg font-semibold text-white">Angaben gemäß § 5 DDG</h2>
+            <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/70 space-y-1">
+              <p className="font-medium text-white">Arien Tschemeris</p>
+              <p>Softwareentwicklung</p>
+              <p>Ludwig-Herr-Strasse. 9</p>
+              <p>70806 Kornwestheim</p>
+              <p>Deutschland</p>
             </div>
           </section>
 
+          {/* Kontakt */}
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Contact</h2>
-            <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic space-y-2">
-              <p>Phone: [Insert phone number]</p>
-              <p>Email: [Insert email address]</p>
+            <h2 className="mb-3 text-lg font-semibold text-white">Kontakt</h2>
+            <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/70 space-y-1">
+              <p>Telefon: +4915752610011</p>
+              <p>E-Mail: a.tschemeris@atomicmail.io</p>
             </div>
           </section>
 
+          {/* Verantwortlich für den Inhalt */}
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Represented by</h2>
-            <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Insert managing director / owner]
+            <h2 className="mb-3 text-lg font-semibold text-white">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+            <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/70 space-y-1">
+              <p className="font-medium text-white">Arien Tschemeris</p>
+              <p>Ludwig-Herr-Strasse. 9</p>
+              <p>70806 Kornwestheim</p>
+            </div>
+          </section>
+
+          {/* Streitschlichtung */}
+          <section>
+            <h2 className="mb-3 text-lg font-semibold text-white">EU-Streitschlichtung</h2>
+            <p>
+              Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:{' '}
+              <a 
+                href="https://ec.europa.eu/consumers/odr" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-white hover:underline transition-colors"
+              >
+                https://ec.europa.eu/consumers/odr
+              </a>.
+              <br />
+              Unsere E-Mail-Adresse finden Sie oben im Impressum.
             </p>
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Register Entry</h2>
-            <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Insert commercial / association register if applicable]
+            <h2 className="mb-3 text-lg font-semibold text-white">Verbraucher­streit­beilegung/Universal­schlichtungs­stelle</h2>
+            <p>
+              Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+                </p>
+              </section>
+
+          {/* Haftung für Inhalte */}
+          <section>
+            <h2 className="mb-3 text-lg font-semibold text-white">Haftung für Inhalte</h2>
+            <p>
+              Als Diensteanbieter sind wir gemäß § 7 Abs.1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen. Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt. Eine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden von entsprechenden Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.
             </p>
           </section>
 
+          {/* Haftung für Links */}
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">VAT ID</h2>
-            <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Insert VAT ID if applicable]
-            </p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Responsible for content according to § 55 Abs. 2 RStV</h2>
-            <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Insert name and address of responsible person]
-            </p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Dispute Resolution</h2>
-            <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Insert dispute resolution note]
-            </p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Liability for Content</h2>
-            <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Insert content liability disclaimer]
-            </p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 text-lg font-semibold text-white">Liability for Links</h2>
-            <p className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-white/40 italic">
-              [Insert external links liability disclaimer]
+            <h2 className="mb-3 text-lg font-semibold text-white">Haftung für Links</h2>
+            <p>
+              Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich. Die verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist jedoch ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.
             </p>
           </section>
         </div>
