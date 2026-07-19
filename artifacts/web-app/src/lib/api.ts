@@ -54,4 +54,19 @@ export const api = {
   getStats: () => request<any>("/user/stats"),
   getSettings: () => request<any>("/user/settings"),
   saveSettings: (data: any) => request<any>("/user/settings", { method: "POST", body: JSON.stringify(data) }),
+
+  // Tickets (public, no Clerk auth)
+  createTicket: (data: any) => fetch(`${BASE}/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+  getTicket: (number: string, email: string) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}?email=${encodeURIComponent(email)}`).then((r) => r.json()),
+  addTicketMessage: (number: string, data: any) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+
+  // Admin (cookie-based auth)
+  adminLogin: (data: any) => fetch(`${BASE}/admin/login`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) }).then((r) => r.json()),
+  adminLogout: () => fetch(`${BASE}/admin/logout`, { method: "POST", credentials: "include" }).then((r) => r.json()),
+  adminMe: () => fetch(`${BASE}/admin/me`, { credentials: "include" }).then((r) => r.json()),
+  getAdminTickets: () => fetch(`${BASE}/admin/tickets`, { credentials: "include" }).then((r) => r.json()),
+  getAdminTicket: (id: string) => fetch(`${BASE}/admin/tickets/${id}`, { credentials: "include" }).then((r) => r.json()),
+  updateTicketStatus: (id: string, status: string) => fetch(`${BASE}/admin/tickets/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ status }) }).then((r) => r.json()),
+  adminReply: (id: string, message: string) => fetch(`${BASE}/admin/tickets/${id}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ message }) }).then((r) => r.json()),
+  adminCreateTicket: (data: any) => fetch(`${BASE}/admin/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) }).then((r) => r.json()),
 };

@@ -1,0 +1,322 @@
+Ich möchte ein minimalistisches, aber funktionales Ticket-Management-System in meine bestehende Plattform integrieren.
+
+WICHTIG:
+- Meine bestehende Authentifizierung existiert bereits und soll NICHT verändert oder ersetzt werden.
+- Für dieses neue Ticket-System soll eine eigene minimale Authentifizierung für Admin-Zugriffe erstellt werden.
+- Die Datenbank ist Supabase. Die vorhandenen Supabase-Integrationsschlüssel sind bereits verfügbar und sollen genutzt werden.
+- Das System soll sauber getrennt und modular aufgebaut werden.
+
+ZIEL:
+Es soll ein einfaches Helpdesk-/Ticket-System entstehen, ähnlich einem kleinen Support-System.
+
+FUNKTIONEN:
+
+## 1. Admin Dashboard
+
+Erstelle ein neues Dashboard für Support-Administratoren.
+
+Das Dashboard benötigt:
+
+- eigene Login-Möglichkeit für Admins
+- Admin-Accounts werden in Supabase gespeichert
+- Passwort sicher gehasht speichern
+- Session-Verwaltung
+- Logout-Funktion
+
+Admin-Funktionen:
+
+- alle Tickets sehen
+- Tickets filtern:
+  - offen
+  - in Bearbeitung
+  - geschlossen
+- Ticketdetails öffnen
+- auf Tickets antworten
+- Status ändern:
+  - OPEN
+  - IN_PROGRESS
+  - CLOSED
+- Tickets schließen
+- neue Tickets manuell erstellen können
+- interne Notizen optional vorbereiten
+
+Dashboard-Struktur:
+
+/admin/login
+/admin/dashboard
+/admin/tickets/[id]
+
+
+---
+
+## 2. Datenbankstruktur in Supabase
+
+Erstelle passende Tabellen.
+
+### Tabelle: admin_users
+
+Felder:
+
+id
+uuid primary key
+
+email
+
+password_hash
+
+created_at
+
+updated_at
+
+
+---
+
+### Tabelle: tickets
+
+Felder:
+
+id
+uuid primary key
+
+ticket_number
+(z.B. TICKET-000001)
+
+name
+
+email
+
+subject
+
+message
+
+status
+
+created_at
+
+updated_at
+
+
+Status:
+OPEN
+IN_PROGRESS
+CLOSED
+
+
+---
+
+### Tabelle: ticket_messages
+
+Für Antworten innerhalb eines Tickets.
+
+Felder:
+
+id
+
+ticket_id
+
+sender_type
+
+sender_name
+
+message
+
+created_at
+
+
+sender_type:
+
+CUSTOMER
+ADMIN
+
+
+---
+
+## 3. Kontaktformular auf der Hauptwebsite
+
+Auf der bestehenden Website soll ein neuer Bereich eingebaut werden:
+
+"Support / Ticket erstellen"
+
+Der Nutzer kann:
+
+- Name eingeben
+- E-Mail eingeben
+- Betreff eingeben
+- Nachricht eingeben
+
+Nach Absenden:
+
+- Ticket wird in Supabase erstellt
+- automatische Ticketnummer wird generiert
+- Nutzer bekommt Bestätigung
+- Ticketnummer wird angezeigt
+
+
+Beispiel:
+
+"Dein Ticket wurde erstellt.
+Ticketnummer: TICKET-000123"
+
+
+---
+
+## 4. Ticket öffnen über die gleiche Stelle
+
+Der gleiche Bereich auf der Website soll zusätzlich ermöglichen:
+
+"Ticket anzeigen"
+
+Der Nutzer gibt ein:
+
+- Ticketnummer
+- E-Mail-Adresse
+
+
+Danach kann er:
+
+- Ticketstatus sehen
+- bisherige Nachrichten sehen
+- antworten
+
+
+Beispiel:
+
+Ticket:
+TICKET-000123
+
+Status:
+IN_PROGRESS
+
+
+Nachrichten:
+
+Kunde:
+"Mein Problem ist..."
+
+Support:
+"Wir prüfen das gerade..."
+
+
+Kunde kann weitere Nachrichten hinzufügen.
+
+
+---
+
+## 5. API Struktur
+
+Erstelle saubere Backend-Endpunkte.
+
+
+Beispiel:
+
+POST
+/api/tickets
+
+Ticket erstellen
+
+
+GET
+/api/tickets/:ticketNumber
+
+Ticket abrufen
+
+
+POST
+/api/tickets/:ticketNumber/messages
+
+Antwort hinzufügen
+
+
+POST
+/api/admin/login
+
+Admin Login
+
+
+GET
+/api/admin/tickets
+
+Alle Tickets abrufen
+
+
+PATCH
+/api/admin/tickets/:id/status
+
+Status ändern
+
+
+POST
+/api/admin/tickets/:id/message
+
+Admin Antwort schreiben
+
+
+---
+
+## 6. Sicherheit
+
+Implementiere:
+
+- Passwort Hashing
+- Input Validation
+- Rate Limiting für Ticket-Erstellung
+- Schutz gegen Spam
+- keine direkten Datenbankzugriffe vom Client
+- sichere Supabase-Nutzung
+- saubere Fehlerbehandlung
+
+
+---
+
+## 7. UI Anforderungen
+
+Design:
+
+- minimalistisch
+- modern
+- responsive
+- passend zur bestehenden Website
+
+Admin Dashboard:
+
+- Sidebar
+- Ticketliste
+- Status-Badges
+- Ticketdetailansicht
+- Chatartige Nachrichtenansicht
+
+
+Kundenbereich:
+
+- einfaches Formular
+- Ticket-Suche
+- Nachrichtenverlauf
+- Antwortfeld
+
+
+---
+
+## 8. Technische Anforderungen
+
+Nutze die bestehende Architektur.
+
+Falls vorhanden:
+- TypeScript verwenden
+- bestehendes Backend erweitern
+- bestehendes Frontend erweitern
+
+Keinen neuen Authentifizierungsdienst einführen.
+
+Supabase nur als:
+- Datenbank
+- Storage falls später benötigt
+
+Der Code soll modular, wartbar und produktionsnah sein.
+
+Priorität:
+1. Funktionalität
+2. Sicherheit
+3. einfache Bedienung
+4. saubere Architektur
+
+Baue zuerst die komplette Backend-Struktur inklusive Datenbankmodell und danach das Frontend.

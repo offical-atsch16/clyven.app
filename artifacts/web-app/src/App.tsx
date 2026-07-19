@@ -22,6 +22,11 @@ import { Settings } from "./pages/Settings";
 import { Pricing } from "./pages/Pricing";
 import { Privacy } from "./pages/Privacy";
 import { Impressum } from "./pages/Impressum";
+import { Support } from "./pages/Support";
+import { AdminLogin } from "./pages/AdminLogin";
+import { AdminDashboard } from "./pages/AdminDashboard";
+import { AdminTicketDetail } from "./pages/AdminTicketDetail";
+import { AdminNewTicket } from "./pages/AdminNewTicket";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30000 } } });
 
@@ -227,6 +232,11 @@ function AppRoutes() {
           <Route path="/pricing" component={Pricing} />
           <Route path="/privacy" component={Privacy} />
           <Route path="/impressum" component={Impressum} />
+          <Route path="/support" component={Support} />
+          <Route path="/admin/login" component={AdminLogin} />
+          <Route path="/admin/dashboard" component={AdminDashboard} />
+          <Route path="/admin/tickets/:id" component={AdminTicketDetail} />
+          <Route path="/admin/tickets/new" component={AdminNewTicket} />
           <Route>
             <Redirect to="/" />
           </Route>

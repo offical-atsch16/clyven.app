@@ -165,6 +165,9 @@ export function Landing() {
               </Link>
             ) : (
               <>
+                <Link href="/support">
+                  <button className="px-4 py-2 text-sm text-white/50 hover:text-white transition-colors">Support</button>
+                </Link>
                 <Link href="/sign-in">
                   <button className="px-4 py-2 text-sm text-white/50 hover:text-white transition-colors">Login</button>
                 </Link>
@@ -220,6 +223,12 @@ export function Landing() {
               <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                 className="rounded-xl border border-white/[0.1] bg-white/[0.04] px-8 py-3.5 text-sm font-semibold text-white/70 hover:bg-white/[0.08] hover:text-white transition-all">
                 Login
+              </motion.button>
+            </Link>
+            <Link href="/support">
+              <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                className="rounded-xl border border-white/[0.1] bg-white/[0.04] px-8 py-3.5 text-sm font-semibold text-white/70 hover:bg-white/[0.08] hover:text-white transition-all">
+                Support
               </motion.button>
             </Link>
           </motion.div>
