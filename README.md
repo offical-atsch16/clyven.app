@@ -1,3 +1,5 @@
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/offical-atsch16/clyven.app?utm_source=oss&utm_medium=github&utm_campaign=offical-atsch16%2Fclyven.app&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+
 # Clyven.app 🚀
 
 Willkommen bei **Clyven.app** – deinem persönlichen, zentralen Dashboard für ein produktiveres und bewussteres Leben. Clyven vereint deine Notizen, KI-gestützte Tools und tägliches Journaling an einem Ort, der mit dir wächst.
