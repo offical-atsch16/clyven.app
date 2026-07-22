@@ -74,8 +74,12 @@ export function Pricing() {
           <motion.div
             id="plans"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="mb-16 scroll-mt-24"
+            className="relative mb-16 scroll-mt-24"
           >
+            {/* Custom visual Plus Badge overlaying the Clerk Table */}
+            <div className="absolute left-1/2 -top-3 z-10 -translate-x-1/2 rounded-full border border-yellow-400 bg-yellow-400/10 px-4 py-1 text-xs font-bold tracking-wider text-yellow-400 uppercase shadow-lg shadow-yellow-500/20 animate-pulse">
+              ★ Clyven Plus Empfohlen ★
+            </div>
             <PricingTable
               highlightedPlan={PREMIUM_PLAN}
               newSubscriptionRedirectUrl={`${basePath}/dashboard`}

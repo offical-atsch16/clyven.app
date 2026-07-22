@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useClerk } from "@clerk/react";
-import { Sun, Moon, Bell, Timer, LogOut, Save, Check } from "lucide-react";
+import { Sun, Moon, Bell, Timer, LogOut, Save, Check, Shield } from "lucide-react";
 import { api } from "../lib/api";
 import { useAppStore } from "../stores/useAppStore";
 import { cn } from "../lib/utils";
@@ -89,6 +89,27 @@ export function Settings() {
               <button onClick={() => setNotifications((n) => !n)}
                 className={cn("relative h-6 w-11 rounded-full transition-colors", notifications ? "bg-white/40" : "bg-white/[0.1]")}>
                 <div className={cn("absolute top-1 h-4 w-4 rounded-full bg-white transition-transform", notifications ? "translate-x-6" : "translate-x-1")} />
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Cookies & Privacy */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+            className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-white/40" />
+                <div>
+                  <p className="text-sm font-medium text-white/70">Cookie-Einstellungen</p>
+                  <p className="text-xs text-white/30">Passe deine Datenschutz- und Cookie-Präferenzen an</p>
+                </div>
+              </div>
+              <button onClick={() => {
+                if ((window as any).silktideConsentManager) {
+                  (window as any).silktideConsentManager.preferences();
+                }
+              }} className="rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.05] px-3 py-1.5 text-xs font-semibold text-white transition-all cursor-pointer">
+                Verwalten
               </button>
             </div>
           </motion.div>
