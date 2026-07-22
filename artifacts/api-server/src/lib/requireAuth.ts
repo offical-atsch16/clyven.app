@@ -24,9 +24,25 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
   try {
     const has = auth.has;
+    const claims = (auth.sessionClaims || {}) as any;
+
+    // Extract metadata from various possible session claim locations
+    const metadata = claims.publicMetadata || claims.public_metadata || claims.metadata || {};
+
+    const isPremiumMetadata =
+      metadata.plan === "premium" ||
+      metadata.clyven_plus === true ||
+      metadata.premium === true ||
+      metadata.plan === "plus" ||
+      claims.plan === "premium" ||
+      claims.clyven_plus === true ||
+      claims.premium === true ||
+      claims.plan === "plus";
+
     r.isPremium =
-      typeof has === "function" &&
-      PAID_PLANS.some(({ plan, feature }) => has({ plan }) || has({ feature }));
+      isPremiumMetadata ||
+      (typeof has === "function" &&
+        PAID_PLANS.some(({ plan, feature }) => has({ plan }) || has({ feature })));
   } catch {
     r.isPremium = false;
   }

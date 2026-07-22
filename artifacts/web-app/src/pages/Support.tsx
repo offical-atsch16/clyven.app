@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User, FileText, Loader2 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { Link } from "wouter";
 
 const API = "/api";
 
@@ -10,14 +11,22 @@ export function Support() {
   return (
     <div className="min-h-[100dvh] bg-[#080808] text-white">
       <div className="mx-auto max-w-xl px-6 py-12">
-        <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05]">
-            <MessageSquare className="h-5 w-5 text-white/60" />
+        {/* Navigation & Title Row */}
+        <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05]">
+              <MessageSquare className="h-5 w-5 text-white/60" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">Support</h1>
+              <p className="text-xs text-white/30">Create a ticket or check an existing one</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold">Support</h1>
-            <p className="text-xs text-white/30">Create a ticket or check an existing one</p>
-          </div>
+          <Link href="/">
+            <button className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-white/60 hover:border-white/15 hover:text-white transition-all cursor-pointer">
+              <ArrowLeft className="h-3.5 w-3.5" /> Zurück
+            </button>
+          </Link>
         </div>
 
         <div className="mb-6 flex rounded-xl border border-white/[0.07] bg-white/[0.02] p-1">
@@ -105,31 +114,31 @@ function CreateTicket() {
           <User className="h-3 w-3" /> Name
         </label>
         <input value={name} onChange={(e) => setName(e.target.value)} required
-          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15" />
+          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
           <Mail className="h-3 w-3" /> Email
         </label>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15" />
+          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
           <FileText className="h-3 w-3" /> Subject
         </label>
         <input value={subject} onChange={(e) => setSubject(e.target.value)} required
-          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15" />
+          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
           <MessageSquare className="h-3 w-3" /> Message
         </label>
         <textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={5}
-          className="w-full resize-none rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15" />
+          className="w-full resize-none rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.08] py-3.5 text-sm font-medium text-white hover:bg-white/[0.12] transition-all disabled:opacity-50">
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.08] py-3.5 text-sm font-semibold text-black bg-white hover:bg-white/90 transition-all disabled:opacity-50 cursor-pointer">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4" /> Submit Ticket</>}
       </motion.button>
     </form>
@@ -250,17 +259,17 @@ function ViewTicket() {
           <Ticket className="h-3 w-3" /> Ticket Number
         </label>
         <input value={ticketNumber} onChange={(e) => setTicketNumber(e.target.value)} required placeholder="TICKET-000001"
-          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15" />
+          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
           <Mail className="h-3 w-3" /> Email
         </label>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15" />
+          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.08] py-3.5 text-sm font-medium text-white hover:bg-white/[0.12] transition-all disabled:opacity-50">
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px py-3.5 text-sm font-semibold text-black bg-white hover:bg-white/90 transition-all disabled:opacity-50 cursor-pointer">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Search className="h-4 w-4" /> Find Ticket</>}
       </motion.button>
     </form>

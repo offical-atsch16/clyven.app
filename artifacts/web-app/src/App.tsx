@@ -22,6 +22,7 @@ import { Settings } from "./pages/Settings";
 import { Pricing } from "./pages/Pricing";
 import { Privacy } from "./pages/Privacy";
 import { Impressum } from "./pages/Impressum";
+import { useCookieBanner } from "./hooks/useCookieBanner";
 import { Support } from "./pages/Support";
 import { AdminLogin } from "./pages/AdminLogin";
 import { AdminDashboard } from "./pages/AdminDashboard";
@@ -180,6 +181,7 @@ function ThemeInitializer() {
 
 function AppRoutes() {
   const [, setLocation] = useLocation();
+  useCookieBanner();
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}
