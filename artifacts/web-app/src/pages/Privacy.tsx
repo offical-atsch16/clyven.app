@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Github } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -204,9 +204,12 @@ export function Privacy() {
       <footer className="border-t border-white/[0.06] bg-[#0c0c0c] px-6 py-10">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <p className="text-xs text-white/20">© 2026 CLYVEN</p>
-          <div className="flex gap-4 text-xs text-white/30">
+          <div className="flex gap-6 text-xs text-white/30 items-center">
             <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Privacy</span></Link>
             <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Legal Notice</span></Link>
+            <a href="https://github.com/offical-atsch16/clyven.app" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors flex items-center gap-1 cursor-pointer">
+              <Github className="h-3.5 w-3.5" /> GitHub
+            </a>
           </div>
         </div>
       </footer>

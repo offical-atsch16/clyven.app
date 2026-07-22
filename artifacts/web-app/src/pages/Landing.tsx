@@ -1,9 +1,9 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { Link } from "wouter";
 import {
   FileText, Bookmark, Timer, BookOpen, BarChart2, Trophy,
-  ArrowRight, ChevronDown, Star, Zap, Shield, Globe, Check, Sparkles, Lock,
+  ArrowRight, ChevronDown, Star, Zap, Shield, Globe, Check, Sparkles, Lock, Menu, X, Github
 } from "lucide-react";
 import { useUser } from "@clerk/react";
 import { useCookieBanner } from "../hooks/useCookieBanner";
@@ -56,6 +56,7 @@ export function Landing() {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [pos, setPos] = useState({ x: 50, y: 50 });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useCookieBanner();
 
@@ -66,36 +67,130 @@ export function Landing() {
       {/* Nav */}
       <nav className="fixed top-0 z-50 w-full border-b border-white/[0.05] bg-[#080808]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2.5">
-            <img src={`${basePath}/logo.svg`} alt="CLYVEN" className="h-6 w-6" />
-            <span className="text-sm font-bold tracking-[0.25em]">CLYVEN</span>
+          <Link href="/">
+            <div className="flex items-center gap-2.5 cursor-pointer">
+              <img src={`${basePath}/logo.svg`} alt="CLYVEN" className="h-6 w-6" />
+              <span className="text-sm font-bold tracking-[0.25em]">CLYVEN</span>
+            </div>
+          </Link>
+
+          {/* Desktop Links (centered) */}
+          <div className="hidden md:flex items-center gap-6 text-sm text-white/50">
+            <a href="#features" className="hover:text-white transition-colors">Features</a>
+            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <Link href="/support">
+              <span className="hover:text-white transition-colors cursor-pointer">Support</span>
+            </Link>
+            <Link href="/documentation">
+              <span className="hover:text-white transition-colors cursor-pointer">Docs</span>
+            </Link>
+            <Link href="/privacy">
+              <span className="hover:text-white transition-colors cursor-pointer">Privacy</span>
+            </Link>
+            <Link href="/impressum">
+              <span className="hover:text-white transition-colors cursor-pointer">Impressum</span>
+            </Link>
           </div>
-          <div className="flex items-center gap-3">
+
+          {/* Desktop CTAs (right) */}
+          <div className="hidden md:flex items-center gap-3">
             {user ? (
               <Link href="/dashboard">
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  className="rounded-lg bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-white/90 transition-colors">
+                  className="rounded-lg bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-white/90 transition-colors cursor-pointer">
                   Dashboard →
                 </motion.button>
               </Link>
             ) : (
               <>
-                <Link href="/support">
-                  <button className="px-4 py-2 text-sm text-white/50 hover:text-white transition-colors">Support</button>
-                </Link>
                 <Link href="/sign-in">
-                  <button className="px-4 py-2 text-sm text-white/50 hover:text-white transition-colors">Login</button>
+                  <button className="px-4 py-2 text-sm text-white/50 hover:text-white transition-colors cursor-pointer">Login</button>
                 </Link>
                 <Link href="/sign-up">
                   <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    className="rounded-lg bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-white/90 transition-colors">
+                    className="rounded-lg bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-white/90 transition-colors cursor-pointer">
                     Get Started
                   </motion.button>
                 </Link>
               </>
             )}
           </div>
+
+          {/* Mobile Menu Toggle Button */}
+          <div className="flex md:hidden">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="rounded-md p-1.5 text-white/60 hover:bg-white/[0.05] hover:text-white transition-colors cursor-pointer"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Navigation Dropdown Overlay */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="md:hidden overflow-hidden border-t border-white/[0.05] bg-[#0c0c0c] px-6 py-6 space-y-4"
+            >
+              <div className="flex flex-col gap-3 text-sm text-white/60">
+                <a
+                  href="#features"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="hover:text-white py-1 transition-colors block"
+                >
+                  Features
+                </a>
+                <a
+                  href="#pricing"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="hover:text-white py-1 transition-colors block"
+                >
+                  Pricing
+                </a>
+                <Link href="/support">
+                  <span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1 transition-colors block cursor-pointer">Support</span>
+                </Link>
+                <Link href="/documentation">
+                  <span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1 transition-colors block cursor-pointer">Documentation</span>
+                </Link>
+                <Link href="/privacy">
+                  <span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1 transition-colors block cursor-pointer">Datenschutz</span>
+                </Link>
+                <Link href="/impressum">
+                  <span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1 transition-colors block cursor-pointer">Impressum</span>
+                </Link>
+              </div>
+
+              <div className="pt-4 border-t border-white/[0.05] flex flex-col gap-2">
+                {user ? (
+                  <Link href="/dashboard">
+                    <button className="w-full text-center rounded-xl bg-white py-3 text-sm font-semibold text-black hover:bg-white/95 transition-all">
+                      Dashboard →
+                    </button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/sign-in">
+                      <button className="w-full text-center rounded-xl border border-white/[0.08] bg-white/[0.02] py-3 text-sm font-semibold text-white/80 hover:text-white transition-all">
+                        Login
+                      </button>
+                    </Link>
+                    <Link href="/sign-up">
+                      <button className="w-full text-center rounded-xl bg-white py-3 text-sm font-semibold text-black hover:bg-white/95 transition-all">
+                        Get Started
+                      </button>
+                    </Link>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Hero */}
@@ -157,7 +252,7 @@ export function Landing() {
       </section>
 
       {/* Features */}
-      <section className="px-6 py-24">
+      <section id="features" className="px-6 py-24 scroll-mt-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
             <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
@@ -202,7 +297,7 @@ export function Landing() {
       </section>
 
       {/* Pricing */}
-      <section className="px-6 py-24">
+      <section id="pricing" className="px-6 py-24 scroll-mt-20">
         <div className="mx-auto max-w-4xl">
           <div className="mb-16 text-center">
             <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
@@ -317,9 +412,12 @@ export function Landing() {
             <img src={`${basePath}/logo.svg`} alt="CLYVEN" className="h-5 w-5" />
             <span className="text-xs font-bold tracking-[0.2em] text-white/40">CLYVEN</span>
           </div>
-          <div className="flex gap-6 text-xs text-white/30">
+          <div className="flex gap-6 text-xs text-white/30 items-center">
             <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Privacy</span></Link>
             <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Legal Notice</span></Link>
+            <a href="https://github.com/offical-atsch16/clyven.app" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors flex items-center gap-1 cursor-pointer">
+              <Github className="h-3.5 w-3.5" /> GitHub
+            </a>
           </div>
           <p className="text-xs text-white/20">© 2026 CLYVEN</p>
         </div>

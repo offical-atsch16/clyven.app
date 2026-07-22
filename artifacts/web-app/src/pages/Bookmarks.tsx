@@ -102,7 +102,7 @@ export function Bookmarks() {
   };
 
   return (
-    <div className="min-h-full p-6 lg:p-8">
+    <div className="min-h-full p-4 sm:p-6 lg:p-8">
       {addOpen && <AddBookmarkModal onClose={() => setAddOpen(false)} />}
       {upgradeOpen && (
         <UpgradeModal
