@@ -5,7 +5,7 @@ import { pool } from "../lib/db.js";
 import type { Request, Response, NextFunction } from "express";
 
 const router = Router();
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || process.env.CLERK_SECRET_KEY;
+const JWT_SECRET = (process.env.ADMIN_JWT_SECRET || process.env.CLERK_SECRET_KEY) as string;
 if (!JWT_SECRET) {
   throw new Error("ADMIN_JWT_SECRET or CLERK_SECRET_KEY must be set");
 }
@@ -21,7 +21,7 @@ function requireAdmin(req: AdminRequest, res: Response, next: NextFunction) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { adminId: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as unknown as { adminId: string };
     req.adminId = decoded.adminId;
     next();
   } catch {

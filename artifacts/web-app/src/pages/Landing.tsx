@@ -6,6 +6,7 @@ import {
   ArrowRight, ChevronDown, Star, Zap, Shield, Globe, Check, Sparkles, Lock,
 } from "lucide-react";
 import { useUser } from "@clerk/react";
+import { useCookieBanner } from "../hooks/useCookieBanner";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -46,92 +47,6 @@ const FAQS = [
   { q: "How can I cancel?", a: "You can cancel anytime via your profile. There is no minimum contract period and no hidden fees." },
 ];
 
-/* ─── Silktide Cookie Banner (injected only on landing) ─── */
-function useCookieBanner() {
-  useEffect(() => {
-    // Prevent duplicate initialization on HMR
-    if ((window as any).__clyvenCookieBannerInit) return;
-    (window as any).__clyvenCookieBannerInit = true;
-
-    const css = document.createElement("link");
-    css.rel = "stylesheet";
-    css.id = "silktide-consent-manager-css";
-    css.href = "https://cdn.jsdelivr.net/gh/silktide/consent-manager@v2.0.1/silktide-consent-manager.css";
-    css.crossOrigin = "anonymous";
-    document.head.appendChild(css);
-
-    const style = document.createElement("style");
-    style.id = "silktide-consent-manager-overrides";
-    style.textContent = `
-      #stcm-wrapper {
-        --boxShadow: -5px 5px 10px 0px #00000012, 0px 0px 50px 0px #0000001a;
-        --fontFamily: Helvetica Neue, Segoe UI, Arial, sans-serif;
-        --primaryColor: #AFE3FF;
-        --backgroundColor: #070219;
-        --textColor: #E5F6FA;
-        --backdropBackgroundColor: #00000033;
-        --backdropBackgroundBlur: 0px;
-        --iconColor: #070219;
-        --iconBackgroundColor: #AFE3FF;
-      }
-    `;
-    document.head.appendChild(style);
-
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/gh/silktide/consent-manager@v2.0.1/silktide-consent-manager.js";
-    script.crossOrigin = "anonymous";
-    script.onload = () => {
-      (window as any).silktideConsentManager.init({
-        backdrop: { show: true },
-        icon: { position: "bottomRight" },
-        prompt: { position: "bottomRight" },
-        consentTypes: [
-          {
-            id: "essential",
-            label: "Essential",
-            description: "<p>These cookies are necessary for the website to function properly and cannot be switched off.</p>",
-            required: true,
-          },
-          {
-            id: "analytics",
-            label: "Analytics",
-            description: "<p>These cookies help us improve the website by tracking which pages are most popular.</p>",
-            defaultValue: true,
-          },
-          {
-            id: "marketing",
-            label: "Marketing",
-            description: "<p>These cookies are used to show you relevant advertising and measure campaigns.</p>",
-          },
-        ],
-        text: {
-          prompt: {
-            description: "<p>We use cookies to enhance your experience, deliver personalized content, and analyze our traffic.</p>",
-            acceptAllButtonText: "Accept all",
-            acceptAllButtonAccessibleLabel: "Accept all cookies",
-            rejectNonEssentialButtonText: "Reject non-essential",
-            rejectNonEssentialButtonAccessibleLabel: "Reject all non-essential cookies",
-            preferencesButtonText: "Preferences",
-            preferencesButtonAccessibleLabel: "Open preferences",
-          },
-          preferences: {
-            title: "Cookie Preferences",
-            description: "<p>We respect your right to privacy. You can choose which cookies you allow.</p>",
-            saveButtonText: "Save and close",
-            saveButtonAccessibleLabel: "Save preferences",
-          },
-        },
-      });
-    };
-    document.body.appendChild(script);
-
-    return () => {
-      css.remove();
-      style.remove();
-      script.remove();
-    };
-  }, []);
-}
 
 export function Landing() {
   const { user } = useUser();
