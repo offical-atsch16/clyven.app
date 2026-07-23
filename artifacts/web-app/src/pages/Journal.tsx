@@ -95,7 +95,7 @@ export function Journal() {
   const isFuture = date > getTodayISO();
 
   return (
-    <div className="min-h-full p-6 lg:p-8">
+    <div className="min-h-full p-4 sm:p-6 lg:p-8">
       <div className={cn("mx-auto", view === "calendar" ? "max-w-3xl" : "max-w-2xl")}>
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">

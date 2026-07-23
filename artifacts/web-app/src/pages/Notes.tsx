@@ -239,7 +239,7 @@ export function Notes() {
             </div>
           </div>
 
-          <div className={cn("flex flex-1 flex-col overflow-hidden p-6 lg:p-8", COLORS.find((c) => c.key === editColor)?.cls)}>
+          <div className={cn("flex flex-1 flex-col overflow-hidden p-4 sm:p-6 lg:p-8", COLORS.find((c) => c.key === editColor)?.cls)}>
             <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
               className="mb-4 w-full bg-transparent text-2xl font-bold text-white outline-none placeholder:text-white/20"
               placeholder="Title..." />

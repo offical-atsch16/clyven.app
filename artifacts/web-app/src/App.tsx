@@ -22,6 +22,7 @@ import { Settings } from "./pages/Settings";
 import { Pricing } from "./pages/Pricing";
 import { Privacy } from "./pages/Privacy";
 import { Impressum } from "./pages/Impressum";
+import { Documentation } from "./pages/Documentation";
 import { useCookieBanner } from "./hooks/useCookieBanner";
 import { Support } from "./pages/Support";
 import { AdminLogin } from "./pages/AdminLogin";
@@ -234,6 +235,7 @@ function AppRoutes() {
           <Route path="/pricing" component={Pricing} />
           <Route path="/privacy" component={Privacy} />
           <Route path="/impressum" component={Impressum} />
+          <Route path="/documentation" component={Documentation} />
           <Route path="/support" component={Support} />
           <Route path="/admin/login" component={AdminLogin} />
           <Route path="/admin/dashboard" component={AdminDashboard} />

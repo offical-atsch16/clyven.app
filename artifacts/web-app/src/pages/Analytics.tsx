@@ -112,7 +112,7 @@ export function Analytics() {
   })();
 
   return (
-    <div className="min-h-full p-6 lg:p-8">
+    <div className="min-h-full p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex items-start justify-between">
           <div>

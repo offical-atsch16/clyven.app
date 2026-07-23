@@ -57,7 +57,7 @@ export function Dashboard() {
   const recentBookmarks = (bookmarks || []).slice(0, 3);
 
   return (
-    <div className="min-h-full p-6 lg:p-8">
+    <div className="min-h-full p-4 sm:p-6 lg:p-8">
       <motion.div variants={container} initial="hidden" animate="show" className="mx-auto max-w-5xl space-y-8">
 
         {/* Header */}
