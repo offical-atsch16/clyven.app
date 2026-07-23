@@ -183,6 +183,47 @@ function ThemeInitializer() {
 function AppRoutes() {
   const [, setLocation] = useLocation();
   useCookieBanner();
+
+  useEffect(() => {
+    const handleShortcuts = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      if (
+        activeEl &&
+        (activeEl.tagName === "INPUT" ||
+          activeEl.tagName === "TEXTAREA" ||
+          activeEl.hasAttribute("contenteditable") ||
+          activeEl.classList.contains("cmdk-input"))
+      ) {
+        return;
+      }
+
+      if (e.altKey) {
+        if (e.key.toLowerCase() === "n") {
+          e.preventDefault();
+          setLocation("/notes");
+        } else if (e.key.toLowerCase() === "b") {
+          e.preventDefault();
+          setLocation("/bookmarks");
+        } else if (e.key.toLowerCase() === "f") {
+          e.preventDefault();
+          setLocation("/focus");
+        } else if (e.key.toLowerCase() === "j") {
+          e.preventDefault();
+          setLocation("/journal");
+        } else if (e.key.toLowerCase() === "d") {
+          e.preventDefault();
+          setLocation("/dashboard");
+        } else if (e.key.toLowerCase() === "s") {
+          e.preventDefault();
+          setLocation("/settings");
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleShortcuts);
+    return () => document.removeEventListener("keydown", handleShortcuts);
+  }, [setLocation]);
+
   return (
     <ClerkProvider
       publishableKey={clerkPubKey}

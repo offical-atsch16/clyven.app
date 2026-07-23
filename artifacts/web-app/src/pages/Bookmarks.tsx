@@ -180,6 +180,7 @@ export function Bookmarks() {
             <AnimatePresence>
               {filtered.map((b: any) => (
                 <motion.div key={b.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
                   className="group relative rounded-2xl border border-white/[0.07] bg-[#111111] p-5 hover:border-white/10 transition-all">
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.06]">

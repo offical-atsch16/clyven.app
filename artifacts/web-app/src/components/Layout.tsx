@@ -82,7 +82,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <AnimatePresence>
         {mobileOpen && (
           <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", damping: 30 }}
-            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/[0.06] bg-[#0c0c0c] lg:hidden">
+            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/[0.08] bg-[#0c0c0c]/90 backdrop-blur-lg lg:hidden">
             <SidebarContent collapsed={false} displayName={displayName} avatarUrl={avatarUrl}
               onToggle={() => setMobileOpen(false)} onCommandOpen={() => { setMobileOpen(false); openCommandPalette(); }}
               onSignOut={() => signOut()} mobile onMobileClose={() => setMobileOpen(false)} />
@@ -91,7 +91,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Desktop sidebar */}
-      <aside className={cn("hidden shrink-0 flex-col border-r border-white/[0.06] bg-[#0c0c0c] transition-all duration-300 lg:flex", collapsed ? "w-16" : "w-56")}>
+      <aside className={cn("hidden shrink-0 flex-col border-r border-white/[0.08] bg-[#0c0c0c]/85 backdrop-blur-md transition-all duration-300 lg:flex", collapsed ? "w-16" : "w-56")}>
         <SidebarContent collapsed={collapsed} displayName={displayName} avatarUrl={avatarUrl}
           onToggle={() => setCollapsed(!collapsed)} onCommandOpen={openCommandPalette}
           onSignOut={() => signOut()} />
