@@ -65,7 +65,7 @@ router.get("/:ticketNumber", async (req, res) => {
       [ticketNumber, email]
     );
     if (!ticketRows.length) {
-      return res.status(404).json({ error: "Ticket not found" });
+      return res.status(404).json({ error: "Ticket not found, make sure you typed in everything right" });
     }
     const { rows: msgRows } = await client.query(
       "SELECT * FROM ticket_messages WHERE ticket_id=$1 ORDER BY created_at ASC",
@@ -76,7 +76,7 @@ router.get("/:ticketNumber", async (req, res) => {
       messages: msgRows.map(snakeToCamel),
     });
   } catch (e: any) {
-    res.status(500).json({ error: "Failed to fetch ticket", detail: e.message });
+    res.status(500).json({ error: "Failed to fetch ticket, contact support", detail: e.message });
   } finally {
     client.release();
   }
@@ -96,7 +96,7 @@ router.post("/:ticketNumber/messages", async (req, res) => {
       [ticketNumber, email]
     );
     if (!ticketRows.length) {
-      return res.status(404).json({ error: "Ticket not found" });
+      return res.status(404).json({ error: "Ticket not found, make sure you typed in everything right" });
     }
     const ticket = ticketRows[0];
 
@@ -115,7 +115,7 @@ router.post("/:ticketNumber/messages", async (req, res) => {
 
     res.json(snakeToCamel(msgRows[0]));
   } catch (e: any) {
-    res.status(500).json({ error: "Failed to add message", detail: e.message });
+    res.status(500).json({ error: "Failed to add message, contact support", detail: e.message });
   } finally {
     client.release();
   }
