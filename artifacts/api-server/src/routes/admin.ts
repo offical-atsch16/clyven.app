@@ -176,11 +176,12 @@ router.post("/tickets", requireAdmin, async (req, res) => {
     await client.query("BEGIN");
     const { rows: seqRows } = await client.query("SELECT nextval('ticket_number_seq') AS n");
     const ticketNumber = `TICKET-${String(seqRows[0].n).padStart(6, "0")}`;
+    const passcode = Math.floor(100000 + Math.random() * 900000).toString();
 
     const { rows: ticketRows } = await client.query(
-      `INSERT INTO tickets (ticket_number, name, email, subject, message, status)
-       VALUES ($1,$2,$3,$4,$5,'OPEN') RETURNING *`,
-      [ticketNumber, name, email, subject, message]
+      `INSERT INTO tickets (ticket_number, name, email, subject, message, passcode, status)
+       VALUES ($1,$2,$3,$4,$5,$6,'OPEN') RETURNING *`,
+      [ticketNumber, name, email, subject, message, passcode]
     );
     const ticket = ticketRows[0];
 

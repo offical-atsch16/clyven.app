@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, FileText, Bookmark, Timer, BookOpen, ChartBar as BarChart2, Trophy, User, Settings, ChevronLeft, ChevronRight, Command, Menu, X, Zap, Crown, Terminal } from "lucide-react";
+import { LayoutDashboard, FileText, Bookmark, Timer, BookOpen, ChartBar as BarChart2, Trophy, User, Settings, ChevronLeft, ChevronRight, Command, Menu, X, Zap, Crown, Terminal, CheckSquare } from "lucide-react";
 import { useUser, useClerk } from "@clerk/react";
 import { useAppStore } from "../stores/useAppStore";
 import { usePremium } from "../hooks/usePremium";
@@ -12,6 +12,7 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const NAV = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/notes", icon: FileText, label: "Notes" },
+  { href: "/tasks", icon: CheckSquare, label: "Tasks" },
   { href: "/bookmarks", icon: Bookmark, label: "Bookmarks" },
   { href: "/focus", icon: Timer, label: "Focus" },
   { href: "/journal", icon: BookOpen, label: "Journal" },

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User, FileText, Loader2 } from "lucide-react";
+import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User, FileText, Loader2, Key, HelpCircle, ShieldAlert } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Link } from "wouter";
 
@@ -10,16 +10,19 @@ export function Support() {
   const [tab, setTab] = useState<"create" | "view">("create");
   return (
     <div className="min-h-[100dvh] bg-[#080808] text-white">
-      <div className="mx-auto max-w-xl px-6 py-12">
+      {/* Background Gradients */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-blue-950/20 via-transparent to-transparent opacity-60" />
+
+      <div className="relative mx-auto max-w-xl px-6 py-12">
         {/* Navigation & Title Row */}
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05]">
-              <MessageSquare className="h-5 w-5 text-white/60" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05] border border-white/[0.08]">
+              <MessageSquare className="h-5 w-5 text-white/70" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Support</h1>
-              <p className="text-xs text-white/30">Create a ticket or check an existing one</p>
+              <h1 className="text-xl font-bold tracking-tight">Support-Center</h1>
+              <p className="text-xs text-white/30">Erstellen Sie ein Ticket oder fragen Sie den Status ab</p>
             </div>
           </div>
           <Link href="/">
@@ -29,16 +32,16 @@ export function Support() {
           </Link>
         </div>
 
-        <div className="mb-6 flex rounded-xl border border-white/[0.07] bg-white/[0.02] p-1">
+        <div className="mb-8 flex rounded-xl border border-white/[0.07] bg-white/[0.02] p-1">
           <button onClick={() => setTab("create")}
-            className={cn("flex-1 rounded-lg py-2 text-sm font-medium transition-all",
-              tab === "create" ? "bg-white/[0.06] text-white" : "text-white/30 hover:text-white/50")}>
-            New Ticket
+            className={cn("flex-1 rounded-lg py-2.5 text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer",
+              tab === "create" ? "bg-white/[0.08] text-white shadow-sm" : "text-white/30 hover:text-white/50")}>
+            Neues Ticket
           </button>
           <button onClick={() => setTab("view")}
-            className={cn("flex-1 rounded-lg py-2 text-sm font-medium transition-all",
-              tab === "view" ? "bg-white/[0.06] text-white" : "text-white/30 hover:text-white/50")}>
-            View Ticket
+            className={cn("flex-1 rounded-lg py-2.5 text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer",
+              tab === "view" ? "bg-white/[0.08] text-white shadow-sm" : "text-white/30 hover:text-white/50")}>
+            Ticket ansehen
           </button>
         </div>
 
@@ -64,7 +67,7 @@ function CreateTicket() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ ticketNumber: string } | null>(null);
+  const [result, setResult] = useState<{ ticketNumber: string; passcode: string } | null>(null);
   const [error, setError] = useState("");
 
   async function submit(e: React.FormEvent) {
@@ -79,7 +82,7 @@ function CreateTicket() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
-      setResult({ ticketNumber: data.ticketNumber });
+      setResult({ ticketNumber: data.ticketNumber, passcode: data.passcode });
       setName(""); setEmail(""); setSubject(""); setMessage("");
     } catch (e: any) {
       setError(e.message);
@@ -90,17 +93,31 @@ function CreateTicket() {
 
   if (result) {
     return (
-      <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-8 text-center">
-        <CheckCircle className="mx-auto mb-4 h-10 w-10 text-green-400/70" />
-        <h2 className="mb-2 text-lg font-bold">Ticket Created</h2>
-        <p className="mb-4 text-sm text-white/40">Your ticket number:</p>
-        <div className="mb-6 rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-lg font-mono font-bold tracking-wider text-white">
-          {result.ticketNumber}
+      <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-8 text-center shadow-xl">
+        <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-400" />
+        <h2 className="mb-2 text-xl font-bold">Ticket erfolgreich erstellt</h2>
+        <p className="mb-6 text-sm text-white/40">Bitte speichern Sie Ihre Zugangsdaten sorgfältig ab. Wir haben Ihnen diese zusätzlich per E-Mail zugesendet.</p>
+
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-4 text-left">
+            <span className="text-[10px] text-white/30 uppercase font-semibold tracking-wider">Ticketnummer</span>
+            <div className="text-base font-mono font-bold tracking-wider text-white mt-1">
+              {result.ticketNumber}
+            </div>
+          </div>
+          <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-4 text-left">
+            <span className="text-[10px] text-white/30 uppercase font-semibold tracking-wider">Passcode (6-stellig)</span>
+            <div className="text-base font-mono font-bold tracking-wider text-blue-400 mt-1">
+              {result.passcode}
+            </div>
+          </div>
         </div>
-        <p className="mb-6 text-xs text-white/25">Save this number to check your ticket status later.</p>
+
+        <p className="mb-6 text-xs text-white/20">Ohne Ticketnummer und Passcode können Sie den Status Ihres Tickets später nicht abrufen.</p>
+
         <button onClick={() => setResult(null)}
-          className="rounded-xl bg-white/[0.06] px-6 py-2.5 text-sm font-medium text-white hover:bg-white/[0.1] transition-all">
-          Create Another
+          className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white hover:border-white/20 hover:bg-white/[0.06] transition-all cursor-pointer">
+          Neues Ticket erstellen
         </button>
       </div>
     );
@@ -113,33 +130,33 @@ function CreateTicket() {
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
           <User className="h-3 w-3" /> Name
         </label>
-        <input value={name} onChange={(e) => setName(e.target.value)} required
+        <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Ihr vollständiger Name"
           className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
-          <Mail className="h-3 w-3" /> Email
+          <Mail className="h-3 w-3" /> E-Mail-Adresse
         </label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="name@beispiel.de"
           className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
-          <FileText className="h-3 w-3" /> Subject
+          <FileText className="h-3 w-3" /> Betreff
         </label>
-        <input value={subject} onChange={(e) => setSubject(e.target.value)} required
+        <input value={subject} onChange={(e) => setSubject(e.target.value)} required placeholder="Wobei benötigen Sie Hilfe?"
           className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
-          <MessageSquare className="h-3 w-3" /> Message
+          <MessageSquare className="h-3 w-3" /> Nachricht
         </label>
-        <textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={5}
+        <textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={5} placeholder="Bitte beschreiben Sie Ihr Anliegen so detailliert wie möglich..."
           className="w-full resize-none rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.08] py-3.5 text-sm font-semibold text-black bg-white hover:bg-white/90 transition-all disabled:opacity-50 cursor-pointer">
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4" /> Submit Ticket</>}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3.5 text-sm font-semibold text-black hover:bg-white/90 transition-all disabled:opacity-50 cursor-pointer">
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4" /> Ticket absenden</>}
       </motion.button>
     </form>
   );
@@ -147,7 +164,7 @@ function CreateTicket() {
 
 function ViewTicket() {
   const [ticketNumber, setTicketNumber] = useState("");
-  const [email, setEmail] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [ticket, setTicket] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [reply, setReply] = useState("");
@@ -158,9 +175,9 @@ function ViewTicket() {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
-      const res = await fetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}?email=${encodeURIComponent(email)}`);
+      const res = await fetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}?passcode=${encodeURIComponent(passcode)}`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Not found");
+      if (!res.ok) throw new Error(data.error || "Ticket nicht gefunden.");
       setTicket(data.ticket);
       setMessages(data.messages || []);
     } catch (e: any) {
@@ -179,7 +196,7 @@ function ViewTicket() {
       const res = await fetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senderName: ticket.name, message: reply }),
+        body: JSON.stringify({ passcode, senderName: ticket.name, message: reply }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
@@ -201,33 +218,33 @@ function ViewTicket() {
     return (
       <div className="space-y-6">
         <button onClick={() => { setTicket(null); setMessages([]); }}
-          className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white/60 transition-colors">
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to search
+          className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white/60 transition-colors cursor-pointer">
+          <ArrowLeft className="h-3.5 w-3.5" /> Zurück zur Suche
         </button>
-        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 shadow-lg">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <p className="text-xs text-white/25">{ticket.ticketNumber}</p>
-              <h2 className="text-lg font-bold">{ticket.subject}</h2>
+              <p className="text-xs text-white/25 font-mono">{ticket.ticketNumber}</p>
+              <h2 className="text-lg font-bold mt-0.5">{ticket.subject}</h2>
             </div>
-            <span className={cn("rounded-lg px-3 py-1 text-xs font-medium", statusColor)}>
-              {ticket.status.replace("_", " ")}
+            <span className={cn("rounded-lg px-3 py-1 text-xs font-semibold uppercase tracking-wider", statusColor)}>
+              {ticket.status === "OPEN" ? "Offen" : ticket.status === "IN_PROGRESS" ? "In Bearbeitung" : "Geschlossen"}
             </span>
           </div>
-          <div className="space-y-0.5 text-xs text-white/30">
-            <p><span className="text-white/20">From:</span> {ticket.name} &lt;{ticket.email}&gt;</p>
-            <p><span className="text-white/20">Created:</span> {new Date(ticket.createdAt).toLocaleString()}</p>
+          <div className="space-y-1 text-xs text-white/30 border-t border-white/[0.05] pt-3">
+            <p><span className="text-white/20">Ersteller:</span> {ticket.name} &lt;{ticket.email}&gt;</p>
+            <p><span className="text-white/20">Erstellt am:</span> {new Date(ticket.createdAt).toLocaleString()}</p>
           </div>
         </div>
 
         <div className="space-y-3">
           {messages.map((m: any) => (
-            <div key={m.id} className={cn("rounded-xl border px-4 py-3",
-              m.senderType === "ADMIN" ? "border-yellow-400/10 bg-yellow-400/[0.03]" : "border-white/[0.06] bg-white/[0.02]")}>
+            <div key={m.id} className={cn("rounded-xl border px-4 py-3 shadow-sm",
+              m.senderType === "ADMIN" ? "border-blue-500/20 bg-blue-500/[0.03]" : "border-white/[0.06] bg-white/[0.02]")}>
               <div className="mb-1.5 flex items-center gap-2">
                 <span className={cn("text-[10px] font-bold uppercase tracking-wider",
-                  m.senderType === "ADMIN" ? "text-yellow-400/60" : "text-white/30")}>
-                  {m.senderType === "ADMIN" ? "Support" : "You"}
+                  m.senderType === "ADMIN" ? "text-blue-400" : "text-white/30")}>
+                  {m.senderType === "ADMIN" ? "Clyven Support" : "Sie"}
                 </span>
                 <span className="text-[10px] text-white/20">{new Date(m.createdAt).toLocaleString()}</span>
               </div>
@@ -236,16 +253,20 @@ function ViewTicket() {
           ))}
         </div>
 
-        {ticket.status !== "CLOSED" && (
+        {ticket.status !== "CLOSED" ? (
           <form onSubmit={sendReply} className="space-y-3">
             {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">{error}</p>}
-            <textarea value={reply} onChange={(e) => setReply(e.target.value)} required rows={3} placeholder="Write a reply..."
+            <textarea value={reply} onChange={(e) => setReply(e.target.value)} required rows={3} placeholder="Ihre Antwort schreiben..."
               className="w-full resize-none rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15" />
             <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.08] py-3 text-sm font-medium text-white hover:bg-white/[0.12] transition-all disabled:opacity-50">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4" /> Send Reply</>}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.08] py-3 text-sm font-semibold text-white hover:bg-white/[0.12] transition-all disabled:opacity-50 cursor-pointer">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4" /> Antwort senden</>}
             </motion.button>
           </form>
+        ) : (
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.01] p-4 text-center">
+            <p className="text-xs text-white/20">Dieses Ticket ist geschlossen. Sie können keine weiteren Antworten senden.</p>
+          </div>
         )}
       </div>
     );
@@ -253,24 +274,29 @@ function ViewTicket() {
 
   return (
     <form onSubmit={search} className="space-y-4">
-      {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">{error}</p>}
+      {error && (
+        <div className="rounded-lg bg-red-500/10 px-3 py-2.5 flex items-center gap-2 text-xs text-red-400 border border-red-500/15">
+          <ShieldAlert className="h-4 w-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
-          <Ticket className="h-3 w-3" /> Ticket Number
+          <Ticket className="h-3 w-3" /> Ticketnummer
         </label>
         <input value={ticketNumber} onChange={(e) => setTicketNumber(e.target.value)} required placeholder="TICKET-000001"
-          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
+          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/15 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
-          <Mail className="h-3 w-3" /> Email
+          <Key className="h-3 w-3" /> 6-stelliger Passcode
         </label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
+        <input type="text" maxLength={6} value={passcode} onChange={(e) => setPasscode(e.target.value)} required placeholder="z. B. 482915 oder Master-Code"
+          className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/15 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px py-3.5 text-sm font-semibold text-black bg-white hover:bg-white/90 transition-all disabled:opacity-50 cursor-pointer">
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Search className="h-4 w-4" /> Find Ticket</>}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3.5 text-sm font-semibold text-black hover:bg-white/90 transition-all disabled:opacity-50 cursor-pointer">
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Search className="h-4 w-4" /> Ticket suchen</>}
       </motion.button>
     </form>
   );

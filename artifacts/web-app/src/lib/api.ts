@@ -50,6 +50,12 @@ export const api = {
   getJournalEntry: (date: string) => request<any>(`/journal/${date}`),
   saveJournalEntry: (data: any) => request<any>("/journal", { method: "POST", body: JSON.stringify(data) }),
 
+  // Tasks
+  getTasks: () => request<any[]>("/tasks"),
+  createTask: (data: any) => request<any>("/tasks", { method: "POST", body: JSON.stringify(data) }),
+  updateTask: (id: string, data: any) => request<any>(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteTask: (id: string) => request<any>(`/tasks/${id}`, { method: "DELETE" }),
+
   // User
   getStats: () => request<any>("/user/stats"),
   getSettings: () => request<any>("/user/settings"),

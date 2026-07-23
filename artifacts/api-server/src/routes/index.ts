@@ -7,6 +7,7 @@ import journalRouter from "./journal.js";
 import userRouter from "./user.js";
 import ticketsRouter from "./tickets.js";
 import adminRouter from "./admin.js";
+import tasksRouter from "./tasks.js";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use("/journal", journalRouter);
 router.use("/user", userRouter);
 router.use("/tickets", ticketsRouter);
 router.use("/admin", adminRouter);
+router.use("/tasks", tasksRouter);
 
 export default router;
