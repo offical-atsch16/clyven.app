@@ -86,14 +86,14 @@ export function AdminDashboard() {
               <Shield className="h-4 w-4 text-white/50" />
             </div>
             <div>
-              <h1 className="text-sm font-bold">Support Dashboard</h1>
+              <h1 className="text-sm font-bold">CLYVEN Support Dashboard</h1>
               <p className="text-[10px] text-white/25">{tickets.length} tickets total</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => navigate("/admin/tickets/new")}
               className="flex items-center gap-1.5 rounded-lg bg-white/[0.06] px-3 py-2 text-xs font-medium hover:bg-white/[0.1] transition-all">
-              <Plus className="h-3.5 w-3.5" /> New Ticket
+              <Plus className="h-3.5 w-3.5" /> Create Ticket
             </button>
             <button onClick={logout}
               className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-all">
