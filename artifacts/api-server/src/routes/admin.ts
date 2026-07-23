@@ -1,6 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { pool } from "../lib/db.js";
 import type { Request, Response, NextFunction } from "express";
 
@@ -176,7 +177,7 @@ router.post("/tickets", requireAdmin, async (req, res) => {
     await client.query("BEGIN");
     const { rows: seqRows } = await client.query("SELECT nextval('ticket_number_seq') AS n");
     const ticketNumber = `TICKET-${String(seqRows[0].n).padStart(6, "0")}`;
-    const passcode = Math.floor(100000 + Math.random() * 900000).toString();
+    const passcode = crypto.randomInt(100000, 1000000).toString();
 
     const { rows: ticketRows } = await client.query(
       `INSERT INTO tickets (ticket_number, name, email, subject, message, passcode, status)

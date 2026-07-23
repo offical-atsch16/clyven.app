@@ -63,7 +63,7 @@ export const api = {
 
   // Tickets (public, no Clerk auth)
   createTicket: (data: any) => fetch(`${BASE}/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-  getTicket: (number: string, email: string) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}?email=${encodeURIComponent(email)}`).then((r) => r.json()),
+  getTicket: (number: string, passcode: string) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}`, { headers: { "X-Ticket-Passcode": passcode } }).then((r) => r.json()),
   addTicketMessage: (number: string, data: any) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
 
   // Admin (cookie-based auth)

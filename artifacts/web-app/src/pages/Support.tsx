@@ -175,7 +175,11 @@ function ViewTicket() {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
-      const res = await fetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}?passcode=${encodeURIComponent(passcode)}`);
+      const res = await fetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}`, {
+        headers: {
+          "X-Ticket-Passcode": passcode
+        }
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Ticket nicht gefunden.");
       setTicket(data.ticket);

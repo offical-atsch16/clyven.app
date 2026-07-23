@@ -1,6 +1,7 @@
 import { Router } from "express";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { pool } from "../lib/db.js";
 
 const router = Router();
@@ -21,6 +22,16 @@ function snakeToCamel(obj: Record<string, any>): Record<string, any> {
   return result;
 }
 
+// Helper to escape HTML characters to prevent HTML Injection
+function escapeHTML(str: string): string {
+  return (str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // Helper to check if a valid admin session exists
 function isAdmin(req: any): boolean {
   const token = req.cookies?.[COOKIE_NAME];
@@ -33,7 +44,7 @@ function isAdmin(req: any): boolean {
   }
 }
 
-// Create a new ticket (public, no auth) — generates a 6-digit passcode and sends Gmail SMTP email
+// Create a new ticket (public, no auth) — generates a 6-digit passcode securely and sends Gmail SMTP email
 router.post("/", async (req, res) => {
   const { name, email, subject, message } = req.body;
   if (!name || !email || !subject || !message) {
@@ -45,7 +56,9 @@ router.post("/", async (req, res) => {
     await client.query("BEGIN");
     const { rows: seqRows } = await client.query("SELECT nextval('ticket_number_seq') AS n");
     const ticketNumber = generateTicketNumber(seqRows[0].n);
-    const passcode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Cryptographically secure passcode generation
+    const passcode = crypto.randomInt(100000, 1000000).toString();
 
     const { rows: ticketRows } = await client.query(
       `INSERT INTO tickets (ticket_number, name, email, subject, message, passcode, status)
@@ -73,6 +86,11 @@ router.post("/", async (req, res) => {
       },
     });
 
+    // Escape HTML values to mitigate HTML injection (CodeQL safety)
+    const escapedName = escapeHTML(name);
+    const escapedSubject = escapeHTML(subject);
+    const escapedMessage = escapeHTML(message);
+
     const mailOptions = {
       from: `"CLYVEN Support" <${process.env.GMAIL_USER}>`,
       to: email,
@@ -85,7 +103,7 @@ router.post("/", async (req, res) => {
           </div>
 
           <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
-            <p style="margin: 0 0 10px; color: #aaa;">Hallo <strong>${name}</strong>,</p>
+            <p style="margin: 0 0 10px; color: #aaa;">Hallo <strong>${escapedName}</strong>,</p>
             <p style="margin: 0 0 20px; color: #aaa; line-height: 1.5;">Vielen Dank für Ihre Anfrage. Unser Support-Team wird sich so schnell wie möglich bei Ihnen melden.</p>
 
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
@@ -103,7 +121,7 @@ router.post("/", async (req, res) => {
 
             <div style="border-top: 1px solid #222; padding-top: 15px;">
               <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 8px;">Zusammenfassung Ihres Anliegens</span>
-              <div style="color: #888; font-size: 13px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;"><strong>Betreff:</strong> ${subject}\n\n${message}</div>
+              <div style="color: #888; font-size: 13px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;"><strong>Betreff:</strong> ${escapedSubject}\n\n${escapedMessage}</div>
             </div>
           </div>
 
@@ -124,10 +142,12 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Get ticket by number + passcode (or Master-Code / Admin Session)
+// Get ticket by number + passcode header (Securely avoiding sensitive query parameters)
 router.get("/:ticketNumber", async (req, res) => {
   const { ticketNumber } = req.params;
-  const { passcode } = req.query;
+
+  // Read passcode from headers to avoid leaking it in query logs (CodeQL safety)
+  const passcode = req.headers["x-ticket-passcode"] as string;
 
   const client = await pool.connect();
   try {
@@ -170,7 +190,7 @@ router.get("/:ticketNumber", async (req, res) => {
   }
 });
 
-// Add message to a ticket (public, verified by passcode or Master-Code / Admin Session)
+// Add message to a ticket (public, verified by passcode in body, or Master-Code / Admin Session)
 router.post("/:ticketNumber/messages", async (req, res) => {
   const { ticketNumber } = req.params;
   const { passcode, senderName, message } = req.body;

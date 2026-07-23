@@ -1,10 +1,17 @@
 import { Router } from "express";
 import { pool } from "../lib/db.js";
 import bcrypt from "bcryptjs";
+import { rateLimit } from "express-rate-limit";
 
 const router = Router();
 
-router.post("/", async (_req, res) => {
+const setupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 5, // limit each IP to 5 requests per window
+  message: { error: "Too many setup requests, please try again later." },
+});
+
+router.post("/", setupLimiter, async (_req, res) => {
   const client = await pool.connect();
   try {
     await client.query(`
