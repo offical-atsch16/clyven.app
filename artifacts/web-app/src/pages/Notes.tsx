@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Plus, Search, FileText, Star, Pin, Trash2, X, Save,
-  Download, Zap, Crown,
+  Download, Zap, Crown, Copy, Check, Tag,
 } from "lucide-react";
 import { api } from "../lib/api";
 import { cn, countWords, formatRelative } from "../lib/utils";
@@ -51,6 +51,8 @@ export function Notes() {
   const [editColor, setEditColor] = useState("default");
   const [saving, setSaving] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [noteCopied, setNoteCopied] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   const atLimit = !isPremium && notes.length >= FREE_LIMITS.notes;
 
@@ -95,10 +97,13 @@ export function Notes() {
     URL.revokeObjectURL(url);
   };
 
-  const filtered = notes.filter((n: any) =>
-    n.title.toLowerCase().includes(search.toLowerCase()) ||
-    n.content.toLowerCase().includes(search.toLowerCase())
-  );
+  const categories = ["all", ...Array.from(new Set((notes as any[]).map((n: any) => n.category).filter(Boolean)))];
+
+  const filtered = (notes as any[]).filter((n: any) => {
+    const matchesSearch = n.title.toLowerCase().includes(search.toLowerCase()) || n.content.toLowerCase().includes(search.toLowerCase());
+    const matchesCat = categoryFilter === "all" || n.category === categoryFilter;
+    return matchesSearch && matchesCat;
+  });
 
   const colorCls = COLORS.find((c) => c.key === editColor)?.cls || "";
 
@@ -157,6 +162,25 @@ export function Notes() {
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..."
               className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] py-2 pl-9 pr-3 text-sm text-white/70 outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
           </div>
+
+          {categories.length > 1 && (
+            <div className="flex gap-1.5 overflow-x-auto mt-3 pb-1 max-w-full">
+              {categories.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCategoryFilter(c)}
+                  className={cn(
+                    "shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-all cursor-pointer",
+                    categoryFilter === c
+                      ? "bg-white/[0.1] text-white"
+                      : "text-white/35 hover:text-white/60"
+                  )}
+                >
+                  {c === "all" ? "All" : c}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-2">
@@ -174,6 +198,7 @@ export function Notes() {
             <AnimatePresence initial={false}>
               {filtered.map((note: any) => (
                 <motion.div key={note.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }}
+                  whileHover={{ scale: 1.015, x: 2 }}
                   onClick={() => selectNote(note)}
                   className={cn("group mb-1 cursor-pointer rounded-xl border border-transparent p-3 transition-all hover:border-white/[0.07]",
                     COLORS.find((c) => c.key === note.color)?.cls,
@@ -224,12 +249,22 @@ export function Notes() {
                     const blob = new Blob([md], { type: "text/markdown" });
                     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${editTitle}.md`; a.click();
                   }}
-                  className="rounded-lg p-1.5 text-yellow-400/40 hover:text-yellow-400/80 transition-colors">
+                  className="rounded-lg p-1.5 text-yellow-400/40 hover:text-yellow-400/80 transition-colors cursor-pointer">
                   <Download className="h-4 w-4" />
                 </button>
               )}
+              <button title="Copy note as Markdown"
+                onClick={() => {
+                  const md = `# ${editTitle}\n\n${editContent}`;
+                  navigator.clipboard.writeText(md);
+                  setNoteCopied(true);
+                  setTimeout(() => setNoteCopied(false), 2000);
+                }}
+                className="rounded-lg p-1.5 text-white/25 hover:text-white/60 transition-colors cursor-pointer">
+                {noteCopied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+              </button>
               <button onClick={() => { if (confirm("Delete note?")) deleteNote.mutate(selected.id); }}
-                className="rounded-lg p-1.5 text-white/25 hover:text-red-400/70 transition-colors">
+                className="rounded-lg p-1.5 text-white/25 hover:text-red-400/70 transition-colors cursor-pointer">
                 <Trash2 className="h-4 w-4" />
               </button>
               <div className="flex items-center gap-1.5 text-xs text-white/20">
