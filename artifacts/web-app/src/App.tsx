@@ -186,6 +186,10 @@ function AppRoutes() {
 
   useEffect(() => {
     const handleShortcuts = (e: KeyboardEvent) => {
+      if (e.repeat) {
+        return;
+      }
+
       const activeEl = document.activeElement;
       if (
         activeEl &&
@@ -197,23 +201,23 @@ function AppRoutes() {
         return;
       }
 
-      if (e.altKey) {
-        if (e.key.toLowerCase() === "n") {
+      if (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+        if (e.code === "KeyN") {
           e.preventDefault();
           setLocation("/notes");
-        } else if (e.key.toLowerCase() === "b") {
+        } else if (e.code === "KeyB") {
           e.preventDefault();
           setLocation("/bookmarks");
-        } else if (e.key.toLowerCase() === "f") {
+        } else if (e.code === "KeyF") {
           e.preventDefault();
           setLocation("/focus");
-        } else if (e.key.toLowerCase() === "j") {
+        } else if (e.code === "KeyJ") {
           e.preventDefault();
           setLocation("/journal");
-        } else if (e.key.toLowerCase() === "d") {
+        } else if (e.code === "KeyD") {
           e.preventDefault();
           setLocation("/dashboard");
-        } else if (e.key.toLowerCase() === "s") {
+        } else if (e.code === "KeyS") {
           e.preventDefault();
           setLocation("/settings");
         }

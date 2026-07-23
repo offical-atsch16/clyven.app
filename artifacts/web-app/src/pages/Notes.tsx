@@ -51,8 +51,8 @@ export function Notes() {
   const [editColor, setEditColor] = useState("default");
   const [saving, setSaving] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const [noteCopied, setNoteCopied] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [noteCopied, setNoteCopied] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   const atLimit = !isPremium && notes.length >= FREE_LIMITS.notes;
 
@@ -61,6 +61,7 @@ export function Notes() {
     setEditTitle(note.title);
     setEditContent(note.content);
     setEditColor(note.color || "default");
+    setNoteCopied(null);
   };
 
   const save = useCallback(async () => {
@@ -97,13 +98,15 @@ export function Notes() {
     URL.revokeObjectURL(url);
   };
 
-  const categories = ["all", ...Array.from(new Set((notes as any[]).map((n: any) => n.category).filter(Boolean)))];
+  const categories = [null, ...Array.from(new Set((notes as any[]).map((n: any) => n.category).filter(Boolean)))];
 
   const filtered = (notes as any[]).filter((n: any) => {
     const matchesSearch = n.title.toLowerCase().includes(search.toLowerCase()) || n.content.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = categoryFilter === "all" || n.category === categoryFilter;
+    const matchesCat = categoryFilter === null || n.category === categoryFilter;
     return matchesSearch && matchesCat;
   });
+
+  const hasActiveFilter = search.trim() !== "" || categoryFilter !== null;
 
   const colorCls = COLORS.find((c) => c.key === editColor)?.cls || "";
 
@@ -167,7 +170,7 @@ export function Notes() {
             <div className="flex gap-1.5 overflow-x-auto mt-3 pb-1 max-w-full">
               {categories.map((c) => (
                 <button
-                  key={c}
+                  key={c === null ? "all-categories" : c}
                   onClick={() => setCategoryFilter(c)}
                   className={cn(
                     "shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-all cursor-pointer",
@@ -176,7 +179,7 @@ export function Notes() {
                       : "text-white/35 hover:text-white/60"
                   )}
                 >
-                  {c === "all" ? "All" : c}
+                  {c === null ? "All" : c}
                 </button>
               ))}
             </div>
@@ -191,8 +194,8 @@ export function Notes() {
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <FileText className="mb-3 h-8 w-8 text-white/10" />
-              <p className="text-sm text-white/25">{search ? "No results" : "No notes yet"}</p>
-              {!search && !atLimit && <button onClick={handleNew} className="mt-3 text-xs text-white/40 hover:text-white/70 underline">Create your first note</button>}
+              <p className="text-sm text-white/25">{hasActiveFilter ? "No results" : "No notes yet"}</p>
+              {!hasActiveFilter && !atLimit && <button onClick={handleNew} className="mt-3 text-xs text-white/40 hover:text-white/70 underline">Create your first note</button>}
             </div>
           ) : (
             <AnimatePresence initial={false}>
@@ -254,14 +257,16 @@ export function Notes() {
                 </button>
               )}
               <button title="Copy note as Markdown"
-                onClick={() => {
+                onClick={async () => {
                   const md = `# ${editTitle}\n\n${editContent}`;
-                  navigator.clipboard.writeText(md);
-                  setNoteCopied(true);
-                  setTimeout(() => setNoteCopied(false), 2000);
+                  try {
+                    await navigator.clipboard.writeText(md);
+                    setNoteCopied(selected.id);
+                    setTimeout(() => setNoteCopied(null), 2000);
+                  } catch {}
                 }}
                 className="rounded-lg p-1.5 text-white/25 hover:text-white/60 transition-colors cursor-pointer">
-                {noteCopied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+                {noteCopied === selected.id ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
               </button>
               <button onClick={() => { if (confirm("Delete note?")) deleteNote.mutate(selected.id); }}
                 className="rounded-lg p-1.5 text-white/25 hover:text-red-400/70 transition-colors cursor-pointer">

@@ -4,6 +4,12 @@ packages:
   - lib/integrations/*
   - scripts
 
+allowBuilds:
+  '@clerk/shared': set this to true or false
+  '@prisma/engines': set this to true or false
+  esbuild: set this to true or false
+  prisma: set this to true or false
+
 autoInstallPeers: false
 
 catalog:
