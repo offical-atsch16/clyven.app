@@ -305,13 +305,13 @@ router.post("/", requireAuth, async (req, res) => {
                     <tr>
                       <td className="p-4 font-bold text-green-400">GET</td>
                       <td className="p-4 font-mono">/api/tickets/:id</td>
-                      <td className="p-4 text-yellow-400 font-semibold">Passcode / Master-Code</td>
+                      <td className="p-4 text-yellow-400 font-semibold">Individueller Zugangscode</td>
                       <td className="p-4">Liefert Ticket und Nachrichtenverlauf</td>
                     </tr>
                     <tr>
                       <td className="p-4 font-bold text-blue-400">POST</td>
                       <td className="p-4 font-mono">/api/tickets/:id/messages</td>
-                      <td className="p-4 text-yellow-400 font-semibold">Passcode / Master-Code</td>
+                      <td className="p-4 text-yellow-400 font-semibold">Individueller Zugangscode</td>
                       <td className="p-4">Fügt dem Ticket eine neue Antwort hinzu</td>
                     </tr>
                     <tr className="bg-blue-500/[0.02]">
@@ -503,7 +503,7 @@ router.post("/", requireAuth, async (req, res) => {
                 <div className="p-4 rounded-xl border border-white/[0.05] bg-white/[0.01] flex gap-3">
                   <span className="h-5 w-5 rounded-full bg-white/[0.06] text-white/80 font-bold flex items-center justify-center shrink-0">2</span>
                   <p>
-                    <strong className="text-white font-semibold">Gmail SMTP Zustellungs-Pipeline:</strong> Nach erfolgreicher Transaktion in der Datenbank sendet das Backend über <code className="bg-white/[0.05] px-1 rounded">Nodemailer</code> eine formschöne HTML-Bestätigungs-E-Mail an den Kunden. Diese enthält die Zusammenfassung des Anliegens, die eindeutige Ticketnummer sowie den Zugangscode.
+                    <strong className="text-white font-semibold"> SMTP Zustellungs-Pipeline:</strong> Nach erfolgreicher Transaktion in der Datenbank sendet das Backend über <code className="bg-white/[0.05] px-1 rounded">Nodemailer</code> eine formschöne HTML-Bestätigungs-E-Mail an den Kunden. Diese enthält die Zusammenfassung des Anliegens, die eindeutige Ticketnummer sowie den individuellen 													Zugangscode.
                   </p>
                 </div>
 
@@ -517,7 +517,7 @@ router.post("/", requireAuth, async (req, res) => {
                 <div className="p-4 rounded-xl border border-white/[0.05] bg-blue-500/[0.02] border-blue-500/10 flex gap-3 text-blue-300/80">
                   <span className="h-5 w-5 rounded-full bg-blue-500/10 text-blue-400 font-bold flex items-center justify-center shrink-0">4</span>
                   <p>
-                    <strong className="text-white font-semibold">Master-Code Bypass (`161011`):</strong> Admins besitzen über den globalen Master-Code <code className="bg-white/[0.05] px-1 rounded text-white">161011</code> das Privileg, jedes beliebige Ticket direkt über die öffentliche Abfrageseite einzusehen und zu bearbeiten, ohne den spezifischen Zugangscode des Kunden eingeben zu müssen.
+                    <strong className="text-white font-semibold">Sicherheit</strong> Wir gewähren Sicherheit mit AES-256 Verschlüsselung in all unseren Systemen <code className="bg-white/[0.05] px-1 rounded text-white">161011</code> das Privileg, jedes beliebige Ticket direkt über die öffentliche Abfrageseite einzusehen und zu bearbeiten, ohne den spezifischen Zugangscode des Kunden eingeben zu müssen.
                   </p>
                 </div>
               </div>
