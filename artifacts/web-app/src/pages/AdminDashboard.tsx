@@ -6,8 +6,7 @@ import {
   Plus, Search, CheckCircle, AlertCircle, XCircle, Filter
 } from "lucide-react";
 import { cn } from "../lib/utils";
-
-const API = "/api";
+import { api } from "../lib/api";
 
 type Status = "OPEN" | "IN_PROGRESS" | "CLOSED" | "ALL";
 
@@ -26,8 +25,7 @@ export function AdminDashboard() {
 
   async function checkAuth() {
     try {
-      const res = await fetch(`${API}/admin/me`, { credentials: "include" });
-      if (!res.ok) throw new Error("Unauthorized");
+      await api.adminMe();
     } catch {
       navigate("/admin/login");
     }
@@ -36,9 +34,7 @@ export function AdminDashboard() {
   async function fetchTickets() {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/admin/tickets`, { credentials: "include" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const data = await api.getAdminTickets();
       setTickets(data);
     } catch (e: any) {
       console.error(e);
@@ -48,7 +44,11 @@ export function AdminDashboard() {
   }
 
   async function logout() {
-    await fetch(`${API}/admin/logout`, { method: "POST", credentials: "include" });
+    try {
+      await api.adminLogout();
+    } catch (e) {
+      console.error(e);
+    }
     navigate("/admin/login");
   }
 

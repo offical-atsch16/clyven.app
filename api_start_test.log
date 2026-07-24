@@ -1,0 +1,11 @@
+file:///app/artifacts/api-server/dist/index.mjs:75851
+  throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set.");
+        ^
+
+Error: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set.
+    at file:///app/artifacts/api-server/dist/index.mjs:75851:9
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+
+Node.js v22.22.1
