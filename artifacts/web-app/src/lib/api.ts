@@ -10,6 +10,20 @@ async function getClerkToken(): Promise<string | null> {
   }
 }
 
+async function handleResponse(res: Response) {
+  if (!res.ok) {
+    const text = await res.text();
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      // Not a JSON response
+    }
+    throw new Error(parsed?.error || text || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = await getClerkToken();
   const res = await fetch(`${BASE}${path}`, {
@@ -21,11 +35,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       ...options?.headers,
     },
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `HTTP ${res.status}`);
-  }
-  return res.json();
+  return handleResponse(res);
 }
 
 export const api = {
@@ -62,17 +72,17 @@ export const api = {
   saveSettings: (data: any) => request<any>("/user/settings", { method: "POST", body: JSON.stringify(data) }),
 
   // Tickets (public, no Clerk auth)
-  createTicket: (data: any) => fetch(`${BASE}/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-  getTicket: (number: string, passcode: string) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}`, { headers: { "X-Ticket-Passcode": passcode } }).then((r) => r.json()),
-  addTicketMessage: (number: string, data: any) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
+  createTicket: (data: any) => fetch(`${BASE}/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(handleResponse),
+  getTicket: (number: string, passcode: string) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}`, { headers: { "X-Ticket-Passcode": passcode } }).then(handleResponse),
+  addTicketMessage: (number: string, data: any) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(handleResponse),
 
   // Admin (cookie-based auth)
-  adminLogin: (data: any) => fetch(`${BASE}/admin/login`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) }).then((r) => r.json()),
-  adminLogout: () => fetch(`${BASE}/admin/logout`, { method: "POST", credentials: "include" }).then((r) => r.json()),
-  adminMe: () => fetch(`${BASE}/admin/me`, { credentials: "include" }).then((r) => r.json()),
-  getAdminTickets: () => fetch(`${BASE}/admin/tickets`, { credentials: "include" }).then((r) => r.json()),
-  getAdminTicket: (id: string) => fetch(`${BASE}/admin/tickets/${id}`, { credentials: "include" }).then((r) => r.json()),
-  updateTicketStatus: (id: string, status: string) => fetch(`${BASE}/admin/tickets/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ status }) }).then((r) => r.json()),
-  adminReply: (id: string, message: string) => fetch(`${BASE}/admin/tickets/${id}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ message }) }).then((r) => r.json()),
-  adminCreateTicket: (data: any) => fetch(`${BASE}/admin/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) }).then((r) => r.json()),
+  adminLogin: (data: any) => fetch(`${BASE}/admin/login`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) }).then(handleResponse),
+  adminLogout: () => fetch(`${BASE}/admin/logout`, { method: "POST", credentials: "include" }).then(handleResponse),
+  adminMe: () => fetch(`${BASE}/admin/me`, { credentials: "include" }).then(handleResponse),
+  getAdminTickets: () => fetch(`${BASE}/admin/tickets`, { credentials: "include" }).then(handleResponse),
+  getAdminTicket: (id: string) => fetch(`${BASE}/admin/tickets/${id}`, { credentials: "include" }).then(handleResponse),
+  updateTicketStatus: (id: string, status: string) => fetch(`${BASE}/admin/tickets/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ status }) }).then(handleResponse),
+  adminReply: (id: string, message: string) => fetch(`${BASE}/admin/tickets/${id}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ message }) }).then(handleResponse),
+  adminCreateTicket: (data: any) => fetch(`${BASE}/admin/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) }).then(handleResponse),
 };
