@@ -50,6 +50,12 @@ export const api = {
   getJournalEntry: (date: string) => request<any>(`/journal/${date}`),
   saveJournalEntry: (data: any) => request<any>("/journal", { method: "POST", body: JSON.stringify(data) }),
 
+  // Tasks
+  getTasks: () => request<any[]>("/tasks"),
+  createTask: (data: any) => request<any>("/tasks", { method: "POST", body: JSON.stringify(data) }),
+  updateTask: (id: string, data: any) => request<any>(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteTask: (id: string) => request<any>(`/tasks/${id}`, { method: "DELETE" }),
+
   // User
   getStats: () => request<any>("/user/stats"),
   getSettings: () => request<any>("/user/settings"),
@@ -57,7 +63,7 @@ export const api = {
 
   // Tickets (public, no Clerk auth)
   createTicket: (data: any) => fetch(`${BASE}/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-  getTicket: (number: string, email: string) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}?email=${encodeURIComponent(email)}`).then((r) => r.json()),
+  getTicket: (number: string, passcode: string) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}`, { headers: { "X-Ticket-Passcode": passcode } }).then((r) => r.json()),
   addTicketMessage: (number: string, data: any) => fetch(`${BASE}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
 
   // Admin (cookie-based auth)

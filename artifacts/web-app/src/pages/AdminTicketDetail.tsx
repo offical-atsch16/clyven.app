@@ -164,6 +164,9 @@ export function AdminTicketDetail() {
             <span className="flex items-center gap-1"><User className="h-3 w-3" /> {ticket.name}</span>
             <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {ticket.email}</span>
             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(ticket.createdAt).toLocaleString()}</span>
+            {ticket.passcode && (
+              <span className="flex items-center gap-1 text-blue-400 font-mono"><Lock className="h-3 w-3" /> Passcode: {ticket.passcode}</span>
+            )}
           </div>
           <div className="mt-4 rounded-xl border border-white/[0.05] bg-white/[0.01] p-4">
             <p className="text-sm text-white/60 leading-relaxed whitespace-pre-wrap">{ticket.message}</p>

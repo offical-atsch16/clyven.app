@@ -29,6 +29,7 @@ import { AdminLogin } from "./pages/AdminLogin";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminTicketDetail } from "./pages/AdminTicketDetail";
 import { AdminNewTicket } from "./pages/AdminNewTicket";
+import { Tasks } from "./pages/Tasks";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30000 } } });
 
@@ -216,6 +217,9 @@ function AppRoutes() {
         } else if (e.key.toLowerCase() === "s") {
           e.preventDefault();
           setLocation("/settings");
+        } else if (e.key.toLowerCase() === "t") {
+          e.preventDefault();
+          setLocation("/tasks");
         }
       }
     };
@@ -251,6 +255,9 @@ function AppRoutes() {
           </Route>
           <Route path="/notes">
             <ProtectedLayout><Notes /></ProtectedLayout>
+          </Route>
+          <Route path="/tasks">
+            <ProtectedLayout><Tasks /></ProtectedLayout>
           </Route>
           <Route path="/bookmarks">
             <ProtectedLayout><Bookmarks /></ProtectedLayout>

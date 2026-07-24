@@ -1,10 +1,17 @@
 import { Router } from "express";
 import { pool } from "../lib/db.js";
 import bcrypt from "bcryptjs";
+import { rateLimit } from "express-rate-limit";
 
 const router = Router();
 
-router.post("/", async (_req, res) => {
+const setupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 5, // limit each IP to 5 requests per window
+  message: { error: "Too many setup requests, please try again later." },
+});
+
+router.post("/", setupLimiter, async (_req, res) => {
   const client = await pool.connect();
   try {
     await client.query(`
@@ -24,10 +31,14 @@ router.post("/", async (_req, res) => {
         email TEXT NOT NULL,
         subject TEXT NOT NULL,
         message TEXT NOT NULL,
+        passcode TEXT,
         status TEXT NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'IN_PROGRESS', 'CLOSED')),
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
       )
+    `);
+    await client.query(`
+      ALTER TABLE tickets ADD COLUMN IF NOT EXISTS passcode TEXT;
     `);
     await client.query(`
       CREATE TABLE IF NOT EXISTS ticket_messages (
@@ -39,6 +50,21 @@ router.post("/", async (_req, res) => {
         created_at TIMESTAMPTZ NOT NULL DEFAULT now()
       )
     `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS tasks (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        status TEXT NOT NULL DEFAULT 'TODO' CHECK (status IN ('TODO', 'IN_PROGRESS', 'DONE')),
+        priority TEXT NOT NULL DEFAULT 'MEDIUM' CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH')),
+        tags TEXT[],
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `);
+    await client.query("CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id)");
+    await client.query("CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)");
     await client.query("CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status)");
     await client.query("CREATE INDEX IF NOT EXISTS idx_tickets_email ON tickets(email)");
     await client.query("CREATE INDEX IF NOT EXISTS idx_tickets_number ON tickets(ticket_number)");

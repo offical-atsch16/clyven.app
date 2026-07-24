@@ -6,6 +6,7 @@ export const FREE_LIMITS = {
   notes: 10,
   bookmarks: 25,
   focusModesCustom: 1,
+  tasks: 20,
 };
 
 export type PlanTier = "free" | "plus" | "business";
