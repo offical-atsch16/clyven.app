@@ -6,6 +6,25 @@ import { Link } from "wouter";
 
 const API = "/api";
 
+async function safeFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, options);
+  const text = await res.text();
+  if (!res.ok) {
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      // not JSON
+    }
+    throw new Error(parsed?.error || text || `HTTP ${res.status}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { success: res.ok };
+  }
+}
+
 export function Support() {
   const [tab, setTab] = useState<"create" | "view">("create");
   return (
@@ -75,13 +94,11 @@ function CreateTicket() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${API}/tickets`, {
+      const data = await safeFetch(`${API}/tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, subject, message }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
       setResult({ ticketNumber: data.ticketNumber, passcode: data.passcode });
       setName(""); setEmail(""); setSubject(""); setMessage("");
     } catch (e: any) {
@@ -175,13 +192,11 @@ function ViewTicket() {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
-      const res = await fetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}`, {
+      const data = await safeFetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}`, {
         headers: {
           "X-Ticket-Passcode": passcode
         }
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Ticket nicht gefunden.");
       setTicket(data.ticket);
       setMessages(data.messages || []);
     } catch (e: any) {
@@ -197,13 +212,11 @@ function ViewTicket() {
     if (!reply.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}/messages`, {
+      const data = await safeFetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ passcode, senderName: ticket.name, message: reply }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
       setMessages((m) => [...m, data]);
       setReply("");
       setTicket((t: any) => ({ ...t, status: "OPEN" }));
