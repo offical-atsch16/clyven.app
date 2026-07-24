@@ -517,7 +517,7 @@ router.post("/", requireAuth, async (req, res) => {
                 <div className="p-4 rounded-xl border border-white/[0.05] bg-blue-500/[0.02] border-blue-500/10 flex gap-3 text-blue-300/80">
                   <span className="h-5 w-5 rounded-full bg-blue-500/10 text-blue-400 font-bold flex items-center justify-center shrink-0">4</span>
                   <p>
-                    <strong className="text-white font-semibold">Sicherheit</strong> Wir gewähren Sicherheit mit AES-256 Verschlüsselung in all unseren Systemen <code className="bg-white/[0.05] px-1 rounded text-white">161011</code> das Privileg, jedes beliebige Ticket direkt über die öffentliche Abfrageseite einzusehen und zu bearbeiten, ohne den spezifischen Zugangscode des Kunden eingeben zu müssen.
+                    <strong className="text-white font-semibold">Sicherheit</strong> Wir gewähren Sicherheit mit AES-256 Verschlüsselung in all unseren Systemen
                   </p>
                 </div>
               </div>
