@@ -12,23 +12,47 @@ if (!dbUrl) {
   throw new Error("DATABASE_URL or SUPABASE_DATABASE_URL must be set.");
 }
 
-// Use Supabase Connection Pooler (port 6543) instead of direct 5432
-// Pooler works through Replit's network restrictions
+// Generate the Pooler URL (Strategy 1)
+let poolerUrl = dbUrl;
 if (dbUrl.includes("supabase") && !dbUrl.includes("pooler")) {
   try {
     const u = new URL(dbUrl);
     u.hostname = "aws-0-eu-central-1.pooler.supabase.com";
     u.port = "6543";
-    dbUrl = u.toString();
+    poolerUrl = u.toString();
   } catch {
-    // fallback: keep original
+    // fallback
   }
 }
 
+// We will try both Connection Strategies (Pooler vs Direct) dynamically as fallbacks
 export const pool = new Pool({
-  connectionString: dbUrl,
-  ssl: dbUrl.includes("supabase") ? { rejectUnauthorized: false } : undefined,
+  connectionString: poolerUrl,
+  ssl: poolerUrl.includes("supabase") ? { rejectUnauthorized: false } : undefined,
 });
+
+// Self-healing hot-swap connector
+(async () => {
+  try {
+    // Attempt connecting with Strategy 1 (Pooler)
+    const client = await pool.connect();
+    client.release();
+    console.log("✅ Supabase pooler connected successfully on port 6543.");
+  } catch (err: any) {
+    console.warn("⚠️ Pooler strategy failed. Hot-swapping to Strategy 2 (Direct connection)...", err.message);
+    // Hot-swap connection settings to the original direct DB connection (Strategy 2)
+    (pool as any).options.connectionString = dbUrl;
+    (pool as any).options.ssl = dbUrl.includes("supabase") ? { rejectUnauthorized: false } : undefined;
+
+    try {
+      const client2 = await pool.connect();
+      client2.release();
+      console.log("✅ Direct database fallback connected successfully on port 5432.");
+    } catch (err2: any) {
+      console.error("❌ Both database connection strategies failed. Please verify SUPABASE_DATABASE_URL in secrets.", err2.message);
+    }
+  }
+})();
 
 export const db = drizzle(pool, { schema });
 
