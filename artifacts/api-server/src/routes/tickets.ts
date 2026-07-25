@@ -44,7 +44,7 @@ function isAdmin(req: any): boolean {
   }
 }
 
-// Create a new ticket (public, no auth) — generates a 6-digit passcode securely and sends Gmail SMTP email if configured
+// Create a new ticket (public, no auth) — generates a 6-digit passcode securely and sends Gmail SMTP email
 router.post("/", async (req, res) => {
   const { name, email, subject, message } = req.body;
   if (!name || !email || !subject || !message) {
@@ -73,75 +73,70 @@ router.post("/", async (req, res) => {
       [ticket.id, name, message]
     );
 
-    // Gmail SMTP integration (graceful fallback/warning if variables are not set or sending fails)
-    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-      try {
-        const transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_APP_PASSWORD,
-          },
-        });
-
-        // Escape HTML values to mitigate HTML injection (CodeQL safety)
-        const escapedName = escapeHTML(name);
-        const escapedSubject = escapeHTML(subject);
-        const escapedMessage = escapeHTML(message);
-
-        const mailOptions = {
-          from: `"CLYVEN Support" <${process.env.GMAIL_USER}>`,
-          to: email,
-          subject: `[CLYVEN Support] Ticket Erstellt: ${ticketNumber}`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
-              <div style="text-align: center; margin-bottom: 24px;">
-                <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
-                <p style="color: #666; margin: 4px 0 0;">Ihr Support-Ticket wurde erfolgreich erstellt</p>
-              </div>
-
-              <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
-                <p style="margin: 0 0 10px; color: #aaa;">Hallo <strong>${escapedName}</strong>,</p>
-                <p style="margin: 0 0 20px; color: #aaa; line-height: 1.5;">Vielen Dank für Ihre Anfrage. Unser Support-Team wird sich so schnell wie möglich bei Ihnen melden.</p>
-
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                  <tr>
-                    <td style="padding: 10px; background-color: #1a1a1a; border-radius: 8px 0 0 8px; border: 1px solid #222;">
-                      <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block;">Ticketnummer</span>
-                      <strong style="font-size: 18px; color: #ffffff; font-family: monospace;">${ticketNumber}</strong>
-                    </td>
-                    <td style="padding: 10px; background-color: #1a1a1a; border-radius: 0 8px 8px 0; border: 1px solid #222; border-left: none;">
-                      <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block;">Zugangscode</span>
-                      <strong style="font-size: 18px; color: #3b82f6; font-family: monospace; letter-spacing: 1px;">${passcode}</strong>
-                    </td>
-                  </tr>
-                </table>
-
-                <div style="border-top: 1px solid #222; padding-top: 15px;">
-                  <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 8px;">Zusammenfassung Ihres Anliegens</span>
-                  <div style="color: #888; font-size: 13px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;"><strong>Betreff:</strong> ${escapedSubject}\n\n${escapedMessage}</div>
-                </div>
-              </div>
-
-              <p style="font-size: 11px; color: #444; text-align: center; margin: 0;">Diese E-Mail wurde automatisch von Clyven.app generiert.</p>
-            </div>
-          `,
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log(`Support confirmation email sent successfully to ${email}`);
-      } catch (mailError: any) {
-        console.warn("Failed to send support email via SMTP, but ticket was created:", mailError.message);
-      }
-    } else {
-      console.warn("GMAIL_USER or GMAIL_APP_PASSWORD is not set. Support confirmation email was skipped.");
+    // Gmail SMTP integration (mandatory, throws error if missing or fails)
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      throw new Error("Gmail SMTP configuration is missing. Please define GMAIL_USER and GMAIL_APP_PASSWORD environment variables.");
     }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+
+    // Escape HTML values to mitigate HTML injection (CodeQL safety)
+    const escapedName = escapeHTML(name);
+    const escapedSubject = escapeHTML(subject);
+    const escapedMessage = escapeHTML(message);
+
+    const mailOptions = {
+      from: `"CLYVEN Support" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: `[CLYVEN Support] Ticket Erstellt: ${ticketNumber}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
+            <p style="color: #666; margin: 4px 0 0;">Ihr Support-Ticket wurde erfolgreich erstellt</p>
+          </div>
+
+          <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
+            <p style="margin: 0 0 10px; color: #aaa;">Hallo <strong>${escapedName}</strong>,</p>
+            <p style="margin: 0 0 20px; color: #aaa; line-height: 1.5;">Vielen Dank für Ihre Anfrage. Unser Support-Team wird sich so schnell wie möglich bei Ihnen melden.</p>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 10px; background-color: #1a1a1a; border-radius: 8px 0 0 8px; border: 1px solid #222;">
+                  <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block;">Ticketnummer</span>
+                  <strong style="font-size: 18px; color: #ffffff; font-family: monospace;">${ticketNumber}</strong>
+                </td>
+                <td style="padding: 10px; background-color: #1a1a1a; border-radius: 0 8px 8px 0; border: 1px solid #222; border-left: none;">
+                  <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block;">Zugangscode</span>
+                  <strong style="font-size: 18px; color: #3b82f6; font-family: monospace; letter-spacing: 1px;">${passcode}</strong>
+                </td>
+              </tr>
+            </table>
+
+            <div style="border-top: 1px solid #222; padding-top: 15px;">
+              <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 8px;">Zusammenfassung Ihres Anliegens</span>
+              <div style="color: #888; font-size: 13px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;"><strong>Betreff:</strong> ${escapedSubject}\n\n${escapedMessage}</div>
+            </div>
+          </div>
+
+          <p style="font-size: 11px; color: #444; text-align: center; margin: 0;">Diese E-Mail wurde automatisch von Clyven.app generiert.</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
 
     await client.query("COMMIT");
     res.json(snakeToCamel(ticket));
   } catch (e: any) {
     await client.query("ROLLBACK").catch(() => {});
-    res.status(500).json({ error: "Failed to create ticket", detail: e.message });
+    res.status(500).json({ error: "Failed to create ticket or send notification email", detail: e.message });
   } finally {
     client.release();
   }
