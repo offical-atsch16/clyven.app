@@ -14,11 +14,14 @@ async function executeSetup() {
   let dbUrl = rawUrl.replace(/:\s+/g, ":").trim();
 
   // Handle Supabase Connection Pooler
-  if (dbUrl.includes("supabase") && !dbUrl.includes("pooler")) {
+  if (dbUrl.includes("supabase")) {
     try {
       const u = new URL(dbUrl);
-      u.hostname = "aws-0-eu-central-1.pooler.supabase.com";
+      if (!u.hostname.includes("pooler")) {
+        u.hostname = "aws-0-eu-central-1.pooler.supabase.com";
+      }
       u.port = "6543";
+      u.searchParams.set("sslmode", "require");
       dbUrl = u.toString();
     } catch {
       // fallback

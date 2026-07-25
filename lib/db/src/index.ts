@@ -14,12 +14,27 @@ if (!dbUrl) {
 
 // Generate the Pooler URL (Strategy 1)
 let poolerUrl = dbUrl;
-if (dbUrl.includes("supabase") && !dbUrl.includes("pooler")) {
+if (dbUrl.includes("supabase")) {
   try {
     const u = new URL(dbUrl);
-    u.hostname = "aws-0-eu-central-1.pooler.supabase.com";
+    if (!u.hostname.includes("pooler")) {
+      u.hostname = "aws-0-eu-central-1.pooler.supabase.com";
+    }
     u.port = "6543";
+    u.searchParams.set("sslmode", "require");
     poolerUrl = u.toString();
+  } catch {
+    // fallback
+  }
+}
+
+// Prepare fallback direct URL (Strategy 2) with sslmode=require if it's Supabase
+let fallbackUrl = dbUrl;
+if (dbUrl.includes("supabase")) {
+  try {
+    const u = new URL(dbUrl);
+    u.searchParams.set("sslmode", "require");
+    fallbackUrl = u.toString();
   } catch {
     // fallback
   }
@@ -41,8 +56,8 @@ export const pool = new Pool({
   } catch (err: any) {
     console.warn("⚠️ Pooler strategy failed. Hot-swapping to Strategy 2 (Direct connection)...", err.message);
     // Hot-swap connection settings to the original direct DB connection (Strategy 2)
-    (pool as any).options.connectionString = dbUrl;
-    (pool as any).options.ssl = dbUrl.includes("supabase") ? { rejectUnauthorized: false } : undefined;
+    (pool as any).options.connectionString = fallbackUrl;
+    (pool as any).options.ssl = fallbackUrl.includes("supabase") ? { rejectUnauthorized: false } : undefined;
 
     try {
       const client2 = await pool.connect();
