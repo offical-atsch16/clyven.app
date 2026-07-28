@@ -2,16 +2,12 @@ import { Router } from "express";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { pool } from "../lib/db.js";
+import { supabase } from "../lib/supabase.js";
 
 const router = Router();
 
 const JWT_SECRET = (process.env.ADMIN_JWT_SECRET || process.env.CLERK_SECRET_KEY) as string;
 const COOKIE_NAME = "admin_session";
-
-function generateTicketNumber(seq: number): string {
-  return `TICKET-${String(seq).padStart(6, "0")}`;
-}
 
 function snakeToCamel(obj: Record<string, any>): Record<string, any> {
   const result: Record<string, any> = {};
@@ -44,6 +40,31 @@ function isAdmin(req: any): boolean {
   }
 }
 
+// Robust self-healing ticket number sequence generator using Supabase client library
+async function getNextTicketNumber(): Promise<string> {
+  try {
+    const { data, error } = await supabase
+      .from("tickets")
+      .select("ticket_number")
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (error || !data || data.length === 0) {
+      return "TICKET-000001";
+    }
+
+    const lastNumStr = data[0].ticket_number; // e.g. "TICKET-000005"
+    const match = lastNumStr.match(/TICKET-(\d+)/);
+    if (match) {
+      const nextSeq = parseInt(match[1], 10) + 1;
+      return `TICKET-${String(nextSeq).padStart(6, "0")}`;
+    }
+  } catch (err) {
+    console.error("Error in getNextTicketNumber:", err);
+  }
+  return "TICKET-000001";
+}
+
 // Create a new ticket (public, no auth) — generates a 6-digit passcode securely and sends Gmail SMTP email
 router.post("/", async (req, res) => {
   const { name, email, subject, message } = req.body;
@@ -51,27 +72,41 @@ router.post("/", async (req, res) => {
     return res.status(400).json({ error: "All fields are required" });
   }
 
-  const client = await pool.connect();
   try {
-    await client.query("BEGIN");
-    const { rows: seqRows } = await client.query("SELECT nextval('ticket_number_seq') AS n");
-    const ticketNumber = generateTicketNumber(seqRows[0].n);
-
+    const ticketNumber = await getNextTicketNumber();
     // Cryptographically secure passcode generation
     const passcode = crypto.randomInt(100000, 1000000).toString();
 
-    const { rows: ticketRows } = await client.query(
-      `INSERT INTO tickets (ticket_number, name, email, subject, message, passcode, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'OPEN') RETURNING *`,
-      [ticketNumber, name, email, subject, message, passcode]
-    );
-    const ticket = ticketRows[0];
+    const { data: ticket, error: ticketErr } = await supabase
+      .from("tickets")
+      .insert({
+        ticket_number: ticketNumber,
+        name,
+        email,
+        subject,
+        message,
+        passcode,
+        status: "OPEN"
+      })
+      .select()
+      .single();
 
-    await client.query(
-      `INSERT INTO ticket_messages (ticket_id, sender_type, sender_name, message)
-       VALUES ($1, 'CUSTOMER', $2, $3)`,
-      [ticket.id, name, message]
-    );
+    if (ticketErr || !ticket) {
+      throw new Error(`Failed to create ticket in database: ${ticketErr?.message}`);
+    }
+
+    const { error: msgErr } = await supabase
+      .from("ticket_messages")
+      .insert({
+        ticket_id: ticket.id,
+        sender_type: "CUSTOMER",
+        sender_name: name,
+        message: message
+      });
+
+    if (msgErr) {
+      throw new Error(`Failed to insert ticket message in database: ${msgErr.message}`);
+    }
 
     // Gmail SMTP integration (mandatory, throws error if missing or fails)
     if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
@@ -132,13 +167,9 @@ router.post("/", async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    await client.query("COMMIT");
     res.json(snakeToCamel(ticket));
   } catch (e: any) {
-    await client.query("ROLLBACK").catch(() => {});
     res.status(500).json({ error: "Failed to create ticket or send notification email", detail: e.message });
-  } finally {
-    client.release();
   }
 });
 
@@ -149,14 +180,17 @@ router.get("/:ticketNumber", async (req, res) => {
   // Read passcode from headers to avoid leaking it in query logs (CodeQL safety)
   const passcode = req.headers["x-ticket-passcode"] as string;
 
-  const client = await pool.connect();
   try {
-    const { rows: ticketRows } = await client.query(
-      "SELECT * FROM tickets WHERE ticket_number=$1",
-      [ticketNumber]
-    );
+    const { data: ticketRows, error: ticketErr } = await supabase
+      .from("tickets")
+      .select("*")
+      .eq("ticket_number", ticketNumber);
 
-    if (!ticketRows.length) {
+    if (ticketErr) {
+      throw ticketErr;
+    }
+
+    if (!ticketRows || !ticketRows.length) {
       return res.status(404).json({ error: "Ticket not found, make sure you typed in everything right" });
     }
 
@@ -174,19 +208,22 @@ router.get("/:ticketNumber", async (req, res) => {
       return res.status(403).json({ error: "Invalid access code. Access denied." });
     }
 
-    const { rows: msgRows } = await client.query(
-      "SELECT * FROM ticket_messages WHERE ticket_id=$1 ORDER BY created_at ASC",
-      [ticket.id]
-    );
+    const { data: msgRows, error: msgErr } = await supabase
+      .from("ticket_messages")
+      .select("*")
+      .eq("ticket_id", ticket.id)
+      .order("created_at", { ascending: true });
+
+    if (msgErr) {
+      throw msgErr;
+    }
 
     res.json({
       ticket: snakeToCamel(ticket),
-      messages: msgRows.map(snakeToCamel),
+      messages: (msgRows || []).map(snakeToCamel),
     });
   } catch (e: any) {
     res.status(500).json({ error: "Failed to fetch ticket, contact support", detail: e.message });
-  } finally {
-    client.release();
   }
 });
 
@@ -199,14 +236,17 @@ router.post("/:ticketNumber/messages", async (req, res) => {
     return res.status(400).json({ error: "SenderName and message are required" });
   }
 
-  const client = await pool.connect();
   try {
-    const { rows: ticketRows } = await client.query(
-      "SELECT * FROM tickets WHERE ticket_number=$1",
-      [ticketNumber]
-    );
+    const { data: ticketRows, error: ticketErr } = await supabase
+      .from("tickets")
+      .select("*")
+      .eq("ticket_number", ticketNumber);
 
-    if (!ticketRows.length) {
+    if (ticketErr) {
+      throw ticketErr;
+    }
+
+    if (!ticketRows || !ticketRows.length) {
       return res.status(404).json({ error: "Ticket not found, make sure you typed in everything right" });
     }
 
@@ -221,24 +261,31 @@ router.post("/:ticketNumber/messages", async (req, res) => {
       return res.status(403).json({ error: "Invalid access code. Access denied." });
     }
 
-    const { rows: msgRows } = await client.query(
-      `INSERT INTO ticket_messages (ticket_id, sender_type, sender_name, message)
-       VALUES ($1, 'CUSTOMER', $2, $3) RETURNING *`,
-      [ticket.id, senderName, message]
-    );
+    const { data: insertedMsg, error: msgErr } = await supabase
+      .from("ticket_messages")
+      .insert({
+        ticket_id: ticket.id,
+        sender_type: "CUSTOMER",
+        sender_name: senderName,
+        message: message
+      })
+      .select()
+      .single();
 
-    if (ticket.status === "CLOSED") {
-      await client.query(
-        "UPDATE tickets SET status='OPEN', updated_at=now() WHERE id=$1",
-        [ticket.id]
-      );
+    if (msgErr || !insertedMsg) {
+      throw new Error(`Failed to add message: ${msgErr?.message}`);
     }
 
-    res.json(snakeToCamel(msgRows[0]));
+    if (ticket.status === "CLOSED") {
+      await supabase
+        .from("tickets")
+        .update({ status: "OPEN", updated_at: new Date().toISOString() })
+        .eq("id", ticket.id);
+    }
+
+    res.json(snakeToCamel(insertedMsg));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to add message, contact support", detail: e.message });
-  } finally {
-    client.release();
   }
 });
 
