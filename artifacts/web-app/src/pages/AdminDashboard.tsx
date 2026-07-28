@@ -6,7 +6,8 @@ import {
   Plus, Search, CheckCircle, AlertCircle, XCircle, Filter
 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { api } from "../lib/api";
+
+const API = "/api";
 
 type Status = "OPEN" | "IN_PROGRESS" | "CLOSED" | "ALL";
 
@@ -25,7 +26,8 @@ export function AdminDashboard() {
 
   async function checkAuth() {
     try {
-      await api.adminMe();
+      const res = await fetch(`${API}/admin/me`, { credentials: "include" });
+      if (!res.ok) throw new Error("Unauthorized");
     } catch {
       navigate("/admin/login");
     }
@@ -34,7 +36,9 @@ export function AdminDashboard() {
   async function fetchTickets() {
     setLoading(true);
     try {
-      const data = await api.getAdminTickets();
+      const res = await fetch(`${API}/admin/tickets`, { credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
       setTickets(data);
     } catch (e: any) {
       console.error(e);
@@ -44,11 +48,7 @@ export function AdminDashboard() {
   }
 
   async function logout() {
-    try {
-      await api.adminLogout();
-    } catch (e) {
-      console.error(e);
-    }
+    await fetch(`${API}/admin/logout`, { method: "POST", credentials: "include" });
     navigate("/admin/login");
   }
 
@@ -86,14 +86,14 @@ export function AdminDashboard() {
               <Shield className="h-4 w-4 text-white/50" />
             </div>
             <div>
-              <h1 className="text-sm font-bold">CLYVEN Support Dashboard</h1>
+              <h1 className="text-sm font-bold">Support Dashboard</h1>
               <p className="text-[10px] text-white/25">{tickets.length} tickets total</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => navigate("/admin/tickets/new")}
               className="flex items-center gap-1.5 rounded-lg bg-white/[0.06] px-3 py-2 text-xs font-medium hover:bg-white/[0.1] transition-all">
-              <Plus className="h-3.5 w-3.5" /> Create Ticket
+              <Plus className="h-3.5 w-3.5" /> New Ticket
             </button>
             <button onClick={logout}
               className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-white/30 hover:text-white/60 hover:bg-white/[0.05] transition-all">

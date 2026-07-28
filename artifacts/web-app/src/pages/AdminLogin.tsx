@@ -2,7 +2,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Shield, Loader2, Eye, EyeOff } from "lucide-react";
 import { useLocation } from "wouter";
-import { api } from "../lib/api";
+
+const API = "/api";
 
 export function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -17,7 +18,14 @@ export function AdminLogin() {
     setError("");
     setLoading(true);
     try {
-      await api.adminLogin({ email, password });
+      const res = await fetch(`${API}/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Login failed");
       navigate("/admin/dashboard");
     } catch (e: any) {
       setError(e.message);

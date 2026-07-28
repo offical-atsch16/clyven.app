@@ -11,14 +11,11 @@ if (!rawUrl) {
 let cleanUrl = rawUrl.replace(/:\s+/g, ":").trim();
 
 // Use Supabase Connection Pooler (port 6543) instead of direct 5432
-if (cleanUrl.includes("supabase")) {
+if (cleanUrl.includes("supabase") && !cleanUrl.includes("pooler")) {
   try {
     const u = new URL(cleanUrl);
-    if (!u.hostname.includes("pooler")) {
-      u.hostname = "aws-0-eu-central-1.pooler.supabase.com";
-    }
+    u.hostname = "aws-0-eu-central-1.pooler.supabase.com";
     u.port = "6543";
-    u.searchParams.set("sslmode", "require");
     cleanUrl = u.toString();
   } catch {
     // fallback

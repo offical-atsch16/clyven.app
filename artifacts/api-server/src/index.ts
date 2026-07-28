@@ -2,19 +2,24 @@ import app from "./app";
 import { logger } from "./lib/logger";
 
 const rawPort = process.env["PORT"];
-let port = 3000;
 
-if (rawPort) {
-  const parsedPort = Number(rawPort);
-  if (!Number.isNaN(parsedPort) && parsedPort > 0) {
-    port = parsedPort;
-  } else {
-    logger.warn({ rawPort }, "Invalid PORT value provided, falling back to 3000");
-  }
-} else {
-  logger.info("No PORT environment variable provided, falling back to 3000");
+if (!rawPort) {
+  throw new Error(
+    "PORT environment variable is required but was not provided.",
+  );
 }
 
-app.listen(port, "0.0.0.0", () => {
-  logger.info({ port, host: "0.0.0.0" }, "Server listening");
+const port = Number(rawPort);
+
+if (Number.isNaN(port) || port <= 0) {
+  throw new Error(`Invalid PORT value: "${rawPort}"`);
+}
+
+app.listen(port, (err) => {
+  if (err) {
+    logger.error({ err }, "Error listening on port");
+    process.exit(1);
+  }
+
+  logger.info({ port }, "Server listening");
 });

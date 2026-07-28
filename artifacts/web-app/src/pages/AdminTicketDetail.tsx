@@ -6,7 +6,8 @@ import {
   Mail, User, Calendar, XCircle, Lock, Unlock, Plus
 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { api } from "../lib/api";
+
+const API = "/api";
 
 export function AdminTicketDetail() {
   const { id } = useParams() as { id: string };
@@ -30,7 +31,8 @@ export function AdminTicketDetail() {
 
   async function checkAuth() {
     try {
-      await api.adminMe();
+      const res = await fetch(`${API}/admin/me`, { credentials: "include" });
+      if (!res.ok) throw new Error("Unauthorized");
     } catch {
       navigate("/admin/login");
     }
@@ -39,7 +41,9 @@ export function AdminTicketDetail() {
   async function fetchDetail() {
     setLoading(true);
     try {
-      const data = await api.getAdminTicket(id);
+      const res = await fetch(`${API}/admin/tickets/${id}`, { credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
       setTicket(data.ticket);
       setMessages(data.messages || []);
     } catch (e: any) {
@@ -54,7 +58,14 @@ export function AdminTicketDetail() {
     if (!reply.trim()) return;
     setSending(true);
     try {
-      const data = await api.adminReply(id, reply);
+      const res = await fetch(`${API}/admin/tickets/${id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ message: reply }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
       setMessages((m) => [...m, data]);
       setReply("");
       setTicket((t: any) => ({ ...t, status: "OPEN" }));
@@ -68,7 +79,14 @@ export function AdminTicketDetail() {
   async function changeStatus(status: string) {
     setStatusChanging(true);
     try {
-      const data = await api.updateTicketStatus(id, status);
+      const res = await fetch(`${API}/admin/tickets/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
       setTicket(data);
     } catch (e: any) {
       console.error(e);
@@ -146,9 +164,6 @@ export function AdminTicketDetail() {
             <span className="flex items-center gap-1"><User className="h-3 w-3" /> {ticket.name}</span>
             <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {ticket.email}</span>
             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(ticket.createdAt).toLocaleString()}</span>
-            {ticket.passcode && (
-              <span className="flex items-center gap-1 text-blue-400 font-mono"><Lock className="h-3 w-3" /> Passcode: {ticket.passcode}</span>
-            )}
           </div>
           <div className="mt-4 rounded-xl border border-white/[0.05] bg-white/[0.01] p-4">
             <p className="text-sm text-white/60 leading-relaxed whitespace-pre-wrap">{ticket.message}</p>
