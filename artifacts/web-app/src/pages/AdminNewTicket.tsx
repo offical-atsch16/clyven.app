@@ -2,8 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { ArrowLeft, Send, Loader2, Mail, User, FileText, MessageSquare } from "lucide-react";
-
-const API = "/api";
+import { api } from "../lib/api";
 
 export function AdminNewTicket() {
   const [, navigate] = useLocation();
@@ -19,14 +18,7 @@ export function AdminNewTicket() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${API}/admin/tickets`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ name, email, subject, message }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
+      await api.adminCreateTicket({ name, email, subject, message });
       navigate("/admin/dashboard");
     } catch (e: any) {
       setError(e.message);
