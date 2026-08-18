@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm --filter @workspace/web-app run build",
+  "outputDirectory": "artifacts/web-app/dist/public",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api.clyven.app/api/:path*"
+    }
+  ]
+}
