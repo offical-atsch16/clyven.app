@@ -2,3 +2,4 @@
 - [Premium Plan Architecture](premium-plan.md) — `usePremium` hook checks `has({plan:'clyven_plus'})` + metadata fallbacks; API enforces limits server-side with LIMIT_REACHED error
 - [Supabase Connectivity](supabase-connectivity.md) — Replit sandbox blocks outbound TCP port 5432; drizzle-kit push must be run locally or from deployment
 - [Ticket System Architecture](ticket-system.md) — minimalist ticket system integrated into CLYVEN: public ticket creation/viewing via email, admin dashboard with JWT cookie auth, status filtering, threaded messages with auto-reopen on customer reply
+- [External Hosting Migration](external-hosting-migration.md) — Vercel frontend, Railway API, Supabase database, and external Clerk are the migration boundary
