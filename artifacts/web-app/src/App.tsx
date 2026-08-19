@@ -32,7 +32,7 @@ import { Tasks } from "./pages/Tasks";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30000 } } });
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {

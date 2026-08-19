@@ -28,21 +28,27 @@ app.use(
   }),
 );
 
-const configuredOrigins = (process.env.CORS_ORIGINS || "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim()).filter(Boolean)
+  : ['http://localhost:5173'];
 
 app.use(cors({
-  credentials: true,
   origin: (origin, callback) => {
-    if (!origin || process.env.NODE_ENV !== "production" || configuredOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.pages.dev')) {
       callback(null, true);
-      return;
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
-    callback(new Error("Origin is not allowed by CORS"));
   },
+  credentials: true
 }));
+
+const healthHandler = (_req: express.Request, res: express.Response) => {
+  res.send('OK');
+};
+
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
