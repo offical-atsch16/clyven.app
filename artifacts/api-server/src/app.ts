@@ -43,6 +43,10 @@ app.use(cors({
   credentials: true
 }));
 
+app.get('/', (req, res) => {
+  res.status(200).send('OK');
+});
+
 const healthHandler = (_req: express.Request, res: express.Response) => {
   res.send('OK');
 };
@@ -58,5 +62,14 @@ app.use(clerkMiddleware({
 }));
 
 app.use("/api", router);
+
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error("=== DETAILED ROUTE ERROR ===");
+  console.error(err);
+  res.status(500).json({
+    error: err.message || "Internal Server Error",
+    details: String(err)
+  });
+});
 
 export default app;

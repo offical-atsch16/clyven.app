@@ -67,13 +67,12 @@ async function getNextTicketNumber(): Promise<string> {
 }
 
 // Create a new ticket (public, no auth) — generates a 6-digit passcode securely and sends Gmail SMTP email
-router.post("/", async (req, res) => {
-  const { name, email, subject, message } = req.body;
-  if (!name || !email || !subject || !message) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
-
+router.post("/", async (req, res, next) => {
   try {
+    const { name, email, subject, message } = req.body;
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
     const ticketNumber = await getNextTicketNumber();
     // Cryptographically secure passcode generation
     const passcode = crypto.randomInt(100000, 1000000).toString();
@@ -175,8 +174,9 @@ router.post("/", async (req, res) => {
     }
 
     res.json({ ...snakeToCamel(ticket), emailSent });
-  } catch (e: any) {
-    res.status(500).json({ error: "Failed to create ticket", detail: e.message });
+  } catch (error) {
+    console.error("TICKETS ROUTE FAILED:", error);
+    next(error);
   }
 });
 
