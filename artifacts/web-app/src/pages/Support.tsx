@@ -4,7 +4,8 @@ import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User
 import { cn } from "../lib/utils";
 import { Link } from "wouter";
 
-const API = "/api";
+const rawBase = (import.meta.env.VITE_API_URL || "/api").replace(/\/+$/, "");
+const API = rawBase.endsWith("/api") ? rawBase : `${rawBase}/api`;
 
 async function safeFetch(url: string, options?: RequestInit) {
   const res = await fetch(url, options);
