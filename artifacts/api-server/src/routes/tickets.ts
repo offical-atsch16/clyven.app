@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { supabase } from "../lib/supabase.js";
+import { logger } from "../lib/logger.js";
 
 const router = Router();
 
@@ -108,29 +109,30 @@ router.post("/", async (req, res) => {
       throw new Error(`Failed to insert ticket message in database: ${msgErr.message}`);
     }
 
-    // Gmail SMTP integration (mandatory, throws error if missing or fails)
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-      throw new Error("Gmail SMTP configuration is missing. Please define GMAIL_USER and GMAIL_APP_PASSWORD environment variables.");
-    }
+    // Gmail SMTP integration (non-blocking, errors do not interrupt ticket creation response)
+    let emailSent = false;
+    try {
+      if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+        logger.warn("Gmail SMTP configuration is missing (GMAIL_USER or GMAIL_APP_PASSWORD not defined). Skipping confirmation email.");
+      } else {
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.GMAIL_USER,
+            pass: process.env.GMAIL_APP_PASSWORD,
+          },
+        });
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-    });
+        // Escape HTML values to mitigate HTML injection (CodeQL safety)
+        const escapedName = escapeHTML(name);
+        const escapedSubject = escapeHTML(subject);
+        const escapedMessage = escapeHTML(message);
 
-    // Escape HTML values to mitigate HTML injection (CodeQL safety)
-    const escapedName = escapeHTML(name);
-    const escapedSubject = escapeHTML(subject);
-    const escapedMessage = escapeHTML(message);
-
-    const mailOptions = {
-      from: `"CLYVEN Support" <${process.env.GMAIL_USER}>`,
-      to: email,
-      subject: `[CLYVEN Support] Ticket Erstellt: ${ticketNumber}`,
-      html: `
+        const mailOptions = {
+          from: `"CLYVEN Support" <${process.env.GMAIL_USER}>`,
+          to: email,
+          subject: `[CLYVEN Support] Ticket Erstellt: ${ticketNumber}`,
+          html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
           <div style="text-align: center; margin-bottom: 24px;">
             <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
@@ -163,13 +165,18 @@ router.post("/", async (req, res) => {
           <p style="font-size: 11px; color: #444; text-align: center; margin: 0;">Diese E-Mail wurde automatisch von Clyven.app generiert.</p>
         </div>
       `,
-    };
+        };
 
-    await transporter.sendMail(mailOptions);
+        await transporter.sendMail(mailOptions);
+        emailSent = true;
+      }
+    } catch (mailErr: any) {
+      logger.error({ err: mailErr }, `Failed to send confirmation email for ticket ${ticketNumber}`);
+    }
 
-    res.json(snakeToCamel(ticket));
+    res.json({ ...snakeToCamel(ticket), emailSent });
   } catch (e: any) {
-    res.status(500).json({ error: "Failed to create ticket or send notification email", detail: e.message });
+    res.status(500).json({ error: "Failed to create ticket", detail: e.message });
   }
 });
 

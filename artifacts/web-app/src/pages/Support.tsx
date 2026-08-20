@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User, FileText, Loader2, Key, HelpCircle, ShieldAlert } from "lucide-react";
+import { API_BASE_URL } from "../lib/api";
 import { cn } from "../lib/utils";
 import { Link } from "wouter";
-
-const rawBase = (import.meta.env.VITE_API_URL || "/api").replace(/\/+$/, "");
-const API = rawBase.endsWith("/api") ? rawBase : `${rawBase}/api`;
 
 async function safeFetch(url: string, options?: RequestInit) {
   const res = await fetch(url, options);
@@ -95,7 +93,7 @@ function CreateTicket() {
     setError("");
     setLoading(true);
     try {
-      const data = await safeFetch(`${API}/tickets`, {
+      const data = await safeFetch(`${API_BASE_URL}/tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, subject, message }),
@@ -193,7 +191,7 @@ function ViewTicket() {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
-      const data = await safeFetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}`, {
+      const data = await safeFetch(`${API_BASE_URL}/tickets/${encodeURIComponent(ticketNumber)}`, {
         headers: {
           "X-Ticket-Passcode": passcode
         }
@@ -213,7 +211,7 @@ function ViewTicket() {
     if (!reply.trim()) return;
     setLoading(true);
     try {
-      const data = await safeFetch(`${API}/tickets/${encodeURIComponent(ticketNumber)}/messages`, {
+      const data = await safeFetch(`${API_BASE_URL}/tickets/${encodeURIComponent(ticketNumber)}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ passcode, senderName: ticket.name, message: reply }),
