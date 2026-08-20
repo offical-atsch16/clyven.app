@@ -3,7 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { Link } from "wouter";
 import {
   FileText, Bookmark, Timer, BookOpen, BarChart2, Trophy,
-  ArrowRight, ChevronDown, Star, Zap, Shield, Globe, Check, Sparkles, Lock, Menu, X, Github
+  ArrowRight, ChevronDown, Star, Zap, Shield, Globe, Check, Sparkles, Lock, Menu, X, Github, Activity
 } from "lucide-react";
 import { useUser } from "@clerk/react";
 import { useCookieBanner } from "../hooks/useCookieBanner";
@@ -417,6 +417,9 @@ export function Landing() {
             <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Legal Notice</span></Link>
             <a href="https://github.com/offical-atsch16/clyven.app" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors flex items-center gap-1 cursor-pointer">
               <Github className="h-3.5 w-3.5" /> GitHub
+            </a>
+            <a href="https://stats.uptimerobot.com/rS9J6TmeMj" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors flex items-center gap-1 cursor-pointer">
+              <Activity className="h-3.5 w-3.5" /> Status Page
             </a>
           </div>
           <p className="text-xs text-white/20">© 2026 CLYVEN</p>

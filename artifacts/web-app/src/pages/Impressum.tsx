@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowLeft, Github } from "lucide-react";
+import { ArrowLeft, Github, Activity } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -121,6 +121,9 @@ export function Impressum() {
             <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Legal Notice</span></Link>
             <a href="https://github.com/offical-atsch16/clyven.app" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors flex items-center gap-1 cursor-pointer">
               <Github className="h-3.5 w-3.5" /> GitHub
+            </a>
+            <a href="https://stats.uptimerobot.com/rS9J6TmeMj" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors flex items-center gap-1 cursor-pointer">
+              <Activity className="h-3.5 w-3.5" /> Status Page
             </a>
           </div>
         </div>
