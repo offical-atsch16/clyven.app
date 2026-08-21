@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import {
   ArrowLeft, BookOpen, Layout, Server, Database, Shield, Zap, Copy, Check,
   Terminal, ExternalLink, Github, MessageSquare, CheckSquare, Key, Mail,
-  ListTodo, Cpu, Kanban, Landmark, Lock, HelpCircle
+  ListTodo, Cpu, Kanban, Landmark, Lock, HelpCircle, Activity
 } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -536,6 +536,9 @@ router.post("/", requireAuth, async (req, res) => {
             <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Legal Notice</span></Link>
             <a href="https://github.com/offical-atsch16/clyven.app" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors flex items-center gap-1 cursor-pointer">
               <Github className="h-3.5 w-3.5" /> GitHub
+            </a>
+            <a href="https://stats.uptimerobot.com/rS9J6TmeMj" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors flex items-center gap-1 cursor-pointer">
+              <Activity className="h-3.5 w-3.5" /> Status Page
             </a>
           </div>
         </div>
