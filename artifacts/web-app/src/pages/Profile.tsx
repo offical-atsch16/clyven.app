@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useUser, useClerk } from "@clerk/react";
 import { useQuery } from "@tanstack/react-query";
 import { usePremium } from "../hooks/usePremium";
+import { PlanBadge } from "../components/PlanBadge";
 import { api } from "../lib/api";
 import { formatMinutes, formatDate } from "../lib/utils";
 import { Timer, FileText, Bookmark, BookOpen, Trophy, Calendar, Crown, CreditCard } from "lucide-react";
@@ -9,7 +10,7 @@ import { Timer, FileText, Bookmark, BookOpen, Trophy, Calendar, Crown, CreditCar
 export function Profile() {
   const { user, isLoaded } = useUser();
   const clerk = useClerk();
-  const { isPremium } = usePremium();
+  const { isPremium, planTier, openUpgrade } = usePremium();
   const { data: stats } = useQuery({ queryKey: ["stats"], queryFn: api.getStats, retry: 1 });
 
   if (!isLoaded) return <div className="flex h-full items-center justify-center"><div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white/70" /></div>;
@@ -29,8 +30,9 @@ export function Profile() {
   return (
     <div className="min-h-full p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-2xl">
-        <div className="mb-8">
+        <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-white">Profile</h1>
+          <PlanBadge tier={planTier} size="lg" showFree />
         </div>
 
         {/* Profile card */}
@@ -45,8 +47,11 @@ export function Profile() {
                 {displayName[0]?.toUpperCase()}
               </div>
             )}
-            <div className="text-center sm:text-left">
-              <h2 className="text-xl font-bold text-white">{displayName}</h2>
+            <div className="text-center sm:text-left flex-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h2 className="text-xl font-bold text-white">{displayName}</h2>
+                <PlanBadge tier={planTier} size="md" showFree />
+              </div>
               <p className="mt-1 text-sm text-white/40">{user?.primaryEmailAddress?.emailAddress}</p>
               <div className="mt-3 flex items-center gap-2 justify-center sm:justify-start">
                 <Calendar className="h-3.5 w-3.5 text-white/30" />
@@ -72,29 +77,42 @@ export function Profile() {
         {/* Subscription */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
           className="mb-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
-          <div className="mb-1 flex items-center gap-2">
-            <Crown className={isPremium ? "h-4 w-4 text-yellow-400/70" : "h-4 w-4 text-white/30"} />
-            <p className="text-sm font-medium text-white/60">Subscription &amp; Billing</p>
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Crown className={isPremium ? "h-4 w-4 text-amber-400" : "h-4 w-4 text-white/30"} />
+              <p className="text-sm font-medium text-white/80">Abonnement & Abrechnung</p>
+            </div>
+            <PlanBadge tier={planTier} size="sm" showFree />
           </div>
-          <p className="text-xs text-white/30 mb-4">
-            {isPremium
-              ? "You are on CLYVEN PLUS. Cancel subscription, change payment method or view invoices."
-              : "Manage your subscription, payment method and invoices in the billing area."}
+          <p className="text-xs text-white/40 mb-4">
+            {planTier === "business"
+              ? "Du nutzt den CLYVEN Business Plan. Zugriff auf alle Premium & Business Task-Features."
+              : planTier === "plus"
+              ? "Du nutzt CLYVEN Plus. Upgrade auf Business für Kanban, Gantt, Subtasks und Zeiterfassung."
+              : "Du nutzt den kostenlosen Free-Plan mit reduzierten Limits (max 10 Notizen, Bookmarks, Tasks)."}
           </p>
-          <button onClick={() => clerk.openUserProfile()}
-            className="flex items-center gap-2 rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-sm text-white/60 hover:bg-white/[0.08] hover:text-white transition-all">
-            <CreditCard className="h-4 w-4" /> Manage Subscription
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => clerk.openUserProfile()}
+              className="flex items-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white/70 hover:bg-white/[0.08] hover:text-white transition-all cursor-pointer">
+              <CreditCard className="h-3.5 w-3.5" /> Abo verwalten
+            </button>
+            {planTier !== "business" && (
+              <button onClick={openUpgrade}
+                className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-2 text-xs font-semibold text-amber-400 hover:bg-amber-500/20 transition-all cursor-pointer">
+                <Crown className="h-3.5 w-3.5" /> Plan upgraden
+              </button>
+            )}
+          </div>
         </motion.div>
 
         {/* Account */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
           className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
-          <p className="text-sm font-medium text-white/60 mb-1">Manage Account</p>
-          <p className="text-xs text-white/30 mb-4">Manage password, email and security settings via Clerk.</p>
+          <p className="text-sm font-medium text-white/60 mb-1">Konto verwalten</p>
+          <p className="text-xs text-white/30 mb-4">Passwort, E-Mail und Sicherheitseinstellungen anpassen.</p>
           <button onClick={() => clerk.openUserProfile()}
-            className="rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-sm text-white/60 hover:bg-white/[0.08] hover:text-white transition-all">
-            Open Account Settings
+            className="rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white/60 hover:bg-white/[0.08] hover:text-white transition-all cursor-pointer">
+            Konto-Einstellungen öffnen
           </button>
         </motion.div>
       </div>

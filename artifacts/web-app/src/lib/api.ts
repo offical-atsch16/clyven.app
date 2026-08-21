@@ -10,7 +10,7 @@ async function handleResponse(res: Response) {
     } catch {
       // Not a JSON response
     }
-    throw new Error(parsed?.error || text || `HTTP ${res.status}`);
+    throw new Error(parsed?.error || parsed?.message || text || `HTTP ${res.status}`);
   }
   return res.json();
 }
@@ -50,6 +50,11 @@ export const api = {
   createNote: (data: any) => request<any>("/notes", { method: "POST", body: JSON.stringify(data) }),
   updateNote: (id: string, data: any) => request<any>(`/notes/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteNote: (id: string) => request<any>(`/notes/${id}`, { method: "DELETE" }),
+
+  // Note Attachments
+  getNoteAttachments: (noteId: string) => request<any[]>(`/notes/${noteId}/attachments`),
+  createNoteAttachment: (noteId: string, data: any) => request<any>(`/notes/${noteId}/attachments`, { method: "POST", body: JSON.stringify(data) }),
+  deleteNoteAttachment: (noteId: string, attachmentId: string) => request<any>(`/notes/${noteId}/attachments/${attachmentId}`, { method: "DELETE" }),
 
   // Bookmarks
   getBookmarks: () => request<any[]>("/bookmarks"),

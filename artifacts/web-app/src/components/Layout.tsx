@@ -5,6 +5,7 @@ import { LayoutDashboard, FileText, Bookmark, Timer, BookOpen, ChartBar as BarCh
 import { useUser, useClerk } from "@clerk/react";
 import { useAppStore } from "../stores/useAppStore";
 import { usePremium } from "../hooks/usePremium";
+import { PlanBadge } from "./PlanBadge";
 import { cn } from "../lib/utils";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -118,8 +119,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommandOpen, onSignOut, mobile, onMobileClose }: any) {
-  const { isPremium, planTier, planName, openUpgrade } = usePremium();
-  const [, navigate] = useLocation();
+  const { isPremium, planTier, openUpgrade } = usePremium();
 
   return (
     <div className="flex h-full flex-col p-3">
@@ -145,13 +145,12 @@ function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommand
       {/* Premium badge OR upgrade prompt */}
       {(!collapsed || mobile) && (
         isPremium ? (
-          <div className="mb-4 flex items-center gap-2 rounded-lg border border-yellow-400/20 bg-yellow-400/[0.07] px-3 py-2">
-            <Crown className="h-3.5 w-3.5 text-yellow-400 shrink-0" />
-            <span className="text-xs font-semibold text-yellow-400">{planName === "Business" ? "BUSINESS" : "PLUS"}</span>
+          <div className="mb-4">
+            <PlanBadge tier={planTier} size="md" />
           </div>
         ) : (
           <button onClick={openUpgrade}
-            className="mb-4 flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.02] px-3 py-2 hover:border-yellow-400/20 hover:bg-yellow-400/[0.05] transition-all group">
+            className="mb-4 flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.02] px-3 py-2 hover:border-yellow-400/20 hover:bg-yellow-400/[0.05] transition-all group cursor-pointer">
             <Zap className="h-3.5 w-3.5 text-white/25 group-hover:text-yellow-400/60 shrink-0 transition-colors" />
             <span className="text-xs text-white/30 group-hover:text-yellow-400/60 transition-colors">Upgrade to PLUS</span>
           </button>
@@ -159,11 +158,11 @@ function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommand
       )}
       {collapsed && !mobile && (
         isPremium ? (
-          <div className="mb-4 flex justify-center rounded-lg border border-yellow-400/20 bg-yellow-400/[0.07] p-2">
-            <Crown className="h-4 w-4 text-yellow-400" />
+          <div className="mb-4 flex justify-center">
+            <PlanBadge tier={planTier} size="sm" />
           </div>
         ) : (
-          <button onClick={openUpgrade} className="mb-4 flex justify-center rounded-lg p-2 hover:bg-yellow-400/[0.05] transition-colors group">
+          <button onClick={openUpgrade} className="mb-4 flex justify-center rounded-lg p-2 hover:bg-yellow-400/[0.05] transition-colors group cursor-pointer">
             <Zap className="h-4 w-4 text-white/25 group-hover:text-yellow-400/60 transition-colors" />
           </button>
         )
@@ -172,14 +171,14 @@ function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommand
       {/* Search / Command */}
       {(!collapsed || mobile) && (
         <button onClick={onCommandOpen}
-          className="mb-4 flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-sm text-white/30 hover:border-white/10 hover:text-white/50 transition-all">
+          className="mb-4 flex items-center gap-2 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-sm text-white/30 hover:border-white/10 hover:text-white/50 transition-all cursor-pointer">
           <Command className="h-3.5 w-3.5" />
           <span className="flex-1 text-left text-xs">Search...</span>
           <span className="text-[10px] tracking-widest text-white/20">⌘K</span>
         </button>
       )}
       {collapsed && !mobile && (
-        <button onClick={onCommandOpen} className="mb-4 flex justify-center rounded-lg p-2 text-white/30 hover:bg-white/[0.04] hover:text-white/70">
+        <button onClick={onCommandOpen} className="mb-4 flex justify-center rounded-lg p-2 text-white/30 hover:bg-white/[0.04] hover:text-white/70 cursor-pointer">
           <Command className="h-4 w-4" />
         </button>
       )}

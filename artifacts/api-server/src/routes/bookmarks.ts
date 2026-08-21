@@ -4,7 +4,7 @@ import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
 import { snakeToCamel } from "../lib/snakeToCamel.js";
 
 const router = Router();
-const FREE_LIMIT = 25;
+const FREE_LIMIT = 10;
 
 router.get("/", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
@@ -33,7 +33,7 @@ router.post("/", requireAuth, async (req, res) => {
       return res.status(403).json({
         error: "LIMIT_REACHED",
         limit: FREE_LIMIT,
-        message: `Free plan: Maximum ${FREE_LIMIT} bookmarks reached. Upgrade to CLYVEN PLUS for unlimited bookmarks.`,
+        message: `Free plan: Maximum ${FREE_LIMIT} bookmarks reached. Upgrade to CLYVEN PLUS or BUSINESS for unlimited bookmarks.`,
       });
     }
   }
