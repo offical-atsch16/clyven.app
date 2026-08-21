@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { supabase } from "../lib/supabase.js";
+import { sendEmail } from "../lib/email.js";
 import type { Request, Response, NextFunction } from "express";
 
 const router = Router();
@@ -228,6 +229,30 @@ router.post("/tickets/:id/messages", requireAdmin, async (req: AdminRequest, res
       .from("tickets")
       .update({ updated_at: new Date().toISOString() })
       .eq("id", id);
+
+    // Send email notification to customer (non-blocking)
+    const { data: ticketRows } = await supabase.from("tickets").select("*").eq("id", id);
+    if (ticketRows && ticketRows.length > 0) {
+      const ticket = ticketRows[0];
+      const escapedMsg = (message || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      await sendEmail({
+        to: ticket.email,
+        subject: `[CLYVEN Support] Neue Antwort zu Ticket #${ticket.ticket_number}`,
+        ticketNumber: ticket.ticket_number,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
+              <p style="color: #666; margin: 4px 0 0;">Neue Antwort vom Support zu Ihrem Ticket #${ticket.ticket_number}</p>
+            </div>
+            <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
+              <p style="margin: 0 0 10px; color: #aaa;"><strong>Antwort vom Support-Team:</strong></p>
+              <div style="color: #ddd; font-size: 14px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;">${escapedMsg}</div>
+            </div>
+          </div>
+        `
+      });
+    }
 
     res.json(snakeToCamel(msgRow));
   } catch (e: any) {

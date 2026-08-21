@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User, FileText, Loader2, Key, HelpCircle, ShieldAlert } from "lucide-react";
+import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User, FileText, Loader2, ShieldAlert } from "lucide-react";
 import { API_BASE_URL } from "../lib/api";
 import { cn } from "../lib/utils";
 import { Link } from "wouter";
@@ -85,7 +85,7 @@ function CreateTicket() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ ticketNumber: string; passcode: string } | null>(null);
+  const [result, setResult] = useState<{ ticketNumber: string } | null>(null);
   const [error, setError] = useState("");
 
   async function submit(e: React.FormEvent) {
@@ -98,7 +98,7 @@ function CreateTicket() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, subject, message }),
       });
-      setResult({ ticketNumber: data.ticketNumber, passcode: data.passcode });
+      setResult({ ticketNumber: data.ticketNumber });
       setName(""); setEmail(""); setSubject(""); setMessage("");
     } catch (e: any) {
       setError(e.message);
@@ -112,24 +112,16 @@ function CreateTicket() {
       <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-8 text-center shadow-xl">
         <CheckCircle className="mx-auto mb-4 h-12 w-12 text-green-400" />
         <h2 className="mb-2 text-xl font-bold">Ticket erfolgreich erstellt</h2>
-        <p className="mb-6 text-sm text-white/40">Bitte speichern Sie Ihre Zugangsdaten sorgfältig ab. Wir haben Ihnen diese zusätzlich per E-Mail zugesendet.</p>
+        <p className="mb-6 text-sm text-white/40">Ihr Ticket wurde im System registriert. Eine Bestätigung wurde per E-Mail gesendet.</p>
 
-        <div className="mb-6 grid grid-cols-2 gap-4">
-          <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-4 text-left">
-            <span className="text-[10px] text-white/30 uppercase font-semibold tracking-wider">Ticketnummer</span>
-            <div className="text-base font-mono font-bold tracking-wider text-white mt-1">
-              {result.ticketNumber}
-            </div>
-          </div>
-          <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-4 text-left">
-            <span className="text-[10px] text-white/30 uppercase font-semibold tracking-wider">Passcode (6-stellig)</span>
-            <div className="text-base font-mono font-bold tracking-wider text-blue-400 mt-1">
-              {result.passcode}
-            </div>
+        <div className="mb-6 rounded-xl border border-white/[0.07] bg-white/[0.03] p-5 text-center">
+          <span className="text-[10px] text-white/30 uppercase font-semibold tracking-wider block mb-1">Generierte Ticketnummer</span>
+          <div className="text-2xl font-mono font-bold tracking-widest text-white">
+            {result.ticketNumber}
           </div>
         </div>
 
-        <p className="mb-6 text-xs text-white/20">Ohne Ticketnummer und Passcode können Sie den Status Ihres Tickets später nicht abrufen.</p>
+        <p className="mb-6 text-xs text-white/30">Sie können den Status Ihres Tickets jederzeit unter "Ticket ansehen" mit Ihrer E-Mail-Adresse und dieser Ticketnummer abrufen.</p>
 
         <button onClick={() => setResult(null)}
           className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white hover:border-white/20 hover:bg-white/[0.06] transition-all cursor-pointer">
@@ -180,7 +172,7 @@ function CreateTicket() {
 
 function ViewTicket() {
   const [ticketNumber, setTicketNumber] = useState("");
-  const [passcode, setPasscode] = useState("");
+  const [email, setEmail] = useState("");
   const [ticket, setTicket] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [reply, setReply] = useState("");
@@ -191,9 +183,9 @@ function ViewTicket() {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
-      const data = await safeFetch(`${API_BASE_URL}/tickets/${encodeURIComponent(ticketNumber)}`, {
+      const data = await safeFetch(`${API_BASE_URL}/tickets/${encodeURIComponent(ticketNumber.trim())}`, {
         headers: {
-          "X-Ticket-Passcode": passcode
+          "X-Ticket-Email": email.trim().toLowerCase()
         }
       });
       setTicket(data.ticket);
@@ -211,10 +203,10 @@ function ViewTicket() {
     if (!reply.trim()) return;
     setLoading(true);
     try {
-      const data = await safeFetch(`${API_BASE_URL}/tickets/${encodeURIComponent(ticketNumber)}/messages`, {
+      const data = await safeFetch(`${API_BASE_URL}/tickets/${encodeURIComponent(ticketNumber.trim())}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passcode, senderName: ticket.name, message: reply }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), senderName: ticket.name, message: reply }),
       });
       setMessages((m) => [...m, data]);
       setReply("");
@@ -305,9 +297,9 @@ function ViewTicket() {
       </div>
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
-          <Key className="h-3 w-3" /> 6-stelliger Passcode
+          <Mail className="h-3 w-3" /> E-Mail-Adresse
         </label>
-        <input type="text" maxLength={6} value={passcode} onChange={(e) => setPasscode(e.target.value)} required placeholder="z. B. 482915 oder Master-Code"
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="name@beispiel.de"
           className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/15 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading}
