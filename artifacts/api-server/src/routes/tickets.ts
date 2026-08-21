@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { supabase } from "../lib/supabase.js";
 import { logger } from "../lib/logger.js";
-import { sendEmail } from "../lib/email.js";
+import { sendEmail, escapeHTML } from "../lib/email.js";
 
 const router = Router();
 
@@ -17,16 +17,6 @@ function snakeToCamel(obj: Record<string, any>): Record<string, any> {
     result[camelKey] = value;
   }
   return result;
-}
-
-// Helper to escape HTML characters to prevent HTML Injection
-function escapeHTML(str: string): string {
-  return (str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 // Helper to check if a valid admin session exists
@@ -111,6 +101,7 @@ router.post("/", async (req, res, next) => {
     const escapedName = escapeHTML(name);
     const escapedSubject = escapeHTML(subject);
     const escapedMessage = escapeHTML(message);
+    const escapedTicketNum = escapeHTML(ticketNumber);
 
     const emailSent = await sendEmail({
       to: email,
@@ -131,7 +122,7 @@ router.post("/", async (req, res, next) => {
               <tr>
                 <td style="padding: 12px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #222; text-align: center;">
                   <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 4px;">Ticketnummer</span>
-                  <strong style="font-size: 20px; color: #ffffff; font-family: monospace;">${ticketNumber}</strong>
+                  <strong style="font-size: 20px; color: #ffffff; font-family: monospace;">${escapedTicketNum}</strong>
                 </td>
               </tr>
             </table>
@@ -155,11 +146,12 @@ router.post("/", async (req, res, next) => {
 });
 
 // Get ticket by number + email (or Master Code / Admin Session)
+// Credentials passed via HTTP headers to avoid leaking sensitive data in GET URL parameters (CodeQL)
 router.get("/:ticketNumber", async (req, res) => {
   const { ticketNumber } = req.params;
 
-  const providedEmail = (req.headers["x-ticket-email"] as string || req.query.email as string || "").trim().toLowerCase();
-  const passcode = req.headers["x-ticket-passcode"] as string || req.query.passcode as string;
+  const providedEmail = (req.headers["x-ticket-email"] as string || "").trim().toLowerCase();
+  const passcode = req.headers["x-ticket-passcode"] as string || "";
 
   try {
     const { data: ticketRows, error: ticketErr } = await supabase
@@ -271,6 +263,7 @@ router.post("/:ticketNumber/messages", async (req, res) => {
     // Send email notification on reply (non-blocking)
     const escapedSender = escapeHTML(senderName);
     const escapedMsg = escapeHTML(message);
+    const escapedNum = escapeHTML(ticketNumber);
 
     await sendEmail({
       to: ticket.email,
@@ -280,7 +273,7 @@ router.post("/:ticketNumber/messages", async (req, res) => {
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
           <div style="text-align: center; margin-bottom: 20px;">
             <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
-            <p style="color: #666; margin: 4px 0 0;">Neue Antwort zu Ihrem Ticket #${ticketNumber}</p>
+            <p style="color: #666; margin: 4px 0 0;">Neue Antwort zu Ihrem Ticket #${escapedNum}</p>
           </div>
           <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
             <p style="margin: 0 0 10px; color: #aaa;"><strong>${escapedSender}:</strong></p>
