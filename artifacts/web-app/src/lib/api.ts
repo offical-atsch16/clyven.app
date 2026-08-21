@@ -15,14 +15,31 @@ async function handleResponse(res: Response) {
   return res.json();
 }
 
+async function getClerkToken(): Promise<string | null> {
+  try {
+    if (typeof window !== "undefined" && (window as any).Clerk?.session) {
+      return await (window as any).Clerk.session.getToken();
+    }
+  } catch (err) {
+    console.error("Error fetching Clerk session token:", err);
+  }
+  return null;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = await getClerkToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options?.headers as Record<string, string>),
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
+    headers,
   });
   return handleResponse(res);
 }
@@ -60,9 +77,9 @@ export const api = {
   getSettings: () => request<any>("/user/settings"),
   saveSettings: (data: any) => request<any>("/user/settings", { method: "POST", body: JSON.stringify(data) }),
 
-  // Tickets (public, no Clerk auth)
+  // Tickets (public)
   createTicket: (data: any) => fetch(`${API_BASE_URL}/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(handleResponse),
-  getTicket: (number: string, passcode: string) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}`, { headers: { "X-Ticket-Passcode": passcode } }).then(handleResponse),
+  getTicket: (number: string, email: string) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}?email=${encodeURIComponent(email)}`, { headers: { "X-Ticket-Email": email } }).then(handleResponse),
   addTicketMessage: (number: string, data: any) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(handleResponse),
 
   // Admin (cookie-based auth)

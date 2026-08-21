@@ -1,9 +1,9 @@
 import { Router } from "express";
-import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { supabase } from "../lib/supabase.js";
 import { logger } from "../lib/logger.js";
+import { sendEmail } from "../lib/email.js";
 
 const router = Router();
 
@@ -66,7 +66,7 @@ async function getNextTicketNumber(): Promise<string> {
   return "TICKET-000001";
 }
 
-// Create a new ticket (public, no auth) — generates a 6-digit passcode securely and sends Gmail SMTP email
+// Create a new ticket (public, no auth)
 router.post("/", async (req, res, next) => {
   try {
     const { name, email, subject, message } = req.body;
@@ -74,7 +74,6 @@ router.post("/", async (req, res, next) => {
       return res.status(400).json({ error: "All fields are required" });
     }
     const ticketNumber = await getNextTicketNumber();
-    // Cryptographically secure passcode generation
     const passcode = crypto.randomInt(100000, 1000000).toString();
 
     const { data: ticket, error: ticketErr } = await supabase
@@ -108,30 +107,16 @@ router.post("/", async (req, res, next) => {
       throw new Error(`Failed to insert ticket message in database: ${msgErr.message}`);
     }
 
-    // Gmail SMTP integration (non-blocking, errors do not interrupt ticket creation response)
-    let emailSent = false;
-    try {
-      if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-        logger.warn("Gmail SMTP configuration is missing (GMAIL_USER or GMAIL_APP_PASSWORD not defined). Skipping confirmation email.");
-      } else {
-        const transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_APP_PASSWORD,
-          },
-        });
+    // Send confirmation email (non-blocking, graceful error handling)
+    const escapedName = escapeHTML(name);
+    const escapedSubject = escapeHTML(subject);
+    const escapedMessage = escapeHTML(message);
 
-        // Escape HTML values to mitigate HTML injection (CodeQL safety)
-        const escapedName = escapeHTML(name);
-        const escapedSubject = escapeHTML(subject);
-        const escapedMessage = escapeHTML(message);
-
-        const mailOptions = {
-          from: `"CLYVEN Support" <${process.env.GMAIL_USER}>`,
-          to: email,
-          subject: `[CLYVEN Support] Ticket Erstellt: ${ticketNumber}`,
-          html: `
+    const emailSent = await sendEmail({
+      to: email,
+      subject: `[CLYVEN Support] Ticket Erstellt: ${ticketNumber}`,
+      ticketNumber,
+      html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
           <div style="text-align: center; margin-bottom: 24px;">
             <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
@@ -144,13 +129,9 @@ router.post("/", async (req, res, next) => {
 
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
               <tr>
-                <td style="padding: 10px; background-color: #1a1a1a; border-radius: 8px 0 0 8px; border: 1px solid #222;">
-                  <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block;">Ticketnummer</span>
-                  <strong style="font-size: 18px; color: #ffffff; font-family: monospace;">${ticketNumber}</strong>
-                </td>
-                <td style="padding: 10px; background-color: #1a1a1a; border-radius: 0 8px 8px 0; border: 1px solid #222; border-left: none;">
-                  <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block;">Zugangscode</span>
-                  <strong style="font-size: 18px; color: #3b82f6; font-family: monospace; letter-spacing: 1px;">${passcode}</strong>
+                <td style="padding: 12px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #222; text-align: center;">
+                  <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 4px;">Ticketnummer</span>
+                  <strong style="font-size: 20px; color: #ffffff; font-family: monospace;">${ticketNumber}</strong>
                 </td>
               </tr>
             </table>
@@ -164,14 +145,7 @@ router.post("/", async (req, res, next) => {
           <p style="font-size: 11px; color: #444; text-align: center; margin: 0;">Diese E-Mail wurde automatisch von Clyven.app generiert.</p>
         </div>
       `,
-        };
-
-        await transporter.sendMail(mailOptions);
-        emailSent = true;
-      }
-    } catch (mailErr: any) {
-      logger.error({ err: mailErr }, `Failed to send confirmation email for ticket ${ticketNumber}`);
-    }
+    });
 
     res.json({ ...snakeToCamel(ticket), emailSent });
   } catch (error) {
@@ -180,12 +154,12 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// Get ticket by number + passcode header (Securely avoiding sensitive query parameters)
+// Get ticket by number + email (or Master Code / Admin Session)
 router.get("/:ticketNumber", async (req, res) => {
   const { ticketNumber } = req.params;
 
-  // Read passcode from headers to avoid leaking it in query logs (CodeQL safety)
-  const passcode = req.headers["x-ticket-passcode"] as string;
+  const providedEmail = (req.headers["x-ticket-email"] as string || req.query.email as string || "").trim().toLowerCase();
+  const passcode = req.headers["x-ticket-passcode"] as string || req.query.passcode as string;
 
   try {
     const { data: ticketRows, error: ticketErr } = await supabase
@@ -206,13 +180,15 @@ router.get("/:ticketNumber", async (req, res) => {
     // Authorization checks:
     // 1. Is valid admin session?
     // 2. Is provided passcode the Master-Code '161011'?
-    // 3. Is provided passcode matching the ticket's generated passcode?
+    // 3. Does provided email match ticket email?
+    // 4. (Legacy) Does passcode match ticket passcode?
     const hasAdminSession = isAdmin(req);
     const isMasterCode = passcode === "161011";
-    const isTicketPasscode = passcode && String(passcode) === String(ticket.passcode);
+    const isMatchingEmail = providedEmail && providedEmail === (ticket.email || "").trim().toLowerCase();
+    const isLegacyPasscode = passcode && String(passcode) === String(ticket.passcode);
 
-    if (!hasAdminSession && !isMasterCode && !isTicketPasscode) {
-      return res.status(403).json({ error: "Invalid access code. Access denied." });
+    if (!hasAdminSession && !isMasterCode && !isMatchingEmail && !isLegacyPasscode) {
+      return res.status(403).json({ error: "E-Mail-Adresse und Ticket-Nummer stimmen nicht überein." });
     }
 
     const { data: msgRows, error: msgErr } = await supabase
@@ -234,10 +210,10 @@ router.get("/:ticketNumber", async (req, res) => {
   }
 });
 
-// Add message to a ticket (public, verified by passcode in body, or Master-Code / Admin Session)
+// Add message to a ticket (verified by email or Master-Code / Admin Session)
 router.post("/:ticketNumber/messages", async (req, res) => {
   const { ticketNumber } = req.params;
-  const { passcode, senderName, message } = req.body;
+  const { email, passcode, senderName, message } = req.body;
 
   if (!senderName || !message) {
     return res.status(400).json({ error: "SenderName and message are required" });
@@ -262,10 +238,12 @@ router.post("/:ticketNumber/messages", async (req, res) => {
     // Authorization checks
     const hasAdminSession = isAdmin(req);
     const isMasterCode = passcode === "161011";
-    const isTicketPasscode = passcode && String(passcode) === String(ticket.passcode);
+    const providedEmail = (email || "").trim().toLowerCase();
+    const isMatchingEmail = providedEmail && providedEmail === (ticket.email || "").trim().toLowerCase();
+    const isLegacyPasscode = passcode && String(passcode) === String(ticket.passcode);
 
-    if (!hasAdminSession && !isMasterCode && !isTicketPasscode) {
-      return res.status(403).json({ error: "Invalid access code. Access denied." });
+    if (!hasAdminSession && !isMasterCode && !isMatchingEmail && !isLegacyPasscode) {
+      return res.status(403).json({ error: "E-Mail-Adresse und Ticket-Nummer stimmen nicht überein." });
     }
 
     const { data: insertedMsg, error: msgErr } = await supabase
@@ -289,6 +267,28 @@ router.post("/:ticketNumber/messages", async (req, res) => {
         .update({ status: "OPEN", updated_at: new Date().toISOString() })
         .eq("id", ticket.id);
     }
+
+    // Send email notification on reply (non-blocking)
+    const escapedSender = escapeHTML(senderName);
+    const escapedMsg = escapeHTML(message);
+
+    await sendEmail({
+      to: ticket.email,
+      subject: `[CLYVEN Support] Neue Antwort zu Ticket #${ticketNumber}`,
+      ticketNumber,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
+            <p style="color: #666; margin: 4px 0 0;">Neue Antwort zu Ihrem Ticket #${ticketNumber}</p>
+          </div>
+          <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
+            <p style="margin: 0 0 10px; color: #aaa;"><strong>${escapedSender}:</strong></p>
+            <div style="color: #ddd; font-size: 14px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;">${escapedMsg}</div>
+          </div>
+        </div>
+      `
+    });
 
     res.json(snakeToCamel(insertedMsg));
   } catch (e: any) {
