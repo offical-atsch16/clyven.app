@@ -78,6 +78,8 @@ export const api = {
   deleteTask: (id: string) => request<any>(`/tasks/${id}`, { method: "DELETE" }),
 
   // User
+  getMe: () => request<any>("/user/me"),
+  syncPlan: () => request<any>("/user/sync-plan", { method: "POST" }),
   getStats: () => request<any>("/user/stats"),
   getSettings: () => request<any>("/user/settings"),
   saveSettings: (data: any) => request<any>("/user/settings", { method: "POST", body: JSON.stringify(data) }),

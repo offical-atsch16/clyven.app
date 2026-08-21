@@ -22,7 +22,7 @@ router.get("/", requireAuth, async (req, res) => {
 });
 
 router.post("/", requireAuth, async (req, res) => {
-  const { userId, isPremium } = req as AuthenticatedRequest;
+  const { userId, planTier, isPremium } = req as AuthenticatedRequest;
   const {
     title,
     description,
@@ -56,6 +56,13 @@ router.post("/", requireAuth, async (req, res) => {
       }
     }
 
+    const finalSubtasks = planTier === "business" ? (subtasks || []) : [];
+    const finalTimeSpent = planTier === "business" ? (timeSpent || 0) : 0;
+    const finalTimerStartedAt = planTier === "business" ? (timerStartedAt || null) : null;
+    const finalCustomFields = planTier === "business" ? (customFields || []) : [];
+    const finalStartDate = planTier === "business" ? (startDate || null) : null;
+    const finalDueDate = planTier === "business" ? (dueDate || null) : null;
+
     const { data, error } = await supabase
       .from("tasks")
       .insert({
@@ -65,12 +72,12 @@ router.post("/", requireAuth, async (req, res) => {
         status: status || "TODO",
         priority: priority || "MEDIUM",
         tags: tags || [],
-        subtasks: subtasks || [],
-        time_spent: timeSpent || 0,
-        timer_started_at: timerStartedAt || null,
-        custom_fields: customFields || [],
-        start_date: startDate || null,
-        due_date: dueDate || null,
+        subtasks: finalSubtasks,
+        time_spent: finalTimeSpent,
+        timer_started_at: finalTimerStartedAt,
+        custom_fields: finalCustomFields,
+        start_date: finalStartDate,
+        due_date: finalDueDate,
       })
       .select()
       .single();

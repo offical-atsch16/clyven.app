@@ -1,9 +1,35 @@
 import { Router } from "express";
 import { supabase } from "../lib/supabase.js";
-import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
+import { requireAuth, checkBackendUserPlan, type AuthenticatedRequest } from "../lib/requireAuth.js";
 import { snakeToCamel } from "../lib/snakeToCamel.js";
+import { getAuth } from "@clerk/express";
 
 const router = Router();
+
+router.get("/me", requireAuth, async (req, res) => {
+  const { userId, planTier, isPremium } = req as AuthenticatedRequest;
+  res.json({
+    userId,
+    planTier,
+    isPremium,
+    isPlus: planTier === "plus",
+    isBusiness: planTier === "business",
+    syncedAt: new Date().toISOString(),
+  });
+});
+
+router.post("/sync-plan", requireAuth, async (req, res) => {
+  const auth = getAuth(req);
+  const planTier = await checkBackendUserPlan(auth);
+  res.json({
+    userId: auth.userId,
+    planTier,
+    isPremium: planTier !== "free",
+    isPlus: planTier === "plus",
+    isBusiness: planTier === "business",
+    syncedAt: new Date().toISOString(),
+  });
+});
 
 router.get("/stats", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;

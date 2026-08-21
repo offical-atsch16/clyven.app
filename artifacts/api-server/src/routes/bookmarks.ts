@@ -22,9 +22,9 @@ router.get("/", requireAuth, async (req, res) => {
 });
 
 router.post("/", requireAuth, async (req, res) => {
-  const { userId, isPremium } = req as AuthenticatedRequest;
+  const { userId, planTier } = req as AuthenticatedRequest;
 
-  if (!isPremium) {
+  if (planTier === "free") {
     const { count } = await supabase
       .from("bookmarks")
       .select("*", { count: "exact", head: true })

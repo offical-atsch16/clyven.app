@@ -43,16 +43,16 @@ export function PlanBadge({ tier = "free", size = "md", className, showFree = fa
     );
   }
 
-  if (normTier === "plus" || normTier === "premium") {
+  if (normTier === "plus" || normTier === "premium" || normTier === "clyven_plus") {
     return (
       <span
         className={cn(
-          "inline-flex items-center font-bold tracking-wide rounded-full border bg-indigo-500/10 text-indigo-400 border-indigo-500/20 shadow-sm shadow-indigo-500/10",
+          "inline-flex items-center font-bold tracking-wide rounded-full border bg-violet-500/15 text-violet-300 border-violet-500/30 shadow-sm shadow-violet-500/20 animate-pulse-slow",
           sizes[size],
           className
         )}
       >
-        <Zap className={cn("shrink-0 text-indigo-400", iconSizes[size])} />
+        <Zap className={cn("shrink-0 text-violet-400 fill-violet-400/20", iconSizes[size])} />
         <span>PLUS</span>
       </span>
     );

@@ -23,10 +23,10 @@ router.get("/", requireAuth, async (req, res) => {
 });
 
 router.post("/", requireAuth, async (req, res) => {
-  const { userId, isPremium } = req as AuthenticatedRequest;
+  const { userId, planTier } = req as AuthenticatedRequest;
   const { title, content, category, tags, color } = req.body;
 
-  if (!isPremium) {
+  if (planTier === "free") {
     const { count } = await supabase
       .from("notes")
       .select("*", { count: "exact", head: true })
