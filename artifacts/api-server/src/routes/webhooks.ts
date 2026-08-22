@@ -13,6 +13,10 @@ export function normalizePlanName(rawPlan?: string): "plus" | "business" | "free
   return "free";
 }
 
+function isValidUserId(id: unknown): id is string {
+  return typeof id === "string" && /^[a-zA-Z0-9_.-]+$/.test(id);
+}
+
 /**
  * Webhook handler for Stripe payment/checkout completion
  * Supports Stripe event objects (e.g. checkout.session.completed, customer.subscription.created/updated)
@@ -21,24 +25,25 @@ export function normalizePlanName(rawPlan?: string): "plus" | "business" | "free
 router.post("/stripe", async (req: Request, res: Response) => {
   try {
     const event = req.body;
-    let userId: string | null = null;
+    let rawUserId: unknown = null;
     let rawPlan: string = "plus";
 
     if (event?.type) {
       // Stripe Webhook Event Format
       const object = event.data?.object || {};
-      userId = object.client_reference_id || object.metadata?.userId || object.metadata?.user_id || object.customer_email || null;
+      rawUserId = object.client_reference_id || object.metadata?.userId || object.metadata?.user_id || object.customer_email || null;
       rawPlan = object.metadata?.plan || object.metadata?.tier || object.lines?.data?.[0]?.price?.nickname || "plus";
     } else {
       // Direct / Generic webhook payload
-      userId = req.body.userId || req.body.user_id || req.body.client_reference_id || null;
+      rawUserId = req.body.userId || req.body.user_id || req.body.client_reference_id || null;
       rawPlan = req.body.plan || req.body.tier || "plus";
     }
 
-    if (!userId) {
-      return res.status(400).json({ error: "Missing userId in webhook payload" });
+    if (!isValidUserId(rawUserId)) {
+      return res.status(400).json({ error: "Invalid or missing userId in webhook payload" });
     }
 
+    const userId = rawUserId;
     const planTier = normalizePlanName(rawPlan);
 
     // 1. Sync Supabase profiles table
@@ -84,9 +89,9 @@ router.post("/stripe", async (req: Request, res: Response) => {
           updatedAt: new Date().toISOString(),
         },
       });
-      console.log(`[WEBHOOK SUCCESS] Updated Clerk publicMetadata for user ${userId} to plan: ${planTier}`);
+      console.log("[WEBHOOK SUCCESS] Updated Clerk publicMetadata for user", userId, "to plan:", planTier);
     } catch (clerkErr: any) {
-      console.error(`[WEBHOOK ERROR] Failed to update Clerk publicMetadata for user ${userId}:`, clerkErr);
+      console.error("[WEBHOOK ERROR] Failed to update Clerk publicMetadata for user", userId, clerkErr);
     }
 
     return res.json({
@@ -107,6 +112,10 @@ router.post("/stripe", async (req: Request, res: Response) => {
 router.post("/sync", requireAuth, async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
   const targetUserId = req.body.userId || authReq.userId;
+
+  if (!isValidUserId(targetUserId)) {
+    return res.status(400).json({ error: "Invalid target user ID" });
+  }
 
   // Non-admin users can only trigger plan sync for their own user ID
   if (targetUserId !== authReq.userId) {
