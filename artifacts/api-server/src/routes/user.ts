@@ -8,11 +8,13 @@ const router = Router();
 
 router.get("/me", requireAuth, async (req, res) => {
   const { userId, planTier, isPremium } = req as AuthenticatedRequest;
+  const isBusiness = planTier === "business";
   res.json({
     userId,
     planTier,
     isPremium,
-    isPlus: planTier === "plus",
+    isBusiness,
+    isPlus: isBusiness,
     syncedAt: new Date().toISOString(),
   });
 });
@@ -20,11 +22,13 @@ router.get("/me", requireAuth, async (req, res) => {
 router.post("/sync-plan", requireAuth, async (req, res) => {
   const auth = getAuth(req);
   const planTier = await checkBackendUserPlan(auth);
+  const isBusiness = planTier === "business";
   res.json({
     userId: auth.userId,
     planTier,
     isPremium: planTier !== "free",
-    isPlus: planTier === "plus",
+    isBusiness,
+    isPlus: isBusiness,
     syncedAt: new Date().toISOString(),
   });
 });

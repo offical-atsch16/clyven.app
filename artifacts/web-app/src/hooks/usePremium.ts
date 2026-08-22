@@ -1,7 +1,7 @@
 import { useAuth, useClerk, useUser } from "@clerk/react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { checkUserPlan, hasPlusPlan, PlanTier } from "../lib/billing";
+import { checkUserPlan, isPremiumUser, PlanType } from "../lib/billing";
 import { api } from "../lib/api";
 
 export const FREE_LIMITS = {
@@ -26,20 +26,21 @@ export function usePremium() {
   });
 
   const hasFn = typeof has === "function" ? has : undefined;
-  const backendPlanTier: PlanTier | undefined = userMeData?.planTier;
-  const clientPlanTier: PlanTier = checkUserPlan(user, hasFn);
+  const backendPlanTier: PlanType | undefined = userMeData?.planTier;
+  const clientPlanTier: PlanType = checkUserPlan(user, hasFn);
 
   // Derive planTier prioritizing non-free plan state
-  let planTier: PlanTier = "free";
+  let planTier: PlanType = "free";
   if (backendPlanTier && backendPlanTier !== "free") {
     planTier = backendPlanTier;
   } else if (clientPlanTier && clientPlanTier !== "free") {
     planTier = clientPlanTier;
   }
 
-  const isPlus = planTier === "plus" || hasPlusPlan(user, hasFn, undefined, backendPlanTier);
-  const isPremium = planTier !== "free" || isPlus;
-  const planName = isPlus ? "CLYVEN PLUS" : "Free";
+  const isBusiness = planTier === "business" || isPremiumUser(user, backendPlanTier);
+  const isPlus = isBusiness;
+  const isPremium = planTier !== "free" || isBusiness;
+  const planName = isBusiness ? "CLYVEN PLUS" : "Free";
 
   function openUpgrade() {
     navigate("/pricing");
@@ -52,6 +53,7 @@ export function usePremium() {
   return {
     isPremium,
     isPlus,
+    isBusiness,
     isLoaded: isLoaded && !isMeLoading,
     planTier,
     planName,

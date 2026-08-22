@@ -1,9 +1,25 @@
 // Clerk & Clyven Billing configuration.
 
-export const PREMIUM_PLAN = "clyven_plus";
+export const PREMIUM_PLAN = "clyven_business";
 export const PREMIUM_FEATURE = "premium_access";
 
-export type PlanTier = "free" | "plus";
+export type PlanType = "free" | "business";
+export type PlanTier = PlanType;
+
+/**
+ * Helper-Funktion: Prüfe ausschließlich auf user.publicMetadata.plan === 'business'
+ */
+export function hasBusinessPlan(user?: any): boolean {
+  return user?.publicMetadata?.plan === "business";
+}
+
+/**
+ * Helper-Funktion: Prüfe ob der User ein Premium/Business-Nutzer ist
+ */
+export function isPremiumUser(user?: any, backendPlanTier?: PlanType): boolean {
+  if (backendPlanTier && backendPlanTier === "business") return true;
+  return user?.publicMetadata?.plan === "business";
+}
 
 /**
  * Checks and resolves user plan tier across Clerk metadata, auth.has,
@@ -13,10 +29,14 @@ export function checkUserPlan(
   user?: any,
   hasFn?: (param: any) => boolean,
   profileData?: any,
-  backendPlanTier?: PlanTier
-): PlanTier {
-  if (backendPlanTier && backendPlanTier !== "free") {
-    return backendPlanTier;
+  backendPlanTier?: PlanType
+): PlanType {
+  if (backendPlanTier && backendPlanTier === "business") {
+    return "business";
+  }
+
+  if (user?.publicMetadata?.plan === "business") {
+    return "business";
   }
 
   // Check Clerk auth.has if available
@@ -24,20 +44,17 @@ export function checkUserPlan(
     try {
       if (
         hasFn({ plan: PREMIUM_PLAN }) ||
-        hasFn({ plan: "plus" }) ||
-        hasFn({ plan: "premium" }) ||
-        hasFn({ plan: "clyven_business" }) ||
         hasFn({ plan: "business" }) ||
+        hasFn({ plan: "clyven_business" }) ||
         hasFn({ feature: PREMIUM_FEATURE })
       ) {
-        return "plus";
+        return "business";
       }
     } catch {
       // Ignore if hasFn fails
     }
   }
 
-  // Check Clerk publicMetadata and unsafeMetadata
   const meta = {
     ...(user?.publicMetadata || {}),
     ...(user?.unsafeMetadata || {}),
@@ -46,25 +63,18 @@ export function checkUserPlan(
   const metaPlanStr = String(meta.plan || meta.tier || meta.subscription || "").toLowerCase();
 
   if (
-    metaPlanStr === "plus" ||
-    metaPlanStr === "clyven_plus" ||
-    metaPlanStr === "premium" ||
     metaPlanStr === "business" ||
     metaPlanStr === "clyven_business" ||
-    meta.clyven_plus === true ||
     meta.clyven_business === true ||
-    meta.premium === true ||
-    meta.plus === true ||
     meta.business === true
   ) {
-    return "plus";
+    return "business";
   }
 
-  // Check Supabase profile data if provided
   if (profileData) {
     const profilePlan = String(profileData.plan || profileData.tier || "").toLowerCase();
-    if (profilePlan.includes("plus") || profilePlan.includes("premium") || profilePlan.includes("business")) {
-      return "plus";
+    if (profilePlan.includes("business")) {
+      return "business";
     }
   }
 
@@ -72,16 +82,13 @@ export function checkUserPlan(
 }
 
 /**
- * Helper function to determine whether user has the 'Plus' plan.
- * Evaluates Clerk user metadata, auth.has, Supabase profile, and backend plan state consistently.
- * This is now the sole helper check for all premium features.
+ * Backward compatibility alias for hasBusinessPlan / isPremiumUser
  */
 export function hasPlusPlan(
   user?: any,
   hasFn?: (param: any) => boolean,
   profileData?: any,
-  backendPlanTier?: PlanTier
+  backendPlanTier?: PlanType
 ): boolean {
-  const tier = checkUserPlan(user, hasFn, profileData, backendPlanTier);
-  return tier === "plus";
+  return isPremiumUser(user, backendPlanTier);
 }

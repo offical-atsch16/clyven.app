@@ -1,13 +1,12 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { X, Check, Crown, Zap, Sparkles } from "lucide-react";
+import { X, Check, Sparkles } from "lucide-react";
 import { usePremium } from "../hooks/usePremium";
 import { PlanBadge } from "./PlanBadge";
 
 interface Props {
   onClose: () => void;
   reason?: string;
-  targetTier?: "plus";
+  targetTier?: "business";
 }
 
 export function UpgradeModal({ onClose, reason }: Props) {
@@ -65,7 +64,7 @@ export function UpgradeModal({ onClose, reason }: Props) {
           {/* Column 2: CLYVEN PLUS */}
           <div className="space-y-2 bg-amber-500/[0.06] border border-amber-500/20 rounded-xl p-3">
             <div className="font-bold text-amber-400 mb-1 flex items-center justify-between">
-              CLYVEN PLUS <PlanBadge tier="plus" size="sm" />
+              CLYVEN PLUS <PlanBadge tier="business" size="sm" />
             </div>
             <p className="text-[11px] text-amber-300/70">Alle Profi-Funktionen freigeschaltet</p>
             <ul className="space-y-2 pt-2 text-[11px] text-white/90">
