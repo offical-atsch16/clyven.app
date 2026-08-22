@@ -89,13 +89,70 @@ export const api = {
   getTicket: (number: string, email: string) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}?email=${encodeURIComponent(email)}`, { headers: { "X-Ticket-Email": email } }).then(handleResponse),
   addTicketMessage: (number: string, data: any) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(handleResponse),
 
-  // Admin (cookie-based auth)
-  adminLogin: (data: any) => fetch(`${API_BASE_URL}/admin/login`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) }).then(handleResponse),
-  adminLogout: () => fetch(`${API_BASE_URL}/admin/logout`, { method: "POST", credentials: "include" }).then(handleResponse),
-  adminMe: () => fetch(`${API_BASE_URL}/admin/me`, { credentials: "include" }).then(handleResponse),
-  getAdminTickets: () => fetch(`${API_BASE_URL}/admin/tickets`, { credentials: "include" }).then(handleResponse),
-  getAdminTicket: (id: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}`, { credentials: "include" }).then(handleResponse),
-  updateTicketStatus: (id: string, status: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ status }) }).then(handleResponse),
-  adminReply: (id: string, message: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ message }) }).then(handleResponse),
-  adminCreateTicket: (data: any) => fetch(`${API_BASE_URL}/admin/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) }).then(handleResponse),
+  // Admin (cookie and token auth)
+  adminLogin: async (data: any) => {
+    const res = await fetch(`${API_BASE_URL}/admin/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(data),
+    });
+    const result = await handleResponse(res);
+    if (result.token && typeof window !== "undefined") {
+      sessionStorage.setItem("admin_token", result.token);
+    }
+    return result;
+  },
+  adminLogout: async () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("admin_token");
+    }
+    return fetch(`${API_BASE_URL}/admin/logout`, {
+      method: "POST",
+      credentials: "include",
+    }).then(handleResponse);
+  },
+  getAdminAuthHeaders: (): Record<string, string> => {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (typeof window !== "undefined") {
+      const token = sessionStorage.getItem("admin_token");
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+    return headers;
+  },
+  adminMe: () => {
+    const headers = api.getAdminAuthHeaders();
+    delete headers["Content-Type"];
+    return fetch(`${API_BASE_URL}/admin/me`, { headers, credentials: "include" }).then(handleResponse);
+  },
+  getAdminTickets: () => {
+    const headers = api.getAdminAuthHeaders();
+    delete headers["Content-Type"];
+    return fetch(`${API_BASE_URL}/admin/tickets`, { headers, credentials: "include" }).then(handleResponse);
+  },
+  getAdminTicket: (id: string) => {
+    const headers = api.getAdminAuthHeaders();
+    delete headers["Content-Type"];
+    return fetch(`${API_BASE_URL}/admin/tickets/${id}`, { headers, credentials: "include" }).then(handleResponse);
+  },
+  updateTicketStatus: (id: string, status: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/status`, {
+    method: "PATCH",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ status })
+  }).then(handleResponse),
+  adminReply: (id: string, message: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/messages`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ message })
+  }).then(handleResponse),
+  adminCreateTicket: (data: any) => fetch(`${API_BASE_URL}/admin/tickets`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data)
+  }).then(handleResponse),
 };
