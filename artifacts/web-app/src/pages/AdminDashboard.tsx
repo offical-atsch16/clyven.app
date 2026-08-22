@@ -104,6 +104,26 @@ export function AdminDashboard() {
       </div>
 
       <div className="mx-auto max-w-6xl px-6 py-6">
+        {/* Analytics / Stats Summary Cards */}
+        <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div onClick={() => setFilter("ALL")} className={cn("cursor-pointer rounded-xl border p-4 transition-all", filter === "ALL" ? "border-white/20 bg-white/[0.05]" : "border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]")}>
+            <div className="text-[10px] uppercase font-bold tracking-wider text-white/40">Gesamt Tickets</div>
+            <div className="mt-1 text-2xl font-bold text-white">{counts.ALL}</div>
+          </div>
+          <div onClick={() => setFilter("OPEN")} className={cn("cursor-pointer rounded-xl border p-4 transition-all", filter === "OPEN" ? "border-blue-400/40 bg-blue-400/10" : "border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]")}>
+            <div className="text-[10px] uppercase font-bold tracking-wider text-blue-400">Offen</div>
+            <div className="mt-1 text-2xl font-bold text-blue-300">{counts.OPEN}</div>
+          </div>
+          <div onClick={() => setFilter("IN_PROGRESS")} className={cn("cursor-pointer rounded-xl border p-4 transition-all", filter === "IN_PROGRESS" ? "border-yellow-400/40 bg-yellow-400/10" : "border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]")}>
+            <div className="text-[10px] uppercase font-bold tracking-wider text-yellow-400">In Bearbeitung</div>
+            <div className="mt-1 text-2xl font-bold text-yellow-300">{counts.IN_PROGRESS}</div>
+          </div>
+          <div onClick={() => setFilter("CLOSED")} className={cn("cursor-pointer rounded-xl border p-4 transition-all", filter === "CLOSED" ? "border-green-400/40 bg-green-400/10" : "border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04]")}>
+            <div className="text-[10px] uppercase font-bold tracking-wider text-green-400">Geschlossen</div>
+            <div className="mt-1 text-2xl font-bold text-green-300">{counts.CLOSED}</div>
+          </div>
+        </div>
+
         {/* Filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-1.5">
