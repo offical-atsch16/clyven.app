@@ -155,4 +155,9 @@ export const api = {
     credentials: "include",
     body: JSON.stringify(data)
   }).then(handleResponse),
+  deleteAdminTicket: (id: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}`, {
+    method: "DELETE",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
 };
