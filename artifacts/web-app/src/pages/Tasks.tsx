@@ -674,7 +674,7 @@ export function Tasks() {
                 </h2>
                 <p className="text-xs text-white/40 mt-0.5">Visuelle Übersicht aller Aufgaben mit Zeitplan und Fortschritt</p>
               </div>
-              <PlanBadge tier="plus" size="sm" />
+              <PlanBadge tier="business" size="sm" />
             </div>
 
             <div className="space-y-4">
@@ -834,7 +834,7 @@ export function Tasks() {
                   <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
                     <Crown className="h-3.5 w-3.5" /> Plus Features
                   </span>
-                  {!isPremium && <PlanBadge tier="plus" size="sm" />}
+                  {!isPremium && <PlanBadge tier="business" size="sm" />}
                 </div>
 
                 {/* 1. Unteraufgaben (Subtasks) */}

@@ -5,11 +5,11 @@ import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
 
 const router = Router();
 
-export function normalizePlanName(rawPlan?: string): "plus" | "free" {
+export function normalizePlanName(rawPlan?: string): "business" | "free" {
   if (!rawPlan) return "free";
   const p = String(rawPlan).toLowerCase();
-  if (p.includes("plus") || p.includes("premium") || p.includes("clyven_plus") || p.includes("business") || p.includes("clyven_business")) {
-    return "plus";
+  if (p.includes("business") || p.includes("clyven_business") || p.includes("plus") || p.includes("premium") || p.includes("clyven_plus")) {
+    return "business";
   }
   return "free";
 }
@@ -23,17 +23,17 @@ router.post("/stripe", async (req: Request, res: Response) => {
   try {
     const event = req.body;
     let userId: string | null = null;
-    let rawPlan: string = "plus";
+    let rawPlan: string = "business";
 
     if (event?.type) {
       // Stripe Webhook Event Format
       const object = event.data?.object || {};
       userId = object.client_reference_id || object.metadata?.userId || object.metadata?.user_id || object.customer_email || null;
-      rawPlan = object.metadata?.plan || object.metadata?.tier || object.lines?.data?.[0]?.price?.nickname || "plus";
+      rawPlan = object.metadata?.plan || object.metadata?.tier || object.lines?.data?.[0]?.price?.nickname || "business";
     } else {
       // Direct / Generic webhook payload
       userId = req.body.userId || req.body.user_id || req.body.client_reference_id || null;
-      rawPlan = req.body.plan || req.body.tier || "plus";
+      rawPlan = req.body.plan || req.body.tier || "business";
     }
 
     if (!userId) {
@@ -64,7 +64,7 @@ router.post("/stripe", async (req: Request, res: Response) => {
       .upsert(
         {
           user_id: userId,
-          plan: planTier === "plus" ? "clyven_plus" : "clyven_free",
+          plan: planTier === "business" ? "clyven_business" : "clyven_free",
           status: "active",
           updated_at: new Date().toISOString(),
         },
@@ -80,7 +80,7 @@ router.post("/stripe", async (req: Request, res: Response) => {
       await clerkClient.users.updateUserMetadata(userId, {
         publicMetadata: {
           plan: planTier,
-          clyven_plus: planTier === "plus",
+          clyven_business: planTier === "business",
           updatedAt: new Date().toISOString(),
         },
       });
@@ -124,7 +124,7 @@ router.post("/sync", requireAuth, async (req: Request, res: Response) => {
 
     // 2. Supabase subscriptions
     await supabase.from("subscriptions").upsert(
-      { user_id: targetUserId, plan: planTier === "plus" ? "clyven_plus" : "clyven_free", status: "active", updated_at: new Date().toISOString() },
+      { user_id: targetUserId, plan: planTier === "business" ? "clyven_business" : "clyven_free", status: "active", updated_at: new Date().toISOString() },
       { onConflict: "user_id" }
     );
 
@@ -132,7 +132,7 @@ router.post("/sync", requireAuth, async (req: Request, res: Response) => {
     await clerkClient.users.updateUserMetadata(targetUserId, {
       publicMetadata: {
         plan: planTier,
-        clyven_plus: planTier === "plus",
+        clyven_business: planTier === "business",
       },
     });
 
