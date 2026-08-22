@@ -18,7 +18,10 @@ interface AdminRequest extends Request {
 }
 
 function requireAdmin(req: AdminRequest, res: Response, next: NextFunction) {
-  const token = req.cookies?.[COOKIE_NAME];
+  const authHeader = req.headers.authorization;
+  const headerToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+  const token = req.cookies?.[COOKIE_NAME] || headerToken;
+
   if (!token) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -82,21 +85,22 @@ router.post("/login", async (req, res) => {
     }
 
     if (!adminRows || !adminRows.length) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid credentials", message: "E-Mail oder Passwort falsch." });
     }
     const admin = adminRows[0];
     const valid = await bcrypt.compare(password, admin.password_hash);
     if (!valid) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid credentials", message: "E-Mail oder Passwort falsch." });
     }
     const token = jwt.sign({ adminId: admin.id, email: admin.email }, JWT_SECRET, { expiresIn: "24h" });
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
+      path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
-    res.json({ success: true, admin: { id: admin.id, email: admin.email } });
+    res.status(200).json({ success: true, token, admin: { id: admin.id, email: admin.email } });
   } catch (e: any) {
     res.status(500).json({ error: "Login failed", detail: e.message });
   }
@@ -104,7 +108,7 @@ router.post("/login", async (req, res) => {
 
 // Admin logout
 router.post("/logout", (_req, res) => {
-  res.clearCookie(COOKIE_NAME);
+  res.clearCookie(COOKIE_NAME, { path: "/" });
   res.json({ success: true });
 });
 

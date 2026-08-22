@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Shield, Loader2, Eye, EyeOff } from "lucide-react";
+import { Shield, Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { api } from "../lib/api";
 
@@ -9,21 +9,49 @@ export function AdminLogin() {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [error, setError] = useState("");
   const [, navigate] = useLocation();
+
+  useEffect(() => {
+    checkExistingSession();
+  }, []);
+
+  async function checkExistingSession() {
+    try {
+      await api.adminMe();
+      navigate("/admin/dashboard");
+    } catch {
+      // Session not active, stay on login page
+    } finally {
+      setCheckingAuth(false);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await api.adminLogin({ email, password });
-      navigate("/admin/dashboard");
+      const res = await api.adminLogin({ email, password });
+      if (res.success || res.token) {
+        navigate("/admin/dashboard");
+      } else {
+        setError("Anmeldung fehlgeschlagen. Bitte Zugangsdaten überprüfen.");
+      }
     } catch (e: any) {
-      setError(e.message);
+      setError(e.message || "Anmeldung fehlgeschlagen. Bitte Zugangsdaten überprüfen.");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checkingAuth) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-[#080808]">
+        <Loader2 className="h-6 w-6 animate-spin text-white/20" />
+      </div>
+    );
   }
 
   return (
@@ -39,7 +67,10 @@ export function AdminLogin() {
 
         <form onSubmit={submit} className="space-y-4">
           {error && (
-            <p className="rounded-lg bg-red-500/10 px-3 py-2 text-center text-xs text-red-400">{error}</p>
+            <div className="flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3.5 py-2.5 text-xs text-red-400">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{error}</span>
+            </div>
           )}
           <div>
             <label className="mb-1.5 block text-xs font-medium text-white/40">Email</label>

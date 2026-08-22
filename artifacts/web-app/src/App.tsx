@@ -279,6 +279,9 @@ function AppRoutes() {
           <Route path="/impressum" component={Impressum} />
           <Route path="/documentation" component={Documentation} />
           <Route path="/support" component={Support} />
+          <Route path="/admin">
+            <Redirect to="/admin/dashboard" />
+          </Route>
           <Route path="/admin/login" component={AdminLogin} />
           <Route path="/admin/dashboard" component={AdminDashboard} />
           <Route path="/admin/tickets/:id" component={AdminTicketDetail} />

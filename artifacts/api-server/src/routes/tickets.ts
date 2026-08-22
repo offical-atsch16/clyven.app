@@ -31,7 +31,9 @@ function escapeHTML(str: string): string {
 
 // Helper to check if a valid admin session exists
 function isAdmin(req: any): boolean {
-  const token = req.cookies?.[COOKIE_NAME];
+  const authHeader = req.headers.authorization;
+  const headerToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+  const token = req.cookies?.[COOKIE_NAME] || headerToken;
   if (!token) return false;
   try {
     jwt.verify(token, JWT_SECRET);
