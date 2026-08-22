@@ -5,6 +5,7 @@ import { LayoutDashboard, FileText, Bookmark, Timer, BookOpen, ChartBar as BarCh
 import { useUser, useClerk } from "@clerk/react";
 import { useAppStore } from "../stores/useAppStore";
 import { usePremium } from "../hooks/usePremium";
+import { usePlanSync } from "../hooks/usePlanSync";
 import { PlanBadge } from "./PlanBadge";
 import { cn } from "../lib/utils";
 
@@ -49,6 +50,7 @@ function NavItem({ href, icon: Icon, label, collapsed, mobile, onMobileClose }: 
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  usePlanSync();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useUser();

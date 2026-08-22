@@ -70,8 +70,20 @@ export async function checkBackendUserPlan(auth: any): Promise<PlanTier> {
       return "plus";
     }
 
-    // Check Supabase subscriptions table if auth userId exists
+    // Check Supabase profiles and subscriptions table if auth userId exists
     if (auth.userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("plan")
+        .eq("id", auth.userId)
+        .maybeSingle();
+
+      if (profile?.plan) {
+        const p = String(profile.plan).toLowerCase();
+        if (p.includes("business")) return "business";
+        if (p.includes("plus") || p.includes("premium")) return "plus";
+      }
+
       const { data, error } = await supabase
         .from("subscriptions")
         .select("plan, status")
