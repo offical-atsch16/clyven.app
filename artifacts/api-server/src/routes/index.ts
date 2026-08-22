@@ -9,11 +9,13 @@ import ticketsRouter from "./tickets.js";
 import adminRouter from "./admin.js";
 import tasksRouter from "./tasks.js";
 import webhooksRouter from "./webhooks.js";
+import attachmentsRouter from "./attachments.js";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use("/notes", notesRouter);
+router.use("/attachments", attachmentsRouter);
 router.use("/bookmarks", bookmarksRouter);
 router.use("/focus", focusRouter);
 router.use("/journal", journalRouter);
