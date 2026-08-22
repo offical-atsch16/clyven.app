@@ -51,17 +51,17 @@ router.post("/", requireAuth, async (req, res) => {
         return res.status(403).json({
           error: "LIMIT_REACHED",
           limit: FREE_LIMIT,
-          message: `Free plan: Maximum ${FREE_LIMIT} tasks reached. Upgrade to CLYVEN PLUS or BUSINESS for unlimited tasks.`,
+          message: `Free plan: Maximum ${FREE_LIMIT} tasks reached. Upgrade to CLYVEN PLUS for unlimited tasks.`,
         });
       }
     }
 
-    const finalSubtasks = planTier === "business" ? (subtasks || []) : [];
-    const finalTimeSpent = planTier === "business" ? (timeSpent || 0) : 0;
-    const finalTimerStartedAt = planTier === "business" ? (timerStartedAt || null) : null;
-    const finalCustomFields = planTier === "business" ? (customFields || []) : [];
-    const finalStartDate = planTier === "business" ? (startDate || null) : null;
-    const finalDueDate = planTier === "business" ? (dueDate || null) : null;
+    const finalSubtasks = isPremium ? (subtasks || []) : [];
+    const finalTimeSpent = isPremium ? (timeSpent || 0) : 0;
+    const finalTimerStartedAt = isPremium ? (timerStartedAt || null) : null;
+    const finalCustomFields = isPremium ? (customFields || []) : [];
+    const finalStartDate = isPremium ? (startDate || null) : null;
+    const finalDueDate = isPremium ? (dueDate || null) : null;
 
     const { data, error } = await supabase
       .from("tasks")

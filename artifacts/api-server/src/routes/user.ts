@@ -13,7 +13,6 @@ router.get("/me", requireAuth, async (req, res) => {
     planTier,
     isPremium,
     isPlus: planTier === "plus",
-    isBusiness: planTier === "business",
     syncedAt: new Date().toISOString(),
   });
 });
@@ -26,7 +25,6 @@ router.post("/sync-plan", requireAuth, async (req, res) => {
     planTier,
     isPremium: planTier !== "free",
     isPlus: planTier === "plus",
-    isBusiness: planTier === "business",
     syncedAt: new Date().toISOString(),
   });
 });
