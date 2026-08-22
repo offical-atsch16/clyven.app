@@ -15,6 +15,7 @@ const COOKIE_NAME = "admin_session";
 
 interface AdminRequest extends Request {
   adminId?: string;
+  email?: string;
 }
 
 function requireAdmin(req: AdminRequest, res: Response, next: NextFunction) {
@@ -26,8 +27,9 @@ function requireAdmin(req: AdminRequest, res: Response, next: NextFunction) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as unknown as { adminId: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as unknown as { adminId: string; email?: string };
     req.adminId = decoded.adminId;
+    req.email = decoded.email;
     next();
   } catch {
     return res.status(401).json({ error: "Invalid session" });
@@ -113,8 +115,20 @@ router.post("/logout", (_req, res) => {
 });
 
 // Check session
-router.get("/me", requireAdmin, (req: AdminRequest, res) => {
-  res.json({ adminId: req.adminId });
+router.get("/me", requireAdmin, async (req: AdminRequest, res) => {
+  try {
+    if (req.email) {
+      return res.json({ adminId: req.adminId, email: req.email });
+    }
+    const { data } = await supabase
+      .from("admin_users")
+      .select("email")
+      .eq("id", req.adminId!)
+      .single();
+    res.json({ adminId: req.adminId, email: data?.email || "" });
+  } catch {
+    res.json({ adminId: req.adminId, email: "" });
+  }
 });
 
 // List all tickets
@@ -172,7 +186,7 @@ router.get("/tickets/:id", requireAdmin, async (req, res) => {
 router.patch("/tickets/:id/status", requireAdmin, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
-  if (!["OPEN", "IN_PROGRESS", "CLOSED"].includes(status)) {
+  if (!["OPEN", "IN_PROGRESS", "WAITING", "CLOSED"].includes(status)) {
     return res.status(400).json({ error: "Invalid status" });
   }
   try {
@@ -266,25 +280,31 @@ router.post("/tickets/:id/messages", requireAdmin, async (req: AdminRequest, res
 
 // Admin create ticket manually
 router.post("/tickets", requireAdmin, async (req, res) => {
-  const { name, email, subject, message } = req.body;
-  if (!name || !email || !subject || !message) {
-    return res.status(400).json({ error: "All fields are required" });
+  const { name, email, subject, message, priority, category } = req.body;
+  if (!email || !subject || !message) {
+    return res.status(400).json({ error: "E-Mail, Betreff und Nachricht sind erforderlich." });
   }
+  const customerName = name || email.split("@")[0];
   try {
     const ticketNumber = await getNextTicketNumber();
     const passcode = crypto.randomInt(100000, 1000000).toString();
 
+    const insertData: Record<string, any> = {
+      ticket_number: ticketNumber,
+      name: customerName,
+      email,
+      subject,
+      message,
+      passcode,
+      status: "OPEN",
+      priority: priority || "MEDIUM",
+      category: category || "Allgemein",
+      created_by_admin: true
+    };
+
     const { data: ticket, error: ticketErr } = await supabase
       .from("tickets")
-      .insert({
-        ticket_number: ticketNumber,
-        name,
-        email,
-        subject,
-        message,
-        passcode,
-        status: "OPEN"
-      })
+      .insert(insertData)
       .select()
       .single();
 
@@ -296,18 +316,70 @@ router.post("/tickets", requireAdmin, async (req, res) => {
       .from("ticket_messages")
       .insert({
         ticket_id: ticket.id,
-        sender_type: "CUSTOMER",
-        sender_name: name,
+        sender_type: "ADMIN",
+        sender_name: "Support Team",
         message: message
       });
 
     if (msgErr) {
-      throw new Error(`Failed to create initial message: ${msgErr.message}`);
+      console.error("Error inserting ticket message:", msgErr);
     }
+
+    // Trigger non-blocking email notification to customer
+    const escapedName = (customerName || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const escapedSubject = (subject || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const escapedMessage = (message || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    sendEmail({
+      to: email,
+      subject: `[CLYVEN Support] Neues Ticket #${ticketNumber}: ${subject}`,
+      ticketNumber,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
+            <p style="color: #666; margin: 4px 0 0;">Ein neues Support-Ticket wurde für Sie erstellt</p>
+          </div>
+          <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
+            <p style="margin: 0 0 10px; color: #aaa;">Hallo <strong>${escapedName}</strong>,</p>
+            <p style="margin: 0 0 20px; color: #aaa; line-height: 1.5;">Unser Support-Team hat ein neues Ticket für Ihr Anliegen erstellt.</p>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 12px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #222; text-align: center;">
+                  <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 4px;">Ticketnummer</span>
+                  <strong style="font-size: 20px; color: #ffffff; font-family: monospace;">${ticketNumber}</strong>
+                </td>
+              </tr>
+            </table>
+
+            <div style="border-top: 1px solid #222; padding-top: 15px;">
+              <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 8px;">Details</span>
+              <div style="color: #888; font-size: 13px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;"><strong>Betreff:</strong> ${escapedSubject}\n\n${escapedMessage}</div>
+            </div>
+          </div>
+        </div>
+      `
+    }).catch((err) => console.error("Email sending failed for admin created ticket:", err));
 
     res.json(snakeToCamel(ticket));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to create ticket", detail: e.message });
+  }
+});
+
+// Delete ticket
+router.delete("/tickets/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await supabase.from("ticket_messages").delete().eq("ticket_id", id);
+    const { error } = await supabase.from("tickets").delete().eq("id", id);
+    if (error) {
+      throw error;
+    }
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to delete ticket", detail: e.message });
   }
 });
 
