@@ -53,8 +53,11 @@ export const api = {
 
   // Note Attachments
   getNoteAttachments: (noteId: string) => request<any[]>(`/notes/${noteId}/attachments`),
+  getPresignedAttachmentUrl: (noteId: string, data: { fileName: string; fileSize: number; fileType?: string }) =>
+    request<{ uploadUrl: string; fileUrl: string; key?: string; attachment?: any }>(`/notes/${noteId}/attachments/presigned-url`, { method: "POST", body: JSON.stringify(data) }),
   createNoteAttachment: (noteId: string, data: any) => request<any>(`/notes/${noteId}/attachments`, { method: "POST", body: JSON.stringify(data) }),
   deleteNoteAttachment: (noteId: string, attachmentId: string) => request<any>(`/notes/${noteId}/attachments/${attachmentId}`, { method: "DELETE" }),
+  deleteAttachment: (attachmentId: string) => request<any>(`/attachments/${attachmentId}`, { method: "DELETE" }),
 
   // Bookmarks
   getBookmarks: () => request<any[]>("/bookmarks"),
