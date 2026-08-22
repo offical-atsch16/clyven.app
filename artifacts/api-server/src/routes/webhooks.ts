@@ -5,11 +5,12 @@ import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
 
 const router = Router();
 
-export function normalizePlanName(rawPlan?: string): "plus" | "business" | "free" {
+export function normalizePlanName(rawPlan?: string): "plus" | "free" {
   if (!rawPlan) return "free";
   const p = String(rawPlan).toLowerCase();
-  if (p.includes("business") || p.includes("clyven_business")) return "business";
-  if (p.includes("plus") || p.includes("premium") || p.includes("clyven_plus")) return "plus";
+  if (p.includes("plus") || p.includes("premium") || p.includes("clyven_plus") || p.includes("business") || p.includes("clyven_business")) {
+    return "plus";
+  }
   return "free";
 }
 
@@ -63,7 +64,7 @@ router.post("/stripe", async (req: Request, res: Response) => {
       .upsert(
         {
           user_id: userId,
-          plan: planTier === "plus" ? "clyven_plus" : planTier === "business" ? "clyven_business" : "clyven_free",
+          plan: planTier === "plus" ? "clyven_plus" : "clyven_free",
           status: "active",
           updated_at: new Date().toISOString(),
         },
@@ -80,7 +81,6 @@ router.post("/stripe", async (req: Request, res: Response) => {
         publicMetadata: {
           plan: planTier,
           clyven_plus: planTier === "plus",
-          clyven_business: planTier === "business",
           updatedAt: new Date().toISOString(),
         },
       });
@@ -124,7 +124,7 @@ router.post("/sync", requireAuth, async (req: Request, res: Response) => {
 
     // 2. Supabase subscriptions
     await supabase.from("subscriptions").upsert(
-      { user_id: targetUserId, plan: planTier === "plus" ? "clyven_plus" : planTier === "business" ? "clyven_business" : "clyven_free", status: "active", updated_at: new Date().toISOString() },
+      { user_id: targetUserId, plan: planTier === "plus" ? "clyven_plus" : "clyven_free", status: "active", updated_at: new Date().toISOString() },
       { onConflict: "user_id" }
     );
 
@@ -133,7 +133,6 @@ router.post("/sync", requireAuth, async (req: Request, res: Response) => {
       publicMetadata: {
         plan: planTier,
         clyven_plus: planTier === "plus",
-        clyven_business: planTier === "business",
       },
     });
 

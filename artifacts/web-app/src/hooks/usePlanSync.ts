@@ -37,8 +37,7 @@ export function usePlanSync() {
       urlParams.get("checkout") === "success" ||
       urlParams.get("upgraded") === "true" ||
       urlParams.has("session_id") ||
-      urlParams.get("plan") === "plus" ||
-      urlParams.get("plan") === "business";
+      urlParams.get("plan") === "plus";
 
     if (hasCheckoutTrigger) {
       syncPlanSession().then(() => {

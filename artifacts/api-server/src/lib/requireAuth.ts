@@ -2,7 +2,7 @@ import { getAuth } from "@clerk/express";
 import type { Request, Response, NextFunction } from "express";
 import { supabase } from "./supabase.js";
 
-export type PlanTier = "free" | "plus" | "business";
+export type PlanTier = "free" | "plus";
 
 export interface AuthenticatedRequest extends Request {
   userId: string;
@@ -17,13 +17,12 @@ export async function checkBackendUserPlan(auth: any): Promise<PlanTier> {
     const has = auth.has;
     if (typeof has === "function") {
       try {
-        if (has({ plan: "clyven_business" }) || has({ plan: "business" }) || has({ feature: "business_access" })) {
-          return "business";
-        }
         if (
           has({ plan: "clyven_plus" }) ||
           has({ plan: "plus" }) ||
           has({ plan: "premium" }) ||
+          has({ plan: "clyven_business" }) ||
+          has({ plan: "business" }) ||
           has({ feature: "premium_access" })
         ) {
           return "plus";
@@ -46,24 +45,15 @@ export async function checkBackendUserPlan(auth: any): Promise<PlanTier> {
     ).toLowerCase();
 
     if (
-      planStr === "business" ||
-      planStr === "clyven_business" ||
-      planStr === "pro_business" ||
-      meta.clyven_business === true ||
-      meta.business === true ||
-      claims.clyven_business === true ||
-      claims.business === true
-    ) {
-      return "business";
-    }
-
-    if (
       planStr === "plus" ||
       planStr === "clyven_plus" ||
       planStr === "premium" ||
+      planStr === "business" ||
+      planStr === "clyven_business" ||
       meta.clyven_plus === true ||
       meta.premium === true ||
       meta.plus === true ||
+      meta.business === true ||
       claims.clyven_plus === true ||
       claims.premium === true
     ) {
@@ -80,8 +70,7 @@ export async function checkBackendUserPlan(auth: any): Promise<PlanTier> {
 
       if (profile?.plan) {
         const p = String(profile.plan).toLowerCase();
-        if (p.includes("business")) return "business";
-        if (p.includes("plus") || p.includes("premium")) return "plus";
+        if (p.includes("plus") || p.includes("premium") || p.includes("business")) return "plus";
       }
 
       const { data, error } = await supabase
@@ -94,8 +83,7 @@ export async function checkBackendUserPlan(auth: any): Promise<PlanTier> {
 
       if (!error && data && data.length > 0) {
         const subPlan = String(data[0].plan || "").toLowerCase();
-        if (subPlan.includes("business")) return "business";
-        if (subPlan.includes("plus") || subPlan.includes("premium")) return "plus";
+        if (subPlan.includes("plus") || subPlan.includes("premium") || subPlan.includes("business")) return "plus";
       }
     }
   } catch (err) {

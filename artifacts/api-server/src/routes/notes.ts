@@ -116,16 +116,16 @@ router.post("/:id/attachments", requireAuth, async (req, res) => {
   if (planTier === "free") {
     return res.status(403).json({
       error: "FEATURE_LOCKED",
-      message: "File uploads are not available on the Free plan. Upgrade to Clyven Plus or Business.",
+      message: "File uploads are not available on the Free plan. Upgrade to CLYVEN PLUS.",
     });
   }
 
-  // Check file size limits
-  const maxBytes = planTier === "business" ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
+  // Check file size limits (100 MB for CLYVEN PLUS)
+  const maxBytes = 100 * 1024 * 1024;
   if (fileSize > maxBytes) {
     return res.status(400).json({
       error: "FILE_TOO_LARGE",
-      message: `File size exceeds the limit of ${planTier === "business" ? "100 MB" : "10 MB"} for your plan.`,
+      message: "File size exceeds the limit of 100 MB for CLYVEN PLUS.",
     });
   }
 

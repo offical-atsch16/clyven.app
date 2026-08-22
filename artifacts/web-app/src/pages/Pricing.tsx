@@ -13,7 +13,6 @@ const FAQS = [
   { q: "Can I cancel anytime?", a: "Yes, you can cancel anytime. You will keep access until the end of your billing period." },
   { q: "What happens to my data when I downgrade?", a: "Your data stays preserved. However, you won't be able to create new notes if you exceed the free limit." },
   { q: "Is there a free trial?", a: "Yes, you can try Clyven Plus free for 30 days!" },
-  { q: "What is Clyven Business?", a: "Clyven Business is designed for people who want to use Clyven in a corporate environment."},
 ];
 
 function scrollToPlans() {
@@ -95,15 +94,15 @@ export function Pricing() {
               <p className="text-center text-sm font-medium text-yellow-400/70">PLUS</p>
             </div>
             {[
-              { label: "Notes", free: "10", plus: "Unlimited" },
-              { label: "Bookmarks", free: "25", plus: "Unlimited" },
-              { label: "Focus Timer", free: "✓", plus: "✓" },
-              { label: "Journal", free: "✓", plus: "✓" },
-              { label: "Analytics", free: "7 days", plus: "30 days" },
-              { label: "Export (Markdown)", free: "—", plus: "✓" },
-              { label: "Streak Tracking", free: "—", plus: "✓" },
+              { label: "Notes & Bookmarks", free: "10 Limit", plus: "Unlimited" },
+              { label: "Tasks & To-Dos", free: "10 Limit", plus: "Unlimited" },
+              { label: "Kanban & Gantt Views", free: "—", plus: "✓" },
+              { label: "Subtasks & Custom Fields", free: "—", plus: "✓" },
+              { label: "Time Tracking & Timer Log", free: "—", plus: "✓" },
+              { label: "Note File Uploads", free: "—", plus: "100 MB per File" },
+              { label: "Focus Timer & Journal", free: "✓", plus: "✓" },
+              { label: "Export (Markdown / PDF)", free: "—", plus: "✓" },
               { label: "Premium Badge", free: "—", plus: "✓" },
-              { label: "All Achievements", free: "Basic", plus: "✓" },
               { label: "Support", free: "Community", plus: "Priority" },
             ].map((row, i) => (
               <div key={row.label} className={cn("grid grid-cols-3 px-6 py-3.5 text-sm", i % 2 === 0 && "bg-white/[0.01]")}>

@@ -449,7 +449,7 @@ router.post("/", requireAuth, async (req, res) => {
                 <Zap className="h-5 w-5 text-yellow-400" /> 7. Premium Gating (Clyven Plus)
               </h2>
               <p className="text-white/50 text-sm mb-6">
-                Premium-Prüfungen finden synchron auf Client- und API-Ebene statt. Nutzer der Tarife <code className="text-white/80 bg-white/[0.05] px-1 py-0.5 rounded">Clyven Plus</code> oder <code className="text-white/80 bg-white/[0.05] px-1 py-0.5 rounded">Clyven Business</code> besitzen unlimitierten Speicherplatz für Notizen, Lesezeichen und Aufgaben.
+                Premium-Prüfungen finden synchron auf Client- und API-Ebene statt. Nutzer des Tarifs <code className="text-white/80 bg-white/[0.05] px-1 py-0.5 rounded">CLYVEN PLUS</code> besitzen unlimitierten Speicherplatz für Notizen, Lesezeichen und Aufgaben.
               </p>
 
               <div className="grid gap-4 sm:grid-cols-3 text-center mb-6">

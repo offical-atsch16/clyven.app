@@ -1,7 +1,7 @@
 import { useAuth, useClerk, useUser } from "@clerk/react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { checkUserPlan, hasPlusPlan, hasBusinessPlan, PlanTier } from "../lib/billing";
+import { checkUserPlan, hasPlusPlan, PlanTier } from "../lib/billing";
 import { api } from "../lib/api";
 
 export const FREE_LIMITS = {
@@ -37,10 +37,9 @@ export function usePremium() {
     planTier = clientPlanTier;
   }
 
-  const isBusiness = planTier === "business" || hasBusinessPlan(user, hasFn, undefined, backendPlanTier);
   const isPlus = planTier === "plus" || hasPlusPlan(user, hasFn, undefined, backendPlanTier);
-  const isPremium = planTier !== "free" || isPlus || isBusiness;
-  const planName = isBusiness ? "Business" : isPlus ? "Plus" : "Free";
+  const isPremium = planTier !== "free" || isPlus;
+  const planName = isPlus ? "CLYVEN PLUS" : "Free";
 
   function openUpgrade() {
     navigate("/pricing");
@@ -53,7 +52,6 @@ export function usePremium() {
   return {
     isPremium,
     isPlus,
-    isBusiness,
     isLoaded: isLoaded && !isMeLoading,
     planTier,
     planName,

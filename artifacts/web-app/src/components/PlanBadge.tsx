@@ -28,32 +28,23 @@ export function PlanBadge({ tier = "free", size = "md", className, showFree = fa
     lg: "h-4 w-4",
   };
 
-  if (normTier === "business") {
+  if (
+    normTier === "plus" ||
+    normTier === "premium" ||
+    normTier === "clyven_plus" ||
+    normTier === "business" ||
+    normTier === "clyven_business"
+  ) {
     return (
       <span
         className={cn(
-          "inline-flex items-center font-bold tracking-wide rounded-full border bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-sm shadow-amber-500/10",
+          "inline-flex items-center font-bold tracking-wide rounded-full border bg-amber-500/15 text-amber-300 border-amber-500/30 shadow-sm shadow-amber-500/20 animate-pulse-slow",
           sizes[size],
           className
         )}
       >
-        <Crown className={cn("shrink-0 text-amber-400", iconSizes[size])} />
-        <span>BUSINESS</span>
-      </span>
-    );
-  }
-
-  if (normTier === "plus" || normTier === "premium" || normTier === "clyven_plus") {
-    return (
-      <span
-        className={cn(
-          "inline-flex items-center font-bold tracking-wide rounded-full border bg-violet-500/15 text-violet-300 border-violet-500/30 shadow-sm shadow-violet-500/20 animate-pulse-slow",
-          sizes[size],
-          className
-        )}
-      >
-        <Zap className={cn("shrink-0 text-violet-400 fill-violet-400/20", iconSizes[size])} />
-        <span>PLUS</span>
+        <Zap className={cn("shrink-0 text-amber-400 fill-amber-400/20", iconSizes[size])} />
+        <span>CLYVEN PLUS</span>
       </span>
     );
   }

@@ -47,7 +47,7 @@ export function NoteFileUpload({ noteId }: Props) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["note-attachments", noteId] }),
   });
 
-  const maxFileBytes = planTier === "business" ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
+  const maxFileBytes = 100 * 1024 * 1024;
   const isFree = planTier === "free";
 
   const handleFiles = async (files: FileList | null) => {
@@ -65,7 +65,7 @@ export function NoteFileUpload({ noteId }: Props) {
 
       if (file.size > maxFileBytes) {
         setErrorMessage(
-          `Datei "${file.name}" ist zu groß (${formatBytes(file.size)}). Max. ${planTier === "business" ? "100 MB" : "10 MB"}.`
+          `Datei "${file.name}" ist zu groß (${formatBytes(file.size)}). Max. 100 MB.`
         );
         continue;
       }
@@ -122,11 +122,7 @@ export function NoteFileUpload({ noteId }: Props) {
         </div>
 
         <span className="text-[10px] text-white/30">
-          {isFree
-            ? "Uploads gesperrt (Free-Tarif)"
-            : planTier === "business"
-            ? "Max. 100 MB pro Datei (Business)"
-            : "Max. 10 MB pro Datei (Plus)"}
+          {isFree ? "Uploads gesperrt (Free-Tarif)" : "Max. 100 MB pro Datei (CLYVEN PLUS)"}
         </span>
       </div>
 
@@ -142,7 +138,7 @@ export function NoteFileUpload({ noteId }: Props) {
             </div>
             <div>
               <p className="text-xs font-bold text-amber-400">Dateianhänge freischalten</p>
-              <p className="text-[11px] text-white/40">Upgrade auf Plus oder Business für Dateiuploads in deinen Notizen.</p>
+              <p className="text-[11px] text-white/40">Upgrade auf CLYVEN PLUS für Dateiuploads in deinen Notizen.</p>
             </div>
           </div>
           <button className="rounded-xl bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-400 group-hover:bg-amber-500/30 transition-colors">
@@ -176,9 +172,7 @@ export function NoteFileUpload({ noteId }: Props) {
           <p className="text-xs font-semibold text-white/80">
             Dateien hierher ziehen oder <span className="text-amber-400 underline">durchsuchen</span>
           </p>
-          <p className="mt-1 text-[10px] text-white/30">
-            {planTier === "business" ? "Bis zu 100 MB pro Datei" : "Bis zu 10 MB pro Datei"}
-          </p>
+          <p className="mt-1 text-[10px] text-white/30">Bis zu 100 MB pro Datei</p>
         </div>
       )}
 
