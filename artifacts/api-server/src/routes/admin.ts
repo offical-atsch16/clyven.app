@@ -2,11 +2,23 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import rateLimit from "express-rate-limit";
 import { supabase } from "../lib/supabase.js";
 import { sendEmail } from "../lib/email.js";
 import type { Request, Response, NextFunction } from "express";
 
 const router = Router();
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." },
+});
+
+router.use(adminLimiter);
+
 const JWT_SECRET = (process.env.ADMIN_JWT_SECRET || process.env.CLERK_SECRET_KEY) as string;
 if (!JWT_SECRET) {
   throw new Error("ADMIN_JWT_SECRET or CLERK_SECRET_KEY must be set");

@@ -54,6 +54,22 @@ const healthHandler = (_req: express.Request, res: express.Response) => {
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
 app.use(cookieParser());
+
+// Anti-CSRF protection for cookie-authenticated state-changing requests
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+    return next();
+  }
+  if (req.cookies && Object.keys(req.cookies).length > 0) {
+    const customHeader = req.headers["authorization"] || req.headers["x-csrf-token"] || req.headers["x-requested-with"];
+    const origin = req.headers.origin || req.headers.referer;
+    if (!customHeader && !origin) {
+      return res.status(403).json({ error: "CSRF validation failed" });
+    }
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
