@@ -89,8 +89,17 @@ export const api = {
 
   // Tickets (public)
   createTicket: (data: any) => fetch(`${API_BASE_URL}/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(handleResponse),
-  getTicket: (number: string, email: string) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}?email=${encodeURIComponent(email)}`, { headers: { "X-Ticket-Email": email } }).then(handleResponse),
-  addTicketMessage: (number: string, data: any) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(handleResponse),
+  getTicket: (number: string, emailOrPasscode: string, passcode?: string) => {
+    const pc = passcode || emailOrPasscode;
+    const em = passcode ? emailOrPasscode : "";
+    return fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}?email=${encodeURIComponent(em)}&passcode=${encodeURIComponent(pc)}`, {
+      headers: {
+        "X-Ticket-Email": em,
+        "X-Ticket-Passcode": pc
+      }
+    }).then(handleResponse);
+  },
+  addTicketMessage: (number: string, data: any) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json", "X-Ticket-Passcode": data.passcode || "" }, body: JSON.stringify(data) }).then(handleResponse),
 
   // Admin (cookie and token auth)
   adminLogin: async (data: any) => {

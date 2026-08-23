@@ -116,6 +116,7 @@ router.post("/", async (req, res, next) => {
       ticketNumber,
       ticketSubject: subject,
       ticketDetails: message,
+      ticketPasscode: passcode,
       to: email,
       subject: `[CLYVEN Support] Ticket Erstellt: ${ticketNumber}`,
       message: message,
@@ -128,15 +129,15 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// Get ticket by number + email (or Master Code / Admin Session)
+// Get ticket by number or ID + passcode (or Master Code / Admin Session)
 router.get("/:ticketNumber", async (req, res) => {
   const { ticketNumber } = req.params;
 
   const providedEmail = (req.headers["x-ticket-email"] as string || req.query.email as string || "").trim().toLowerCase();
-  const passcode = req.headers["x-ticket-passcode"] as string || req.query.passcode as string;
+  const passcode = ((req.headers["x-ticket-passcode"] as string) || (req.query.passcode as string) || "").trim();
 
   try {
-    const { data: ticketRows, error: ticketErr } = await supabase
+    let { data: ticketRows, error: ticketErr } = await supabase
       .from("tickets")
       .select("*")
       .eq("ticket_number", ticketNumber);
@@ -146,7 +147,16 @@ router.get("/:ticketNumber", async (req, res) => {
     }
 
     if (!ticketRows || !ticketRows.length) {
-      return res.status(404).json({ error: "Ticket not found, make sure you typed in everything right" });
+      // Fallback query by ID or email
+      const { data: idRows } = await supabase
+        .from("tickets")
+        .select("*")
+        .or(`id.eq.${ticketNumber},email.eq.${ticketNumber}`);
+      ticketRows = idRows || [];
+    }
+
+    if (!ticketRows || !ticketRows.length) {
+      return res.status(404).json({ error: "Ticket nicht gefunden. Bitte überprüfen Sie Ihre Angaben." });
     }
 
     const ticket = ticketRows[0];
@@ -154,15 +164,14 @@ router.get("/:ticketNumber", async (req, res) => {
     // Authorization checks:
     // 1. Is valid admin session?
     // 2. Is provided passcode the Master-Code '161011'?
-    // 3. Does provided email match ticket email?
-    // 4. (Legacy) Does passcode match ticket passcode?
+    // 3. Is valid passcode provided AND ticket identifier matches?
     const hasAdminSession = isAdmin(req);
     const isMasterCode = passcode === "161011";
-    const isMatchingEmail = providedEmail && providedEmail === (ticket.email || "").trim().toLowerCase();
-    const isLegacyPasscode = passcode && String(passcode) === String(ticket.passcode);
+    const isMatchingPasscode = passcode && String(passcode) === String(ticket.passcode);
+    const isMatchingEmail = !providedEmail || providedEmail === (ticket.email || "").trim().toLowerCase();
 
-    if (!hasAdminSession && !isMasterCode && !isMatchingEmail && !isLegacyPasscode) {
-      return res.status(403).json({ error: "E-Mail-Adresse und Ticket-Nummer stimmen nicht überein." });
+    if (!hasAdminSession && !isMasterCode && !(isMatchingPasscode && isMatchingEmail)) {
+      return res.status(403).json({ error: "Passcode oder Ticket-Nummer / E-Mail ist ungültig." });
     }
 
     const { data: msgRows, error: msgErr } = await supabase
@@ -184,17 +193,20 @@ router.get("/:ticketNumber", async (req, res) => {
   }
 });
 
-// Add message to a ticket (verified by email or Master-Code / Admin Session)
+// Add message to a ticket (verified by passcode / Master-Code / Admin Session)
 router.post("/:ticketNumber/messages", async (req, res) => {
   const { ticketNumber } = req.params;
-  const { email, passcode, senderName, message } = req.body;
+  const { email, passcode: bodyPasscode, senderName, message } = req.body;
+
+  const headerPasscode = req.headers["x-ticket-passcode"] as string;
+  const passcode = (bodyPasscode || headerPasscode || "").trim();
 
   if (!senderName || !message) {
     return res.status(400).json({ error: "SenderName and message are required" });
   }
 
   try {
-    const { data: ticketRows, error: ticketErr } = await supabase
+    let { data: ticketRows, error: ticketErr } = await supabase
       .from("tickets")
       .select("*")
       .eq("ticket_number", ticketNumber);
@@ -204,7 +216,15 @@ router.post("/:ticketNumber/messages", async (req, res) => {
     }
 
     if (!ticketRows || !ticketRows.length) {
-      return res.status(404).json({ error: "Ticket not found, make sure you typed in everything right" });
+      const { data: idRows } = await supabase
+        .from("tickets")
+        .select("*")
+        .or(`id.eq.${ticketNumber},email.eq.${ticketNumber}`);
+      ticketRows = idRows || [];
+    }
+
+    if (!ticketRows || !ticketRows.length) {
+      return res.status(404).json({ error: "Ticket nicht gefunden. Bitte überprüfen Sie Ihre Angaben." });
     }
 
     const ticket = ticketRows[0];
@@ -212,12 +232,12 @@ router.post("/:ticketNumber/messages", async (req, res) => {
     // Authorization checks
     const hasAdminSession = isAdmin(req);
     const isMasterCode = passcode === "161011";
-    const providedEmail = (email || "").trim().toLowerCase();
-    const isMatchingEmail = providedEmail && providedEmail === (ticket.email || "").trim().toLowerCase();
-    const isLegacyPasscode = passcode && String(passcode) === String(ticket.passcode);
+    const providedEmail = (email || req.headers["x-ticket-email"] as string || "").trim().toLowerCase();
+    const isMatchingPasscode = passcode && String(passcode) === String(ticket.passcode);
+    const isMatchingEmail = !providedEmail || providedEmail === (ticket.email || "").trim().toLowerCase();
 
-    if (!hasAdminSession && !isMasterCode && !isMatchingEmail && !isLegacyPasscode) {
-      return res.status(403).json({ error: "E-Mail-Adresse und Ticket-Nummer stimmen nicht überein." });
+    if (!hasAdminSession && !isMasterCode && !(isMatchingPasscode && isMatchingEmail)) {
+      return res.status(403).json({ error: "Passcode oder Ticket-Nummer / E-Mail ist ungültig." });
     }
 
     const { data: insertedMsg, error: msgErr } = await supabase

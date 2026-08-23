@@ -6,6 +6,9 @@ export interface SendEmailOptions {
   ticketNumber?: string;
   ticketSubject?: string;
   ticketDetails?: string;
+  ticketPasscode?: string;
+  ticket_passcode?: string;
+  passcode?: string;
   to?: string;
   subject?: string;
   message?: string;
@@ -41,6 +44,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
     const ticketEmail = options.email || options.userEmail || options.ticketEmail || options.to || "";
     const ticketSubject = options.subject || options.title || options.ticketSubject || "Support-Anfrage";
     const ticketDetails = options.details || options.description || options.message || options.ticketDetails || options.html || "Keine Details angegeben";
+    const ticketPasscode = options.ticketPasscode || options.ticket_passcode || options.passcode || "";
 
     const courierData = {
       user_name: userName,
@@ -48,6 +52,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
       ticket_number: ticketNumber,
       ticket_subject: ticketSubject,
       ticket_details: ticketDetails,
+      ticket_passcode: ticketPasscode,
     };
 
     console.log("Courier Data Payload:", courierData);

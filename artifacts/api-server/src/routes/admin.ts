@@ -373,6 +373,7 @@ router.post("/tickets", requireAdmin, async (req, res) => {
         ticketNumber,
         ticketSubject: subject,
         ticketDetails: message,
+        ticketPasscode: passcode,
         to: email,
         subject: `[CLYVEN Support] Neues Ticket #${ticketNumber}: ${subject}`,
         message,
