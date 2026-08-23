@@ -44,11 +44,17 @@ async function executeSetup() {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         email TEXT NOT NULL UNIQUE,
         password_hash TEXT NOT NULL,
+        name TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
       )
     `);
     console.log("✓ Table 'admin_users' is ready.");
+
+    await client.query(`
+      ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS name TEXT;
+    `);
+    console.log("✓ Column 'name' on 'admin_users' has been added/verified.");
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS tickets (

@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { supabase } from "../lib/supabase.js";
-import { sendEmail } from "../lib/email.js";
+import { sendEmail, sendReplyEmail } from "../lib/email.js";
 import type { Request, Response, NextFunction } from "express";
 
 const router = Router();
@@ -16,6 +16,7 @@ const COOKIE_NAME = "admin_session";
 interface AdminRequest extends Request {
   adminId?: string;
   email?: string;
+  name?: string;
 }
 
 function requireAdmin(req: AdminRequest, res: Response, next: NextFunction) {
@@ -27,9 +28,10 @@ function requireAdmin(req: AdminRequest, res: Response, next: NextFunction) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as unknown as { adminId: string; email?: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as unknown as { adminId: string; email?: string; name?: string };
     req.adminId = decoded.adminId;
     req.email = decoded.email;
+    req.name = decoded.name;
     next();
   } catch {
     return res.status(401).json({ error: "Invalid session" });
@@ -94,7 +96,8 @@ router.post("/login", async (req, res) => {
     if (!valid) {
       return res.status(401).json({ error: "Invalid credentials", message: "E-Mail oder Passwort falsch." });
     }
-    const token = jwt.sign({ adminId: admin.id, email: admin.email }, JWT_SECRET, { expiresIn: "24h" });
+    const name = admin.name || admin.email.split("@")[0];
+    const token = jwt.sign({ adminId: admin.id, email: admin.email, name }, JWT_SECRET, { expiresIn: "24h" });
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -102,7 +105,7 @@ router.post("/login", async (req, res) => {
       path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
-    res.status(200).json({ success: true, token, admin: { id: admin.id, email: admin.email } });
+    res.status(200).json({ success: true, token, admin: { id: admin.id, email: admin.email, name } });
   } catch (e: any) {
     res.status(500).json({ error: "Login failed", detail: e.message });
   }
@@ -117,17 +120,21 @@ router.post("/logout", (_req, res) => {
 // Check session
 router.get("/me", requireAdmin, async (req: AdminRequest, res) => {
   try {
-    if (req.email) {
-      return res.json({ adminId: req.adminId, email: req.email });
+    if (req.email && req.name) {
+      return res.json({ adminId: req.adminId, email: req.email, name: req.name });
     }
     const { data } = await supabase
       .from("admin_users")
-      .select("email")
+      .select("email, name")
       .eq("id", req.adminId!)
       .single();
-    res.json({ adminId: req.adminId, email: data?.email || "" });
+
+    const email = data?.email || req.email || "";
+    const name = data?.name || req.name || (email ? email.split("@")[0] : "");
+
+    res.json({ adminId: req.adminId, email, name });
   } catch {
-    res.json({ adminId: req.adminId, email: "" });
+    res.json({ adminId: req.adminId, email: req.email || "", name: req.name || (req.email ? req.email.split("@")[0] : "") });
   }
 });
 
@@ -217,7 +224,7 @@ router.post("/tickets/:id/messages", requireAdmin, async (req: AdminRequest, res
   try {
     const { data: adminRows, error: adminErr } = await supabase
       .from("admin_users")
-      .select("email")
+      .select("email, name")
       .eq("id", req.adminId!);
 
     if (adminErr) {
@@ -228,12 +235,16 @@ router.post("/tickets/:id/messages", requireAdmin, async (req: AdminRequest, res
       return res.status(404).json({ error: "Admin not found" });
     }
 
+    const adminUser = adminRows[0];
+    const agentEmail = adminUser.email || req.email || "";
+    const agentName = adminUser.name || req.name || agentEmail.split("@")[0] || "Support";
+
     const { data: msgRow, error: msgErr } = await supabase
       .from("ticket_messages")
       .insert({
         ticket_id: id,
         sender_type: "ADMIN",
-        sender_name: adminRows[0].email,
+        sender_name: agentName,
         message: message
       })
       .select()
@@ -248,19 +259,19 @@ router.post("/tickets/:id/messages", requireAdmin, async (req: AdminRequest, res
       .update({ updated_at: new Date().toISOString() })
       .eq("id", id);
 
-    // Send email notification to customer (non-blocking)
+    // Send reply email notification to customer (non-blocking)
     const { data: ticketRows } = await supabase.from("tickets").select("*").eq("id", id);
     if (ticketRows && ticketRows.length > 0) {
       const ticket = ticketRows[0];
-      await sendEmail({
+      await sendReplyEmail({
+        toEmail: ticket.email,
         userName: ticket.name,
-        ticketEmail: ticket.email,
         ticketNumber: ticket.ticket_number,
         ticketSubject: ticket.subject,
-        ticketDetails: message,
-        to: ticket.email,
-        subject: `[CLYVEN Support] Neue Antwort zu Ticket #${ticket.ticket_number}`,
-        message: message,
+        ticketDetails: ticket.message,
+        replyMessage: message,
+        agentName: agentName,
+        agentEmail: agentEmail,
       });
     }
 

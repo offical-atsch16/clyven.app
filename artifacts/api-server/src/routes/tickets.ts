@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { supabase } from "../lib/supabase.js";
 import { logger } from "../lib/logger.js";
-import { sendEmail } from "../lib/email.js";
+import { sendEmail, sendReplyEmail } from "../lib/email.js";
 
 const router = Router();
 
@@ -240,11 +240,13 @@ router.post("/:ticketNumber/messages", async (req, res) => {
       return res.status(403).json({ error: "Passcode oder Ticket-Nummer / E-Mail ist ungültig." });
     }
 
+    const senderType = hasAdminSession ? "ADMIN" : "CUSTOMER";
+
     const { data: insertedMsg, error: msgErr } = await supabase
       .from("ticket_messages")
       .insert({
         ticket_id: ticket.id,
-        sender_type: "CUSTOMER",
+        sender_type: senderType,
         sender_name: senderName,
         message: message
       })
@@ -263,16 +265,29 @@ router.post("/:ticketNumber/messages", async (req, res) => {
     }
 
     // Send email notification on reply (non-blocking)
-    await sendEmail({
-      userName: ticket.name || senderName,
-      ticketEmail: ticket.email,
-      ticketNumber,
-      ticketSubject: ticket.subject,
-      ticketDetails: message,
-      to: ticket.email,
-      subject: `[CLYVEN Support] Neue Antwort zu Ticket #${ticketNumber}`,
-      message: message,
-    });
+    if (senderType === "ADMIN") {
+      await sendReplyEmail({
+        toEmail: ticket.email,
+        userName: ticket.name,
+        ticketNumber: ticket.ticket_number || ticketNumber,
+        ticketSubject: ticket.subject,
+        ticketDetails: ticket.message,
+        replyMessage: message,
+        agentName: senderName,
+        agentEmail: providedEmail || ticket.email,
+      });
+    } else {
+      await sendEmail({
+        userName: ticket.name || senderName,
+        ticketEmail: ticket.email,
+        ticketNumber: ticket.ticket_number || ticketNumber,
+        ticketSubject: ticket.subject,
+        ticketDetails: message,
+        to: ticket.email,
+        subject: `[CLYVEN Support] Neue Antwort zu Ticket #${ticket.ticket_number || ticketNumber}`,
+        message: message,
+      });
+    }
 
     res.json(snakeToCamel(insertedMsg));
   } catch (e: any) {
