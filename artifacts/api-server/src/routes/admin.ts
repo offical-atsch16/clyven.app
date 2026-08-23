@@ -2,6 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { clerkClient } from "@clerk/express";
 import { supabase } from "../lib/supabase.js";
 import { sendEmail, sendReplyEmail } from "../lib/email.js";
 import type { Request, Response, NextFunction } from "express";
@@ -487,22 +488,67 @@ router.post("/settings", requireAdmin, async (req, res) => {
 
 /* ==================== USER AUDIT & IMPERSONATION ==================== */
 
-// Search users by email or ID
-router.get("/users/search", requireAdmin, async (req, res) => {
-  const q = (req.query.q as string || "").trim().toLowerCase();
+// Search users via Clerk Backend API
+async function searchUsersHandler(req: Request, res: Response) {
+  const searchParam = ((req.query.search || req.query.q || "") as string).trim();
   try {
+    let clerkUsers: any[] = [];
+    try {
+      const usersResponse = await clerkClient.users.getUserList({
+        query: searchParam || undefined,
+        limit: 10,
+      });
+      clerkUsers = Array.isArray(usersResponse) ? usersResponse : usersResponse.data || [];
+    } catch (clerkErr: any) {
+      console.warn("Clerk getUserList failed or unconfigured, falling back to Supabase profiles:", clerkErr?.message);
+    }
+
+    if (clerkUsers.length > 0) {
+      const mapped = clerkUsers.map((u: any) => {
+        const primaryEmail =
+          u.emailAddresses?.find((e: any) => e.id === u.primaryEmailAddressId)?.emailAddress ||
+          u.emailAddresses?.[0]?.emailAddress ||
+          "";
+        const name = [u.firstName, u.lastName].filter(Boolean).join(" ") || primaryEmail.split("@")[0] || u.id;
+
+        return {
+          id: u.id,
+          userId: u.id,
+          email: primaryEmail,
+          name,
+          firstName: u.firstName || null,
+          lastName: u.lastName || null,
+          banned: Boolean(u.banned),
+          createdAt: u.createdAt,
+          updatedAt: u.updatedAt,
+          lastSignInAt: u.lastSignInAt || null,
+          publicMetadata: u.publicMetadata || {},
+          plan: u.publicMetadata?.plan || "free",
+        };
+      });
+      return res.json(mapped);
+    }
+
+    // Fallback search in Supabase profiles if Clerk returned no results or was unconfigured
     const { data: profiles, error } = await supabase
       .from("profiles")
       .select("*")
-      .or(`email.ilike.%${q}%,id.ilike.%${q}%,user_id.ilike.%${q}%`)
-      .limit(20);
+      .or(`email.ilike.%${searchParam}%,id.ilike.%${searchParam}%,user_id.ilike.%${searchParam}%`)
+      .limit(10);
 
     if (error) throw error;
-    res.json((profiles || []).map(snakeToCamel));
+    res.json((profiles || []).map((p: any) => ({
+      ...snakeToCamel(p),
+      banned: false,
+      createdAt: p.created_at ? new Date(p.created_at).getTime() : null,
+    })));
   } catch (e: any) {
     res.status(500).json({ error: "Search failed", detail: e.message });
   }
-});
+}
+
+router.get("/users", requireAdmin, searchUsersHandler);
+router.get("/users/search", requireAdmin, searchUsersHandler);
 
 // User audit details
 router.get("/users/:id/audit", requireAdmin, async (req, res) => {
@@ -543,16 +589,51 @@ router.get("/users/:id/audit", requireAdmin, async (req, res) => {
   }
 });
 
-// Impersonation token generation
-router.post("/users/:id/impersonate", requireAdmin, async (req: AdminRequest, res) => {
-  const { id } = req.params;
+// Impersonation token generation via native Clerk Impersonation API
+router.post("/users/:id/impersonate", requireAdmin, async (req: AdminRequest, res: Response) => {
+  const targetUserId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   try {
-    const token = jwt.sign(
-      { impersonatedUserId: id, adminId: req.adminId, role: "impersonation" },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    res.json({ success: true, token, impersonatedUserId: id });
+    let token: string | null = null;
+    let clerkTokenObj: any = null;
+
+    // Try Clerk native Impersonation APIs
+    const adminActorId = Array.isArray(req.adminId) ? req.adminId[0] : (req.adminId || "admin");
+    try {
+      if (typeof (clerkClient as any).sessions?.createImpersonationToken === "function") {
+        clerkTokenObj = await (clerkClient as any).sessions.createImpersonationToken({
+          userId: targetUserId,
+          actor: { sub: adminActorId },
+        });
+        token = clerkTokenObj?.token || clerkTokenObj?.jwt || clerkTokenObj?.id || null;
+      } else if (clerkClient.actorTokens && typeof clerkClient.actorTokens.create === "function") {
+        clerkTokenObj = await clerkClient.actorTokens.create({
+          userId: targetUserId,
+          actor: { sub: adminActorId },
+        });
+        token = clerkTokenObj?.token || clerkTokenObj?.jwt || clerkTokenObj?.id || null;
+      } else if (clerkClient.signInTokens && typeof clerkClient.signInTokens.createSignInToken === "function") {
+        clerkTokenObj = await clerkClient.signInTokens.createSignInToken({ userId: targetUserId, expiresInSeconds: 3600 });
+        token = clerkTokenObj?.token || clerkTokenObj?.url || clerkTokenObj?.id || null;
+      }
+    } catch (clerkErr: any) {
+      console.warn("Clerk impersonation API call failed, falling back to local JWT token:", clerkErr?.message);
+    }
+
+    // Fallback if Clerk impersonation was not available or failed
+    if (!token) {
+      token = jwt.sign(
+        { impersonatedUserId: targetUserId, adminId: req.adminId, role: "impersonation" },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+    }
+
+    res.json({
+      success: true,
+      token,
+      impersonatedUserId: targetUserId,
+      raw: clerkTokenObj || undefined,
+    });
   } catch (e: any) {
     res.status(500).json({ error: "Impersonation failed", detail: e.message });
   }
