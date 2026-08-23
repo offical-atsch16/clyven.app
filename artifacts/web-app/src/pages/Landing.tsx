@@ -31,7 +31,7 @@ const PLANS = [
   },
   {
     name: "CLYVEN PLUS",
-    price: "$2",
+    price: "$5",
     period: "/month",
     description: "Unlimited productivity",
     features: ["Unlimited notes", "Unlimited bookmarks", "Unlimited focus modes", "Advanced analytics", "Priority support", "Export as Markdown"],
@@ -41,7 +41,7 @@ const PLANS = [
 ];
 
 const FAQS = [
-  { q: "Is Clyven free?", a: "Yes — the Free plan is free and includes all core features. For unlimited usage, there's CLYVEN PLUS for just $2/month." },
+  { q: "Is Clyven free?", a: "Yes — the Free plan is free and includes all core features. For unlimited usage, there's CLYVEN PLUS for just $5/month." },
   { q: "Is my data stored securely?", a: "Yes. Your data is stored encrypted in the cloud. We don't sell data and don't share anything with third parties." },
   { q: "Can I use Clyven on multiple devices?", a: "Yes. Clyven automatically syncs your data across all your devices — desktop, tablet, and smartphone." },
   { q: "How can I cancel?", a: "You can cancel anytime via your profile. There is no minimum contract period and no hidden fees." },
@@ -77,7 +77,9 @@ export function Landing() {
           {/* Desktop Links (centered) */}
           <div className="hidden md:flex items-center gap-6 text-sm text-white/50">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <Link href="/pricing">
+              <span className="hover:text-white transition-colors cursor-pointer">Pricing</span>
+            </Link>
             <Link href="/support">
               <span className="hover:text-white transition-colors cursor-pointer">Support</span>
             </Link>
@@ -145,13 +147,9 @@ export function Landing() {
                 >
                   Features
                 </a>
-                <a
-                  href="#pricing"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="hover:text-white py-1 transition-colors block"
-                >
-                  Pricing
-                </a>
+                <Link href="/pricing">
+                  <span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1 transition-colors block cursor-pointer">Pricing</span>
+                </Link>
                 <Link href="/support">
                   <span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1 transition-colors block cursor-pointer">Support</span>
                 </Link>

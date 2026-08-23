@@ -285,9 +285,21 @@ router.post("/tickets", requireAdmin, async (req, res) => {
     return res.status(400).json({ error: "E-Mail, Betreff und Nachricht sind erforderlich." });
   }
   const customerName = name || email.split("@")[0];
+
   try {
-    const ticketNumber = await getNextTicketNumber();
-    const passcode = crypto.randomInt(100000, 1000000).toString();
+    let ticketNumber = "TICKET-000001";
+    try {
+      ticketNumber = await getNextTicketNumber();
+    } catch (codeErr) {
+      console.error("[ADMIN TICKET CODE GENERATION ERROR]", codeErr);
+    }
+
+    let passcode = "100000";
+    try {
+      passcode = crypto.randomInt(100000, 1000000).toString();
+    } catch (passcodeErr) {
+      console.error("[ADMIN PASSCODE GENERATION ERROR]", passcodeErr);
+    }
 
     const insertData: Record<string, any> = {
       ticket_number: ticketNumber,
@@ -302,69 +314,110 @@ router.post("/tickets", requireAdmin, async (req, res) => {
       created_by_admin: true
     };
 
-    const { data: ticket, error: ticketErr } = await supabase
+    let ticket: any = null;
+    let ticketErr: any = null;
+
+    // Try primary insertion with all metadata fields
+    const resInsert = await supabase
       .from("tickets")
       .insert(insertData)
       .select()
       .single();
 
+    ticket = resInsert.data;
+    ticketErr = resInsert.error;
+
+    // Fallback: If insertion failed (e.g., due to missing database columns priority/category/created_by_admin), retry with core fields
     if (ticketErr || !ticket) {
-      throw new Error(`Failed to create ticket: ${ticketErr?.message}`);
+      console.warn("Primary ticket insertion failed, attempting fallback insertion with core fields:", ticketErr?.message);
+      const fallbackInsertData = {
+        ticket_number: ticketNumber,
+        name: customerName,
+        email,
+        subject,
+        message,
+        passcode,
+        status: "OPEN"
+      };
+
+      const fallbackRes = await supabase
+        .from("tickets")
+        .insert(fallbackInsertData)
+        .select()
+        .single();
+
+      ticket = fallbackRes.data;
+      ticketErr = fallbackRes.error;
     }
 
-    const { error: msgErr } = await supabase
-      .from("ticket_messages")
-      .insert({
-        ticket_id: ticket.id,
-        sender_type: "ADMIN",
-        sender_name: "Support Team",
-        message: message
-      });
+    if (ticketErr || !ticket) {
+      console.error("ADMIN CREATE TICKET DATABASE ERROR:", ticketErr);
+      throw new Error(`Failed to create ticket in database: ${ticketErr?.message || "Unknown error"}`);
+    }
 
-    if (msgErr) {
-      console.error("Error inserting ticket message:", msgErr);
+    // Insert message into ticket_messages
+    try {
+      const { error: msgErr } = await supabase
+        .from("ticket_messages")
+        .insert({
+          ticket_id: ticket.id,
+          sender_type: "ADMIN",
+          sender_name: "Support Team",
+          message: message
+        });
+
+      if (msgErr) {
+        console.error("Error inserting ticket message:", msgErr);
+      }
+    } catch (msgErrEx) {
+      console.error("Exception when inserting ticket message:", msgErrEx);
     }
 
     // Trigger non-blocking email notification to customer
-    const escapedName = (customerName || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const escapedSubject = (subject || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const escapedMessage = (message || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    try {
+      const escapedName = (customerName || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const escapedSubject = (subject || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const escapedMessage = (message || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-    sendEmail({
-      to: email,
-      subject: `[CLYVEN Support] Neues Ticket #${ticketNumber}: ${subject}`,
-      ticketNumber,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
-          <div style="text-align: center; margin-bottom: 24px;">
-            <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
-            <p style="color: #666; margin: 4px 0 0;">Ein neues Support-Ticket wurde für Sie erstellt</p>
-          </div>
-          <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
-            <p style="margin: 0 0 10px; color: #aaa;">Hallo <strong>${escapedName}</strong>,</p>
-            <p style="margin: 0 0 20px; color: #aaa; line-height: 1.5;">Unser Support-Team hat ein neues Ticket für Ihr Anliegen erstellt.</p>
+      sendEmail({
+        to: email,
+        subject: `[CLYVEN Support] Neues Ticket #${ticketNumber}: ${subject}`,
+        ticketNumber,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
+              <p style="color: #666; margin: 4px 0 0;">Ein neues Support-Ticket wurde für Sie erstellt</p>
+            </div>
+            <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
+              <p style="margin: 0 0 10px; color: #aaa;">Hallo <strong>${escapedName}</strong>,</p>
+              <p style="margin: 0 0 20px; color: #aaa; line-height: 1.5;">Unser Support-Team hat ein neues Ticket für Ihr Anliegen erstellt.</p>
 
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-              <tr>
-                <td style="padding: 12px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #222; text-align: center;">
-                  <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 4px;">Ticketnummer</span>
-                  <strong style="font-size: 20px; color: #ffffff; font-family: monospace;">${ticketNumber}</strong>
-                </td>
-              </tr>
-            </table>
+              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 12px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #222; text-align: center;">
+                    <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 4px;">Ticketnummer</span>
+                    <strong style="font-size: 20px; color: #ffffff; font-family: monospace;">${ticketNumber}</strong>
+                  </td>
+                </tr>
+              </table>
 
-            <div style="border-top: 1px solid #222; padding-top: 15px;">
-              <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 8px;">Details</span>
-              <div style="color: #888; font-size: 13px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;"><strong>Betreff:</strong> ${escapedSubject}\n\n${escapedMessage}</div>
+              <div style="border-top: 1px solid #222; padding-top: 15px;">
+                <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 8px;">Details</span>
+                <div style="color: #888; font-size: 13px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;"><strong>Betreff:</strong> ${escapedSubject}\n\n${escapedMessage}</div>
+              </div>
             </div>
           </div>
-        </div>
-      `
-    }).catch((err) => console.error("Email sending failed for admin created ticket:", err));
+        `
+      }).catch((err) => console.error("[EMAIL ERROR] Versand fehlgeschlagen für admin erstelltes Ticket:", err));
+    } catch (emailTryErr) {
+      console.error("[EMAIL ERROR] Mailversand Exception abgefangen:", emailTryErr);
+    }
 
     res.json(snakeToCamel(ticket));
   } catch (e: any) {
-    res.status(500).json({ error: "Failed to create ticket", detail: e.message });
+    console.error("ADMIN CREATE TICKET ERROR:", e);
+    res.status(500).json({ error: "Failed to create ticket", detail: e.message || String(e) });
   }
 });
 
