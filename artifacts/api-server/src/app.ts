@@ -5,6 +5,7 @@ import pinoHttp from "pino-http";
 import { clerkMiddleware } from "@clerk/express";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { readOnlyGuard } from "./middlewares/readOnly.js";
 
 const app: Express = express();
 
@@ -57,7 +58,22 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-import { readOnlyGuard } from "./middlewares/readOnly.js";
+// Anti-CSRF protection middleware for state-changing requests when cookies are present
+app.use((req, res, next) => {
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method) && req.cookies && Object.keys(req.cookies).length > 0) {
+    const origin = req.headers.origin;
+    const fetchSite = req.headers["sec-fetch-site"];
+
+    if (fetchSite === "cross-site") {
+      return res.status(403).json({ error: "CSRF protection: cross-site requests with cookies are not allowed" });
+    }
+
+    if (origin && !allowedOrigins.includes(origin) && !origin.endsWith(".pages.dev")) {
+      return res.status(403).json({ error: "CSRF protection: untrusted origin" });
+    }
+  }
+  next();
+});
 
 app.use(clerkMiddleware({
   publishableKey: process.env.CLERK_PUBLISHABLE_KEY,

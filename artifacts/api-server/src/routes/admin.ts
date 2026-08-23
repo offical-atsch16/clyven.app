@@ -5,8 +5,20 @@ import crypto from "crypto";
 import { supabase } from "../lib/supabase.js";
 import { sendEmail, sendReplyEmail } from "../lib/email.js";
 import type { Request, Response, NextFunction } from "express";
+import { rateLimit } from "express-rate-limit";
 
 const router = Router();
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 100, // limit each IP to 100 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many admin requests, please try again later." },
+});
+
+router.use(adminLimiter);
+
 const JWT_SECRET = (process.env.ADMIN_JWT_SECRET || process.env.CLERK_SECRET_KEY) as string;
 if (!JWT_SECRET) {
   throw new Error("ADMIN_JWT_SECRET or CLERK_SECRET_KEY must be set");
