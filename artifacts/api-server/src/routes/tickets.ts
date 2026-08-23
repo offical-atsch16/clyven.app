@@ -68,29 +68,50 @@ async function getNextTicketNumber(): Promise<string> {
   return "TICKET-000001";
 }
 
-// Create a new ticket (public, no auth)
+// Create a new ticket (public or authenticated user)
 router.post("/", async (req, res, next) => {
   try {
-    const { name, email, subject, message } = req.body;
+    const { name, email, subject, message, clerkUserId, isVerifiedUser } = req.body;
     if (!name || !email || !subject || !message) {
       return res.status(400).json({ error: "All fields are required" });
     }
     const ticketNumber = await getNextTicketNumber();
     const passcode = crypto.randomInt(100000, 1000000).toString();
 
-    const { data: ticket, error: ticketErr } = await supabase
+    const insertPayload: Record<string, any> = {
+      ticket_number: ticketNumber,
+      name,
+      email,
+      subject,
+      message,
+      passcode,
+      status: "OPEN",
+    };
+
+    if (clerkUserId) {
+      insertPayload.clerk_user_id = clerkUserId;
+      insertPayload.is_verified_user = isVerifiedUser ?? true;
+    }
+
+    let { data: ticket, error: ticketErr } = await supabase
       .from("tickets")
-      .insert({
-        ticket_number: ticketNumber,
-        name,
-        email,
-        subject,
-        message,
-        passcode,
-        status: "OPEN"
-      })
+      .insert(insertPayload)
       .select()
       .single();
+
+    if (ticketErr && clerkUserId) {
+      // Fallback if clerk_user_id column is missing in DB
+      console.warn("Primary ticket creation with clerk_user_id failed, retrying without extended columns:", ticketErr.message);
+      delete insertPayload.clerk_user_id;
+      delete insertPayload.is_verified_user;
+      const fallbackRes = await supabase
+        .from("tickets")
+        .insert(insertPayload)
+        .select()
+        .single();
+      ticket = fallbackRes.data;
+      ticketErr = fallbackRes.error;
+    }
 
     if (ticketErr || !ticket) {
       throw new Error(`Failed to create ticket in database: ${ticketErr?.message}`);
