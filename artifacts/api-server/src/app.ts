@@ -53,7 +53,26 @@ const healthHandler = (_req: express.Request, res: express.Response) => {
 
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
+
+// Cookie Parser
 app.use(cookieParser());
+
+// Anti-CSRF protection middleware for cookie-authenticated requests
+app.use((req, res, next) => {
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
+    // If request carries cookies, enforce origin/referer header or anti-CSRF custom header validation
+    const hasCookies = req.cookies && Object.keys(req.cookies).length > 0;
+    if (hasCookies) {
+      const origin = req.headers.origin || req.headers.referer;
+      const customHeader = req.headers["x-requested-with"] || req.headers["authorization"];
+      if (!origin && !customHeader) {
+        return res.status(403).json({ error: "CSRF_PROTECTION_TRIGGERED", message: "Missing valid origin or custom request header." });
+      }
+    }
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

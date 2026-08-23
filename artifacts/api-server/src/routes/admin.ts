@@ -5,9 +5,21 @@ import crypto from "crypto";
 import { clerkClient } from "@clerk/express";
 import { supabase } from "../lib/supabase.js";
 import { sendEmail, sendReplyEmail } from "../lib/email.js";
+import { rateLimit } from "express-rate-limit";
 import type { Request, Response, NextFunction } from "express";
 
 const router = Router();
+
+// Rate limiting middleware for admin endpoints
+const adminRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // limit each IP to 200 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many admin requests, please try again later." },
+});
+
+router.use(adminRateLimiter);
 const JWT_SECRET = (process.env.ADMIN_JWT_SECRET || process.env.CLERK_SECRET_KEY) as string;
 if (!JWT_SECRET) {
   throw new Error("ADMIN_JWT_SECRET or CLERK_SECRET_KEY must be set");
