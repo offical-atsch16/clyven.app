@@ -569,19 +569,43 @@ export function AdminDashboard() {
               {/* Results list */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-2">Ergebnisse ({searchedUsers.length})</h3>
-                {searchedUsers.map((u) => (
-                  <div
-                    key={u.id}
-                    onClick={() => inspectUserAudit(u)}
-                    className="flex cursor-pointer items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 hover:bg-white/[0.05]"
-                  >
-                    <div>
-                      <p className="text-xs font-bold text-white">{u.email || u.id}</p>
-                      <p className="text-[10px] text-white/40">ID: {u.id} · Plan: <span className="uppercase font-mono text-white/70">{u.plan || "free"}</span></p>
+                {searchedUsers.length === 0 ? (
+                  <p className="text-xs text-white/30 italic">Keine Nutzer gefunden.</p>
+                ) : (
+                  searchedUsers.map((u) => (
+                    <div
+                      key={u.id}
+                      onClick={() => inspectUserAudit(u)}
+                      className="flex cursor-pointer items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 hover:bg-white/[0.05] transition-all"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-bold text-white">{u.email || u.id}</p>
+                          <span
+                            className={cn(
+                              "rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase border",
+                              u.banned
+                                ? "border-red-500/30 bg-red-500/10 text-red-300"
+                                : "border-green-500/30 bg-green-500/10 text-green-300"
+                            )}
+                          >
+                            {u.banned ? "Gesperrt" : "Aktiv"}
+                          </span>
+                          <span className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[9px] uppercase font-mono text-white/60">
+                            {u.plan || "free"}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-white/40">
+                          ID: <span className="font-mono text-white/60">{u.id}</span>
+                          {u.createdAt && (
+                            <span> · Erstellt: {new Date(u.createdAt).toLocaleDateString("de-DE")}</span>
+                          )}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-white/30 shrink-0" />
                     </div>
-                    <ChevronRight className="h-4 w-4 text-white/30" />
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
 
               {/* Audit Detail Card */}

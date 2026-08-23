@@ -241,7 +241,7 @@ export const api = {
   }).then(handleResponse),
 
   // User Audit & Impersonation
-  searchAdminUsers: (query: string) => fetch(`${API_BASE_URL}/admin/users/search?q=${encodeURIComponent(query)}`, {
+  searchAdminUsers: (query: string) => fetch(`${API_BASE_URL}/admin/users?search=${encodeURIComponent(query)}`, {
     headers: api.getAdminAuthHeaders(),
     credentials: "include",
   }).then(handleResponse),
