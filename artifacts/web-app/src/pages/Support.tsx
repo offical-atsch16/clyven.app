@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User, FileText, Loader2, ShieldAlert, KeyRound } from "lucide-react";
+import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User, FileText, Loader2, ShieldAlert, KeyRound, ShieldCheck } from "lucide-react";
+import { useUser } from "@clerk/react";
 import { API_BASE_URL } from "../lib/api";
 import { cn } from "../lib/utils";
 import { Link } from "wouter";
@@ -80,6 +81,7 @@ export function Support() {
 }
 
 function CreateTicket() {
+  const { user, isLoaded } = useUser();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -88,15 +90,30 @@ function CreateTicket() {
   const [result, setResult] = useState<{ ticketNumber: string } | null>(null);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (user) {
+      const userPrimaryEmail = user.emailAddresses?.find((e) => e.id === user.primaryEmailAddressId)?.emailAddress || user.emailAddresses?.[0]?.emailAddress || "";
+      const userFullName = user.fullName || user.firstName || userPrimaryEmail.split("@")[0] || "";
+      if (userPrimaryEmail) setEmail(userPrimaryEmail);
+      if (userFullName) setName(userFullName);
+    }
+  }, [user]);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
+      const payload: Record<string, any> = { name, email, subject, message };
+      if (user) {
+        payload.clerkUserId = user.id;
+        payload.isVerifiedUser = true;
+      }
+
       const data = await safeFetch(`${API_BASE_URL}/tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, subject, message }),
+        body: JSON.stringify(payload),
       });
       setResult({ ticketNumber: data.ticketNumber });
       setName(""); setEmail(""); setSubject(""); setMessage("");
@@ -134,6 +151,17 @@ function CreateTicket() {
   return (
     <form onSubmit={submit} className="space-y-4">
       {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">{error}</p>}
+
+      {user && (
+        <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-3.5 text-xs text-green-300 flex items-center gap-2.5">
+          <ShieldCheck className="h-4 w-4 shrink-0 text-green-400" />
+          <div>
+            <strong className="font-semibold block">Angemeldeter Nutzer</strong>
+            <span className="opacity-80">Ihre E-Mail und Nutzer-ID ({user.id}) werden automatisch mit diesem Support-Ticket verknüpft.</span>
+          </div>
+        </div>
+      )}
+
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
           <User className="h-3 w-3" /> Name

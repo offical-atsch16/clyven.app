@@ -552,8 +552,15 @@ router.get("/users/search", requireAdmin, searchUsersHandler);
 
 // User audit details
 router.get("/users/:id/audit", requireAdmin, async (req, res) => {
-  const { id } = req.params;
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   try {
+    let clerkUser: any = null;
+    try {
+      clerkUser = await clerkClient.users.getUser(id);
+    } catch {
+      // ignore if user not found in Clerk directly or unconfigured
+    }
+
     // Profile info
     const { data: profileRows } = await supabase
       .from("profiles")
@@ -561,24 +568,49 @@ router.get("/users/:id/audit", requireAdmin, async (req, res) => {
       .or(`id.eq.${id},user_id.eq.${id}`)
       .limit(1);
 
-    const profile = profileRows?.[0] || { id, userId: id, plan: "free" };
+    const primaryEmail =
+      clerkUser?.emailAddresses?.find((e: any) => e.id === clerkUser.primaryEmailAddressId)?.emailAddress ||
+      clerkUser?.emailAddresses?.[0]?.emailAddress ||
+      profileRows?.[0]?.email ||
+      id;
 
-    // Item counts
+    const isEmailVerified = clerkUser?.emailAddresses?.some((e: any) => e.verification?.status === "verified") ?? true;
+
+    const profile = profileRows?.[0] || {
+      id,
+      userId: id,
+      email: primaryEmail,
+      fullName: clerkUser ? [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") : null,
+      plan: clerkUser?.publicMetadata?.plan || "free",
+    };
+
+    // Aggregation counts from Supabase
     const { count: noteCount } = await supabase.from("notes").select("id", { count: "exact", head: true }).eq("user_id", id);
+    const { count: journalCount } = await supabase.from("journal_entries").select("id", { count: "exact", head: true }).eq("user_id", id);
     const { count: taskCount } = await supabase.from("tasks").select("id", { count: "exact", head: true }).eq("user_id", id);
     const { count: bookmarkCount } = await supabase.from("bookmarks").select("id", { count: "exact", head: true }).eq("user_id", id);
 
-    // Tickets
+    // Tickets linked via clerk_user_id, email, or name
     const { data: tickets } = await supabase
       .from("tickets")
       .select("*")
-      .or(`email.eq.${profile.email || id},name.eq.${id}`)
+      .or(`clerk_user_id.eq.${id},email.eq.${primaryEmail},name.eq.${id}`)
       .order("created_at", { ascending: false });
 
     res.json({
-      profile: snakeToCamel(profile),
+      profile: {
+        ...snakeToCamel(profile),
+        clerkId: clerkUser?.id || id,
+        email: primaryEmail,
+        emailVerified: isEmailVerified,
+        banned: Boolean(clerkUser?.banned),
+        createdAt: clerkUser?.createdAt || profile.created_at,
+        publicMetadata: clerkUser?.publicMetadata || {},
+        plan: clerkUser?.publicMetadata?.plan || profile.plan || "free",
+      },
       stats: {
         notes: noteCount || 0,
+        journals: journalCount || 0,
         tasks: taskCount || 0,
         bookmarks: bookmarkCount || 0,
       },
@@ -586,6 +618,35 @@ router.get("/users/:id/audit", requireAdmin, async (req, res) => {
     });
   } catch (e: any) {
     res.status(500).json({ error: "Audit failed", detail: e.message });
+  }
+});
+
+// Assign ticket to Clerk User ID
+router.patch("/tickets/:id/assign", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { clerkUserId } = req.body;
+  if (!clerkUserId) {
+    return res.status(400).json({ error: "clerkUserId is required" });
+  }
+  try {
+    const { data: updatedTicket, error } = await supabase
+      .from("tickets")
+      .update({
+        clerk_user_id: clerkUserId,
+        is_verified_user: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error || !updatedTicket) {
+      throw new Error(`Failed to assign ticket: ${error?.message}`);
+    }
+
+    res.json(snakeToCamel(updatedTicket));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to assign ticket", detail: e.message });
   }
 });
 

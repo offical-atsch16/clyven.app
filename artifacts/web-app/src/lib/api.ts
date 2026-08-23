@@ -50,6 +50,8 @@ export const api = {
     request<{ success: boolean; result: string; action: string }>("/ai/notes-assistant", { method: "POST", body: JSON.stringify(data) }),
   getJournalAISummary: (entries: any[]) =>
     request<{ success: boolean; summary: string }>("/ai/journal-summary", { method: "POST", body: JSON.stringify({ entries }) }),
+  aiChat: (data: { message: string; messages?: any[]; noteContext?: string }) =>
+    request<{ success: boolean; message: { role: string; content: string; timestamp: string } }>("/ai/chat", { method: "POST", body: JSON.stringify(data) }),
 
   // Notes
   getNotes: () => request<any[]>("/notes"),
@@ -178,6 +180,12 @@ export const api = {
     headers: api.getAdminAuthHeaders(),
     credentials: "include",
     body: JSON.stringify(data)
+  }).then(handleResponse),
+  assignAdminTicket: (id: string, clerkUserId: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/assign`, {
+    method: "PATCH",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ clerkUserId })
   }).then(handleResponse),
   deleteAdminTicket: (id: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}`, {
     method: "DELETE",

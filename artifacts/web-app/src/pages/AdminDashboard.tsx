@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import {
   Shield, Loader2, LogOut, Mail, MessageSquare, Clock, ChevronRight,
   Plus, Search, CheckCircle, AlertCircle, XCircle, Filter, Trash2, X, User,
-  Tag, AlertTriangle, Send
+  Tag, AlertTriangle, Send, ShieldCheck, UserCheck
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { api } from "../lib/api";
@@ -56,6 +56,11 @@ export function AdminDashboard() {
   // Delete Modal State
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Assign Ticket Modal State
+  const [assignTicketTarget, setAssignTicketTarget] = useState<any>(null);
+  const [assignClerkId, setAssignClerkId] = useState("");
+  const [assigning, setAssigning] = useState(false);
 
   // Banner state
   const [bannerModalOpen, setBannerModalOpen] = useState(false);
@@ -327,6 +332,26 @@ export function AdminDashboard() {
       console.error("Failed to delete ticket:", err);
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function handleAssignTicket(e: React.FormEvent) {
+    e.preventDefault();
+    if (!assignTicketTarget || !assignClerkId.trim()) return;
+    setAssigning(true);
+    try {
+      await api.assignAdminTicket(assignTicketTarget.id, assignClerkId.trim());
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === assignTicketTarget.id ? { ...t, clerkUserId: assignClerkId.trim(), isVerifiedUser: true } : t
+        )
+      );
+      setAssignTicketTarget(null);
+      setAssignClerkId("");
+    } catch (err: any) {
+      console.error("Failed to assign ticket:", err);
+    } finally {
+      setAssigning(false);
     }
   }
 
@@ -928,9 +953,20 @@ export function AdminDashboard() {
                         )}
                       </div>
 
-                      <p className="mt-1.5 truncate text-sm font-semibold text-white/90 group-hover:text-white transition-colors">
-                        {t.subject}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <p className="truncate text-sm font-semibold text-white/90 group-hover:text-white transition-colors">
+                          {t.subject}
+                        </p>
+                        {t.isVerifiedUser ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-green-500/15 border border-green-500/30 px-2 py-0.5 text-[10px] font-semibold text-green-300">
+                            <ShieldCheck className="h-3 w-3 text-green-400" /> Verifizierter Nutzer
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] text-amber-300">
+                            Gast-Ticket
+                          </span>
+                        )}
+                      </div>
 
                       <p className="mt-1 truncate text-xs text-white/30">
                         {t.name} · <span className="text-white/50">{t.email}</span> · Erstellt: {new Date(t.createdAt).toLocaleString("de-DE")}
@@ -953,6 +989,19 @@ export function AdminDashboard() {
                         <option value="CLOSED">Geschlossen</option>
                       </select>
                     </div>
+
+                    {/* Assign ticket to user button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAssignTicketTarget(t);
+                        setAssignClerkId(t.clerkUserId || "");
+                      }}
+                      title="Ticket einem Clerk User zuweisen"
+                      className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-1.5 text-white/30 hover:border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-300 transition-all"
+                    >
+                      <UserCheck className="h-3.5 w-3.5" />
+                    </button>
 
                     {/* Delete button */}
                     <button
@@ -1315,6 +1364,66 @@ export function AdminDashboard() {
                     className="flex items-center gap-2 rounded-xl bg-white px-5 py-2 text-xs font-semibold text-black hover:bg-white/90 transition-all disabled:opacity-50"
                   >
                     {bannerSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Banner Speichern"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ASSIGN TICKET MODAL */}
+      <AnimatePresence>
+        {assignTicketTarget && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-md rounded-2xl border border-blue-500/20 bg-[#111111] p-6 shadow-2xl"
+            >
+              <div className="flex items-center gap-2.5 text-blue-400 mb-3">
+                <UserCheck className="h-5 w-5" />
+                <h3 className="text-base font-bold text-white">Ticket User zuweisen</h3>
+              </div>
+
+              <p className="text-xs text-white/60 leading-relaxed mb-4">
+                Weisen Sie das Ticket <strong className="text-white font-mono">{assignTicketTarget.ticketNumber}</strong> ({assignTicketTarget.subject}) einer Clerk User-ID zu, um es als verifiziert zu markieren.
+              </p>
+
+              <form onSubmit={handleAssignTicket} className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-white/60">Clerk User ID *</label>
+                  <input
+                    type="text"
+                    required
+                    value={assignClerkId}
+                    onChange={(e) => setAssignClerkId(e.target.value)}
+                    placeholder="user_2x..."
+                    className="w-full font-mono rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5 text-xs text-white outline-none focus:border-white/20"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setAssignTicketTarget(null)}
+                    className="rounded-xl border border-white/[0.08] px-4 py-2 text-xs font-medium text-white/60 hover:bg-white/[0.05] transition-all"
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={assigning}
+                    className="flex items-center gap-1.5 rounded-xl bg-blue-500 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-600 transition-all disabled:opacity-50"
+                  >
+                    {assigning ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <>
+                        <UserCheck className="h-3.5 w-3.5" /> Ticket Zuweisen
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
