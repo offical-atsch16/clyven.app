@@ -45,6 +45,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  // AI Endpoints
+  getNotesAIAssistant: (data: { action: "fix_spelling" | "summarize" | "todo_list"; text: string }) =>
+    request<{ success: boolean; result: string; action: string }>("/ai/notes-assistant", { method: "POST", body: JSON.stringify(data) }),
+  getJournalAISummary: (entries: any[]) =>
+    request<{ success: boolean; summary: string }>("/ai/journal-summary", { method: "POST", body: JSON.stringify({ entries }) }),
+
   // Notes
   getNotes: () => request<any[]>("/notes"),
   createNote: (data: any) => request<any>("/notes", { method: "POST", body: JSON.stringify(data) }),

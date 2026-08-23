@@ -2,16 +2,35 @@ import { useEffect, useState } from "react";
 import { Command } from "cmdk";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import {
   Plus, Timer, BookOpen, Bookmark, BarChart2, FileText,
-  Sun, Moon, Search, LayoutDashboard, Trophy,
+  Sun, Moon, Search, LayoutDashboard, Trophy, Link2, Sparkles
 } from "lucide-react";
 import { useAppStore } from "../stores/useAppStore";
+import { api } from "../lib/api";
 
 export function CommandPalette() {
   const { commandOpen, setCommandOpen, theme, setTheme } = useAppStore();
   const [, navigate] = useLocation();
   const [query, setQuery] = useState("");
+
+  const { data: notes = [] } = useQuery({
+    queryKey: ["notes"],
+    queryFn: api.getNotes,
+    enabled: commandOpen,
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCommandOpen(!commandOpen);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [commandOpen, setCommandOpen]);
 
   useEffect(() => {
     if (!commandOpen) setQuery("");
@@ -24,6 +43,11 @@ export function CommandPalette() {
 
   const go = (path: string) => run(() => navigate(path));
 
+  const filteredNotes = notes.filter((n: any) =>
+    n.title?.toLowerCase().includes(query.toLowerCase()) ||
+    n.content?.toLowerCase().includes(query.toLowerCase())
+  );
+
   return (
     <AnimatePresence>
       {commandOpen && (
@@ -32,54 +56,68 @@ export function CommandPalette() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm"
             onClick={() => setCommandOpen(false)}
           />
-          <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]">
+          <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-lg overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111111] shadow-2xl"
+              className="w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f14] shadow-2xl"
             >
-              <Command label="Clyven" className="flex flex-col">
-                <div className="flex items-center gap-2 border-b border-white/[0.07] px-4 py-3">
-                  <Search className="h-4 w-4 text-white/30 shrink-0" />
+              <Command label="Clyven Command Palette" className="flex flex-col">
+                <div className="flex items-center gap-3 border-b border-white/[0.08] px-4 py-3.5 bg-white/[0.02]">
+                  <Search className="h-4 w-4 text-indigo-400 shrink-0" />
                   <Command.Input
                     value={query}
                     onValueChange={setQuery}
-                    placeholder="Search or enter a command..."
-                    className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/25"
+                    placeholder="Suche nach Notizen, Befehlen oder Views (Cmd + K)..."
+                    className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/30 font-medium"
                   />
-                  <kbd className="rounded border border-white/[0.08] px-1.5 py-0.5 text-[10px] text-white/20">ESC</kbd>
+                  <kbd className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-white/40 font-mono">ESC</kbd>
                 </div>
 
-                <Command.List className="max-h-72 overflow-y-auto p-2">
-                  <Command.Empty className="py-6 text-center text-sm text-white/30">
-                    No results found
+                <Command.List className="max-h-80 overflow-y-auto p-2">
+                  <Command.Empty className="py-8 text-center text-sm text-white/30">
+                    Keine Ergebnisse für "{query}"
                   </Command.Empty>
+
+                  {filteredNotes.length > 0 && (
+                    <CmdGroup heading="Notizen & Knowledge Base">
+                      {filteredNotes.slice(0, 5).map((note: any) => (
+                        <CmdItem
+                          key={note.id}
+                          icon={<FileText className="h-4 w-4 text-sky-400" />}
+                          label={note.title || "Unbenannte Notiz"}
+                          sublabel={note.content ? note.content.slice(0, 40) + "..." : "Leere Notiz"}
+                          onSelect={() => go(`/notes?id=${note.id}`)}
+                        />
+                      ))}
+                    </CmdGroup>
+                  )}
 
                   <CmdGroup heading="Navigation">
                     <CmdItem icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" onSelect={() => go("/dashboard")} />
-                    <CmdItem icon={<FileText className="h-4 w-4" />} label="Notes" onSelect={() => go("/notes")} />
-                    <CmdItem icon={<Bookmark className="h-4 w-4" />} label="Bookmarks" onSelect={() => go("/bookmarks")} />
-                    <CmdItem icon={<Timer className="h-4 w-4" />} label="Start Focus" onSelect={() => go("/focus")} />
-                    <CmdItem icon={<BookOpen className="h-4 w-4" />} label="Open Journal" onSelect={() => go("/journal")} />
-                    <CmdItem icon={<BarChart2 className="h-4 w-4" />} label="Analytics" onSelect={() => go("/analytics")} />
+                    <CmdItem icon={<FileText className="h-4 w-4" />} label="Notizen & Second Brain" onSelect={() => go("/notes")} />
+                    <CmdItem icon={<Bookmark className="h-4 w-4" />} label="Bookmarks Vault" onSelect={() => go("/bookmarks")} />
+                    <CmdItem icon={<Timer className="h-4 w-4" />} label="Focus Timer & Ambience" onSelect={() => go("/focus")} />
+                    <CmdItem icon={<BookOpen className="h-4 w-4" />} label="Daily Journal & AI Insights" onSelect={() => go("/journal")} />
+                    <CmdItem icon={<BarChart2 className="h-4 w-4" />} label="Analytics & Stats" onSelect={() => go("/analytics")} />
                     <CmdItem icon={<Trophy className="h-4 w-4" />} label="Achievements" onSelect={() => go("/achievements")} />
                   </CmdGroup>
 
-                  <CmdGroup heading="Actions">
-                    <CmdItem icon={<Plus className="h-4 w-4" />} label="New Note" onSelect={() => go("/notes?new=1")} />
-                    <CmdItem icon={<Bookmark className="h-4 w-4" />} label="New Bookmark" onSelect={() => go("/bookmarks?new=1")} />
-                    <CmdItem icon={<Timer className="h-4 w-4" />} label="Start Focus" onSelect={() => go("/focus?start=1")} />
+                  <CmdGroup heading="Aktionen">
+                    <CmdItem icon={<Plus className="h-4 w-4" />} label="Neue Notiz erstellen" onSelect={() => go("/notes?new=1")} />
+                    <CmdItem icon={<Bookmark className="h-4 w-4" />} label="Neues Bookmark speichern" onSelect={() => go("/bookmarks?new=1")} />
+                    <CmdItem icon={<Timer className="h-4 w-4" />} label="Focus Session starten" onSelect={() => go("/focus?start=1")} />
                   </CmdGroup>
 
-                  <CmdGroup heading="Design">
+                  <CmdGroup heading="Appearance">
                     <CmdItem
                       icon={theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                      label={theme === "dark" ? "Enable Light Mode" : "Enable Dark Mode"}
+                      label={theme === "dark" ? "Light Mode aktivieren" : "Dark Mode aktivieren"}
                       onSelect={() => run(() => setTheme(theme === "dark" ? "light" : "dark"))}
                     />
                   </CmdGroup>
@@ -97,21 +135,36 @@ function CmdGroup({ heading, children }: { heading: string; children: React.Reac
   return (
     <Command.Group
       heading={heading}
-      className="[&_[cmdk-group-heading]]:mb-1 [&_[cmdk-group-heading]]:mt-2 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-white/25 [&_[cmdk-group-heading]]:uppercase"
+      className="[&_[cmdk-group-heading]]:mb-1 [&_[cmdk-group-heading]]:mt-2 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-indigo-400 [&_[cmdk-group-heading]]:uppercase"
     >
       {children}
     </Command.Group>
   );
 }
 
-function CmdItem({ icon, label, onSelect }: { icon: React.ReactNode; label: string; onSelect: () => void }) {
+function CmdItem({
+  icon,
+  label,
+  sublabel,
+  onSelect,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  sublabel?: string;
+  onSelect: () => void;
+}) {
   return (
     <Command.Item
       onSelect={onSelect}
-      className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-white/60 hover:bg-white/[0.06] hover:text-white data-[selected=true]:bg-white/[0.06] data-[selected=true]:text-white transition-colors outline-none"
+      className="flex cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-sm text-white/70 hover:bg-white/[0.06] hover:text-white data-[selected=true]:bg-indigo-500/15 data-[selected=true]:text-white transition-all outline-none my-0.5"
     >
-      <span className="text-white/40">{icon}</span>
-      {label}
+      <div className="flex items-center gap-3 overflow-hidden">
+        <span className="text-white/40 shrink-0">{icon}</span>
+        <span className="truncate font-medium">{label}</span>
+      </div>
+      {sublabel && (
+        <span className="text-xs text-white/30 truncate ml-4 font-mono">{sublabel}</span>
+      )}
     </Command.Item>
   );
 }
