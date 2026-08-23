@@ -2,12 +2,21 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { rateLimit } from "express-rate-limit";
 import { clerkClient } from "@clerk/express";
 import { supabase } from "../lib/supabase.js";
 import { sendEmail, sendReplyEmail } from "../lib/email.js";
 import type { Request, Response, NextFunction } from "express";
 
 const router = Router();
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many admin requests, please try again later." },
+});
 const JWT_SECRET = (process.env.ADMIN_JWT_SECRET || process.env.CLERK_SECRET_KEY) as string;
 if (!JWT_SECRET) {
   throw new Error("ADMIN_JWT_SECRET or CLERK_SECRET_KEY must be set");
@@ -547,8 +556,8 @@ async function searchUsersHandler(req: Request, res: Response) {
   }
 }
 
-router.get("/users", requireAdmin, searchUsersHandler);
-router.get("/users/search", requireAdmin, searchUsersHandler);
+router.get("/users", adminLimiter, requireAdmin, searchUsersHandler);
+router.get("/users/search", adminLimiter, requireAdmin, searchUsersHandler);
 
 // User audit details
 router.get("/users/:id/audit", requireAdmin, async (req, res) => {
@@ -590,7 +599,7 @@ router.get("/users/:id/audit", requireAdmin, async (req, res) => {
 });
 
 // Impersonation token generation via native Clerk Impersonation API
-router.post("/users/:id/impersonate", requireAdmin, async (req: AdminRequest, res: Response) => {
+router.post("/users/:id/impersonate", adminLimiter, requireAdmin, async (req: AdminRequest, res: Response) => {
   const targetUserId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   try {
     let token: string | null = null;

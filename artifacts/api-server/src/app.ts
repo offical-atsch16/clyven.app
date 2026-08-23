@@ -54,6 +54,36 @@ const healthHandler = (_req: express.Request, res: express.Response) => {
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
 app.use(cookieParser());
+
+// Anti-CSRF protection middleware for cookie-authenticated state-changing requests
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const isStateChanging = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method.toUpperCase());
+  const hasCookies = req.cookies && Object.keys(req.cookies).length > 0;
+
+  if (isStateChanging && hasCookies) {
+    const origin = req.headers["origin"] || req.headers["referer"];
+    const secFetchSite = req.headers["sec-fetch-site"];
+    const authHeader = req.headers["authorization"] || req.headers["x-requested-with"] || req.headers["x-csrf-token"];
+
+    if (authHeader) {
+      return next();
+    }
+
+    if (secFetchSite && ["same-origin", "same-site", "none"].includes(secFetchSite as string)) {
+      return next();
+    }
+
+    if (origin) {
+      const originStr = String(origin);
+      const isAllowed = allowedOrigins.some((allowed) => originStr.startsWith(allowed)) || originStr.endsWith(".pages.dev");
+      if (!isAllowed) {
+        return res.status(403).json({ error: "Forbidden: CSRF protection triggered due to unallowed request origin" });
+      }
+    }
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
