@@ -135,5 +135,48 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type FocusSession = typeof focusSessions.$inferSelect;
 export type JournalEntry = typeof journalEntries.$inferSelect;
+export const profiles = pgTable("profiles", {
+  id: text("id").primaryKey(),
+  userId: text("user_id"),
+  email: text("email"),
+  fullName: text("full_name"),
+  role: text("role").default("user"),
+  plan: text("plan").notNull().default("free"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const systemBanners = pgTable("system_banners", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  type: text("type").notNull().default("info"),
+  isActive: boolean("is_active").notNull().default(true),
+  targetRoute: text("target_route").notNull().default("*"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const systemSettings = pgTable("system_settings", {
+  key: text("key").primaryKey(),
+  value: jsonb("value").notNull().default({}),
+  description: text("description"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const featureFlags = pgTable("feature_flags", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  flagKey: text("flag_key").notNull().unique(),
+  description: text("description"),
+  isEnabledGlobally: boolean("is_enabled_globally").notNull().default(false),
+  allowedUserIds: jsonb("allowed_user_ids").default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type Profile = typeof profiles.$inferSelect;
+export type SystemBanner = typeof systemBanners.$inferSelect;
+export type SystemSetting = typeof systemSettings.$inferSelect;
+export type FeatureFlag = typeof featureFlags.$inferSelect;
 export type UserAchievement = typeof userAchievements.$inferSelect;
 export type UserSettings = typeof userSettings.$inferSelect;

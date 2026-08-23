@@ -7,6 +7,7 @@ import { useAppStore } from "../stores/useAppStore";
 import { usePremium } from "../hooks/usePremium";
 import { usePlanSync } from "../hooks/usePlanSync";
 import { PlanBadge } from "./PlanBadge";
+import { SystemBanner } from "./SystemBanner";
 import { cn } from "../lib/utils";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -103,6 +104,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main content */}
       <main className="flex flex-1 flex-col overflow-hidden">
+        <SystemBanner />
         {/* Mobile top bar */}
         <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3 lg:hidden">
           <button onClick={() => setMobileOpen(true)} className="text-white/40 hover:text-white">

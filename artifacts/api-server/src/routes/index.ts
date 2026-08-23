@@ -10,10 +10,14 @@ import adminRouter from "./admin.js";
 import tasksRouter from "./tasks.js";
 import webhooksRouter from "./webhooks.js";
 import attachmentsRouter from "./attachments.js";
+import bannersRouter from "./banners.js";
+import flagsRouter from "./flags.js";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use("/banners", bannersRouter);
+router.use("/feature-flags", flagsRouter);
 router.use("/notes", notesRouter);
 router.use("/attachments", attachmentsRouter);
 router.use("/bookmarks", bookmarksRouter);

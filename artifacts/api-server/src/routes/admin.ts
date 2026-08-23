@@ -222,28 +222,45 @@ router.post("/tickets/:id/messages", requireAdmin, async (req: AdminRequest, res
     return res.status(400).json({ error: "Message is required" });
   }
   try {
-    const { data: adminRows, error: adminErr } = await supabase
+    const { data: adminRows } = await supabase
       .from("admin_users")
-      .select("email, name")
+      .select("id, email, name")
       .eq("id", req.adminId!);
 
-    if (adminErr) {
-      throw adminErr;
+    let agentId = req.adminId || "";
+    let agentEmail = req.email || "";
+    let agentName = req.name || "";
+
+    if (adminRows && adminRows.length > 0) {
+      const adminUser = adminRows[0];
+      agentId = adminUser.id || agentId;
+      agentEmail = adminUser.email || agentEmail;
+      agentName = adminUser.name || agentName || agentEmail.split("@")[0];
     }
 
-    if (!adminRows || !adminRows.length) {
-      return res.status(404).json({ error: "Admin not found" });
+    // Try finding profile in Supabase profiles table for detailed full_name
+    if (agentEmail) {
+      const { data: profileRows } = await supabase
+        .from("profiles")
+        .select("full_name, email, role")
+        .eq("email", agentEmail);
+      if (profileRows && profileRows.length > 0 && profileRows[0].full_name) {
+        agentName = profileRows[0].full_name;
+      }
     }
 
-    const adminUser = adminRows[0];
-    const agentEmail = adminUser.email || req.email || "";
-    const agentName = adminUser.name || req.name || agentEmail.split("@")[0] || "Support";
+    if (!agentName) {
+      agentName = "Arien Tschemeris";
+    }
 
     const { data: msgRow, error: msgErr } = await supabase
       .from("ticket_messages")
       .insert({
         ticket_id: id,
-        sender_type: "ADMIN",
+        sender_type: "agent",
+        agent_id: agentId,
+        agent_name: agentName,
+        agent_email: agentEmail,
         sender_name: agentName,
         message: message
       })
@@ -251,31 +268,45 @@ router.post("/tickets/:id/messages", requireAdmin, async (req: AdminRequest, res
       .single();
 
     if (msgErr || !msgRow) {
-      throw new Error(`Failed to insert message: ${msgErr?.message}`);
+      // Fallback insert if agent_id / agent_name columns are not yet migrated
+      const { data: fallbackMsgRow, error: fallbackErr } = await supabase
+        .from("ticket_messages")
+        .insert({
+          ticket_id: id,
+          sender_type: "ADMIN",
+          sender_name: agentName,
+          message: message
+        })
+        .select()
+        .single();
+      if (fallbackErr || !fallbackMsgRow) {
+        throw new Error(`Failed to insert message: ${msgErr?.message || fallbackErr?.message}`);
+      }
     }
 
+    // Update ticket status to 'answered' and set updated_at
     await supabase
       .from("tickets")
-      .update({ updated_at: new Date().toISOString() })
+      .update({ status: "answered", updated_at: new Date().toISOString() })
       .eq("id", id);
 
-    // Send reply email notification to customer (non-blocking)
+    // Fetch ticket details to send Courier reply email
     const { data: ticketRows } = await supabase.from("tickets").select("*").eq("id", id);
     if (ticketRows && ticketRows.length > 0) {
       const ticket = ticketRows[0];
       await sendReplyEmail({
-        toEmail: ticket.email,
-        userName: ticket.name,
-        ticketNumber: ticket.ticket_number,
+        toEmail: ticket.email || ticket.user_email,
+        userName: ticket.name || ticket.user_name || "Kunde",
+        ticketNumber: ticket.ticket_number || ticket.number,
         ticketSubject: ticket.subject,
-        ticketDetails: ticket.message,
+        ticketDetails: ticket.message || ticket.initial_description || "",
         replyMessage: message,
         agentName: agentName,
         agentEmail: agentEmail,
       });
     }
 
-    res.json(snakeToCamel(msgRow));
+    res.json(snakeToCamel(msgRow || {}));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to send message", detail: e.message });
   }
@@ -412,6 +443,278 @@ router.delete("/tickets/:id", requireAdmin, async (req, res) => {
     res.json({ success: true });
   } catch (e: any) {
     res.status(500).json({ error: "Failed to delete ticket", detail: e.message });
+  }
+});
+
+/* ==================== SYSTEM SETTINGS / READ-ONLY MODE ==================== */
+
+// Get system settings status
+router.get("/settings", requireAdmin, async (_req, res) => {
+  try {
+    const { data: rows, error } = await supabase.from("system_settings").select("*");
+    if (error) throw error;
+    res.json(rows || []);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch settings", detail: e.message });
+  }
+});
+
+// Update or set a system setting (e.g., read_only_mode)
+router.post("/settings", requireAdmin, async (req, res) => {
+  const { key, value, description } = req.body;
+  if (!key) {
+    return res.status(400).json({ error: "Setting key is required" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("system_settings")
+      .upsert({
+        key,
+        value: typeof value === "object" ? value : { enabled: Boolean(value) },
+        description: description || null,
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to update setting", detail: e.message });
+  }
+});
+
+/* ==================== USER AUDIT & IMPERSONATION ==================== */
+
+// Search users by email or ID
+router.get("/users/search", requireAdmin, async (req, res) => {
+  const q = (req.query.q as string || "").trim().toLowerCase();
+  try {
+    const { data: profiles, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .or(`email.ilike.%${q}%,id.ilike.%${q}%,user_id.ilike.%${q}%`)
+      .limit(20);
+
+    if (error) throw error;
+    res.json((profiles || []).map(snakeToCamel));
+  } catch (e: any) {
+    res.status(500).json({ error: "Search failed", detail: e.message });
+  }
+});
+
+// User audit details
+router.get("/users/:id/audit", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Profile info
+    const { data: profileRows } = await supabase
+      .from("profiles")
+      .select("*")
+      .or(`id.eq.${id},user_id.eq.${id}`)
+      .limit(1);
+
+    const profile = profileRows?.[0] || { id, userId: id, plan: "free" };
+
+    // Item counts
+    const { count: noteCount } = await supabase.from("notes").select("id", { count: "exact", head: true }).eq("user_id", id);
+    const { count: taskCount } = await supabase.from("tasks").select("id", { count: "exact", head: true }).eq("user_id", id);
+    const { count: bookmarkCount } = await supabase.from("bookmarks").select("id", { count: "exact", head: true }).eq("user_id", id);
+
+    // Tickets
+    const { data: tickets } = await supabase
+      .from("tickets")
+      .select("*")
+      .or(`email.eq.${profile.email || id},name.eq.${id}`)
+      .order("created_at", { ascending: false });
+
+    res.json({
+      profile: snakeToCamel(profile),
+      stats: {
+        notes: noteCount || 0,
+        tasks: taskCount || 0,
+        bookmarks: bookmarkCount || 0,
+      },
+      tickets: (tickets || []).map(snakeToCamel),
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: "Audit failed", detail: e.message });
+  }
+});
+
+// Impersonation token generation
+router.post("/users/:id/impersonate", requireAdmin, async (req: AdminRequest, res) => {
+  const { id } = req.params;
+  try {
+    const token = jwt.sign(
+      { impersonatedUserId: id, adminId: req.adminId, role: "impersonation" },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.json({ success: true, token, impersonatedUserId: id });
+  } catch (e: any) {
+    res.status(500).json({ error: "Impersonation failed", detail: e.message });
+  }
+});
+
+/* ==================== FEATURE FLAGS ==================== */
+
+// List feature flags
+router.get("/feature-flags", requireAdmin, async (_req, res) => {
+  try {
+    const { data: rows, error } = await supabase.from("feature_flags").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    res.json((rows || []).map(snakeToCamel));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch feature flags", detail: e.message });
+  }
+});
+
+// Create feature flag
+router.post("/feature-flags", requireAdmin, async (req, res) => {
+  const { flagKey, description, isEnabledGlobally, allowedUserIds } = req.body;
+  if (!flagKey) {
+    return res.status(400).json({ error: "flagKey is required" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("feature_flags")
+      .insert({
+        flag_key: flagKey,
+        description: description || null,
+        is_enabled_globally: isEnabledGlobally || false,
+        allowed_user_ids: Array.isArray(allowedUserIds) ? allowedUserIds : [],
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(snakeToCamel(data));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to create feature flag", detail: e.message });
+  }
+});
+
+// Update feature flag
+router.patch("/feature-flags/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { flagKey, description, isEnabledGlobally, allowedUserIds } = req.body;
+
+  const updates: Record<string, any> = { updated_at: new Date().toISOString() };
+  if (flagKey !== undefined) updates.flag_key = flagKey;
+  if (description !== undefined) updates.description = description;
+  if (isEnabledGlobally !== undefined) updates.is_enabled_globally = isEnabledGlobally;
+  if (allowedUserIds !== undefined) updates.allowed_user_ids = Array.isArray(allowedUserIds) ? allowedUserIds : [];
+
+  try {
+    const { data, error } = await supabase
+      .from("feature_flags")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(snakeToCamel(data));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to update feature flag", detail: e.message });
+  }
+});
+
+// Delete feature flag
+router.delete("/feature-flags/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { error } = await supabase.from("feature_flags").delete().eq("id", id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to delete feature flag", detail: e.message });
+  }
+});
+
+/* ==================== SYSTEM BANNERS ==================== */
+
+// List all system banners
+router.get("/banners", requireAdmin, async (_req, res) => {
+  try {
+    const { data: rows, error } = await supabase
+      .from("system_banners")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    res.json((rows || []).map(snakeToCamel));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch banners", detail: e.message });
+  }
+});
+
+// Create system banner
+router.post("/banners", requireAdmin, async (req, res) => {
+  const { title, message, type, isActive, targetRoute } = req.body;
+  if (!title || !message) {
+    return res.status(400).json({ error: "Title and message are required" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("system_banners")
+      .insert({
+        title,
+        message,
+        type: type || "info",
+        is_active: isActive !== undefined ? isActive : true,
+        target_route: targetRoute || "*",
+      })
+      .select()
+      .single();
+
+    if (error || !data) throw error;
+    res.json(snakeToCamel(data));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to create banner", detail: e.message });
+  }
+});
+
+// Update system banner
+router.patch("/banners/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { title, message, type, isActive, targetRoute } = req.body;
+
+  const updates: Record<string, any> = { updated_at: new Date().toISOString() };
+  if (title !== undefined) updates.title = title;
+  if (message !== undefined) updates.message = message;
+  if (type !== undefined) updates.type = type;
+  if (isActive !== undefined) updates.is_active = isActive;
+  if (targetRoute !== undefined) updates.target_route = targetRoute;
+
+  try {
+    const { data, error } = await supabase
+      .from("system_banners")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error || !data) throw error;
+    res.json(snakeToCamel(data));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to update banner", detail: e.message });
+  }
+});
+
+// Delete system banner
+router.delete("/banners/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { error } = await supabase.from("system_banners").delete().eq("id", id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to delete banner", detail: e.message });
   }
 });
 

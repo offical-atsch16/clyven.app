@@ -13,6 +13,24 @@ type StatusFilter = "ALL" | "OPEN" | "IN_PROGRESS" | "WAITING" | "CLOSED";
 type PriorityFilter = "ALL" | "LOW" | "MEDIUM" | "HIGH";
 
 export function AdminDashboard() {
+  const [activeTab, setActiveTab] = useState<"tickets" | "banners" | "settings" | "users" | "flags">("tickets");
+  const [featureFlags, setFeatureFlags] = useState<any[]>([]);
+  const [flagsLoading, setFlagsLoading] = useState(false);
+  const [flagModalOpen, setFlagModalOpen] = useState(false);
+  const [flagKey, setFlagKey] = useState("");
+  const [flagDesc, setFlagDesc] = useState("");
+  const [flagGlobal, setFlagGlobal] = useState(false);
+  const [flagUsers, setFlagUsers] = useState("");
+  const [flagSaving, setFlagSaving] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+  const [searchedUsers, setSearchedUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [selectedAuditUser, setSelectedAuditUser] = useState<any>(null);
+  const [auditData, setAuditData] = useState<any>(null);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [impersonatingToken, setImpersonatingToken] = useState<string | null>(null);
+  const [readOnlyMode, setReadOnlyMode] = useState(false);
+  const [settingsLoading, setSettingsLoading] = useState(false);
   const [tickets, setTickets] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("ALL");
@@ -20,6 +38,9 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [adminEmail, setAdminEmail] = useState("");
   const [, navigate] = useLocation();
+
+  const [banners, setBanners] = useState<any[]>([]);
+  const [bannersLoading, setBannersLoading] = useState(false);
 
   // Create Ticket Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,10 +57,139 @@ export function AdminDashboard() {
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Banner state
+  const [bannerModalOpen, setBannerModalOpen] = useState(false);
+  const [bannerTitle, setBannerTitle] = useState("");
+  const [bannerMessage, setBannerMessage] = useState("");
+  const [bannerType, setBannerType] = useState("info");
+  const [bannerTargetRoute, setBannerTargetRoute] = useState("*");
+  const [bannerIsActive, setBannerIsActive] = useState(true);
+  const [bannerSaving, setBannerSaving] = useState(false);
+
   useEffect(() => {
     checkAuth();
     fetchTickets();
+    fetchBanners();
+    fetchSettings();
+    fetchFlags();
   }, []);
+
+  async function fetchFlags() {
+    setFlagsLoading(true);
+    try {
+      const data = await api.getAdminFeatureFlags();
+      setFeatureFlags(data);
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      setFlagsLoading(false);
+    }
+  }
+
+  async function handleCreateFlag(e: React.FormEvent) {
+    e.preventDefault();
+    setFlagSaving(true);
+    try {
+      const allowed = flagUsers.split(",").map((s) => s.trim()).filter(Boolean);
+      await api.createAdminFeatureFlag({
+        flagKey,
+        description: flagDesc,
+        isEnabledGlobally: flagGlobal,
+        allowedUserIds: allowed,
+      });
+      setFlagModalOpen(false);
+      setFlagKey("");
+      setFlagDesc("");
+      setFlagGlobal(false);
+      setFlagUsers("");
+      await fetchFlags();
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      setFlagSaving(false);
+    }
+  }
+
+  async function toggleFlagGlobal(flag: any) {
+    try {
+      const updated = await api.updateAdminFeatureFlag(flag.id, { isEnabledGlobally: !flag.isEnabledGlobally });
+      setFeatureFlags((prev) => prev.map((f) => (f.id === flag.id ? updated : f)));
+    } catch (e: any) {
+      console.error(e);
+    }
+  }
+
+  async function handleDeleteFlag(id: string) {
+    try {
+      await api.deleteAdminFeatureFlag(id);
+      setFeatureFlags((prev) => prev.filter((f) => f.id !== id));
+    } catch (e: any) {
+      console.error(e);
+    }
+  }
+
+  async function fetchSettings() {
+    setSettingsLoading(true);
+    try {
+      const data = await api.getAdminSettings();
+      const ro = data.find((s: any) => s.key === "read_only_mode");
+      if (ro) {
+        setReadOnlyMode(ro.value?.enabled === true || ro.value === true);
+      }
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      setSettingsLoading(false);
+    }
+  }
+
+  async function toggleReadOnlyMode() {
+    const nextVal = !readOnlyMode;
+    try {
+      await api.updateAdminSetting("read_only_mode", { enabled: nextVal }, "Global Read-Only / Maintenance Mode");
+      setReadOnlyMode(nextVal);
+    } catch (e: any) {
+      console.error(e);
+    }
+  }
+
+  async function handleSearchUsers(e: React.FormEvent) {
+    e.preventDefault();
+    if (!userSearch.trim()) return;
+    setUsersLoading(true);
+    try {
+      const data = await api.searchAdminUsers(userSearch);
+      setSearchedUsers(data);
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      setUsersLoading(false);
+    }
+  }
+
+  async function inspectUserAudit(user: any) {
+    setSelectedAuditUser(user);
+    setAuditLoading(true);
+    try {
+      const data = await api.getAdminUserAudit(user.id || user.userId);
+      setAuditData(data);
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      setAuditLoading(false);
+    }
+  }
+
+  async function startImpersonation(user: any) {
+    try {
+      const res = await api.impersonateAdminUser(user.id || user.userId);
+      if (res && res.token) {
+        setImpersonatingToken(res.token);
+      }
+    } catch (e: any) {
+      console.error(e);
+    }
+  }
 
   async function checkAuth() {
     try {
@@ -61,6 +211,61 @@ export function AdminDashboard() {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchBanners() {
+    setBannersLoading(true);
+    try {
+      const data = await api.getAdminBanners();
+      setBanners(data);
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      setBannersLoading(false);
+    }
+  }
+
+  async function handleCreateBanner(e: React.FormEvent) {
+    e.preventDefault();
+    setBannerSaving(true);
+    try {
+      await api.createAdminBanner({
+        title: bannerTitle,
+        message: bannerMessage,
+        type: bannerType,
+        targetRoute: bannerTargetRoute,
+        isActive: bannerIsActive,
+      });
+      setBannerModalOpen(false);
+      setBannerTitle("");
+      setBannerMessage("");
+      setBannerType("info");
+      setBannerTargetRoute("*");
+      setBannerIsActive(true);
+      await fetchBanners();
+    } catch (e: any) {
+      console.error(e);
+    } finally {
+      setBannerSaving(false);
+    }
+  }
+
+  async function toggleBannerActive(banner: any) {
+    try {
+      const updated = await api.updateAdminBanner(banner.id, { isActive: !banner.isActive });
+      setBanners((prev) => prev.map((b) => (b.id === banner.id ? updated : b)));
+    } catch (e: any) {
+      console.error(e);
+    }
+  }
+
+  async function handleDeleteBanner(id: string) {
+    try {
+      await api.deleteAdminBanner(id);
+      setBanners((prev) => prev.filter((b) => b.id !== id));
+    } catch (e: any) {
+      console.error(e);
     }
   }
 
@@ -187,10 +392,14 @@ export function AdminDashboard() {
             </div>
 
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                if (activeTab === "tickets") setIsModalOpen(true);
+                else if (activeTab === "banners") setBannerModalOpen(true);
+                else if (activeTab === "flags") setFlagModalOpen(true);
+              }}
               className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3.5 py-1.5 text-xs font-semibold hover:bg-white/90 transition-all shadow-sm"
             >
-              <Plus className="h-3.5 w-3.5" /> Neues Ticket erstellen
+              <Plus className="h-3.5 w-3.5" /> {activeTab === "tickets" ? "Neues Ticket" : activeTab === "banners" ? "Neues Banner" : activeTab === "flags" ? "Neuer Flag" : "Aktion"}
             </button>
 
             <button
@@ -205,8 +414,325 @@ export function AdminDashboard() {
         </div>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="border-b border-white/[0.06] bg-[#0c0c0c] px-6">
+        <div className="mx-auto flex max-w-6xl gap-6">
+          <button
+            onClick={() => setActiveTab("tickets")}
+            className={cn(
+              "py-3 text-xs font-semibold transition-all border-b-2",
+              activeTab === "tickets" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white/70"
+            )}
+          >
+            Support-Tickets ({tickets.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("banners")}
+            className={cn(
+              "py-3 text-xs font-semibold transition-all border-b-2",
+              activeTab === "banners" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white/70"
+            )}
+          >
+            System-Banner ({banners.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={cn(
+              "py-3 text-xs font-semibold transition-all border-b-2",
+              activeTab === "settings" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white/70"
+            )}
+          >
+            Service Controls
+          </button>
+          <button
+            onClick={() => setActiveTab("users")}
+            className={cn(
+              "py-3 text-xs font-semibold transition-all border-b-2",
+              activeTab === "users" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white/70"
+            )}
+          >
+            User Audit & Impersonation
+          </button>
+          <button
+            onClick={() => setActiveTab("flags")}
+            className={cn(
+              "py-3 text-xs font-semibold transition-all border-b-2",
+              activeTab === "flags" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white/70"
+            )}
+          >
+            Feature Flags ({featureFlags.length})
+          </button>
+        </div>
+      </div>
+
       <div className="mx-auto max-w-6xl px-6 py-6">
-        {/* Analytics / Stats Cards */}
+        {activeTab === "flags" ? (
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-white">Feature Flags & Beta Toggles</h2>
+                <p className="text-xs text-white/40">Funktionen global schalten oder gezielt für Beta-Test-User freischalten.</p>
+              </div>
+              <button
+                onClick={() => setFlagModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 py-1.5 text-xs font-semibold hover:bg-white/90 transition-all"
+              >
+                <Plus className="h-3.5 w-3.5" /> Feature Flag Erstellen
+              </button>
+            </div>
+
+            {flagsLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-white/20" /></div>
+            ) : featureFlags.length === 0 ? (
+              <div className="py-12 text-center rounded-2xl border border-dashed border-white/[0.08] text-white/40 text-xs">
+                Keine Feature Flags angelegt.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {featureFlags.map((f) => (
+                  <div key={f.id} className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm font-mono text-white">{f.flagKey}</span>
+                        <span className={cn("rounded border px-2 py-0.5 text-[10px] font-medium", f.isEnabledGlobally ? "border-green-500/30 bg-green-500/10 text-green-300" : "border-white/10 bg-white/5 text-white/40")}>
+                          {f.isEnabledGlobally ? "Global Aktiv" : "Global Inaktiv"}
+                        </span>
+                      </div>
+                      {f.description && <p className="text-xs text-white/60">{f.description}</p>}
+                      {Array.isArray(f.allowedUserIds) && f.allowedUserIds.length > 0 && (
+                        <p className="text-[10px] text-white/40">Gefreischaltete Test-User ({f.allowedUserIds.length}): {f.allowedUserIds.join(", ")}</p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => toggleFlagGlobal(f)}
+                        className={cn(
+                          "rounded-lg px-3 py-1 text-xs font-medium transition-all border",
+                          f.isEnabledGlobally ? "border-green-500/30 bg-green-500/10 text-green-400" : "border-white/[0.1] bg-white/[0.03] text-white/40"
+                        )}
+                      >
+                        {f.isEnabledGlobally ? "Aktiv" : "Inaktiv"}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteFlag(f.id)}
+                        className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-1.5 text-white/40 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : activeTab === "users" ? (
+          <div>
+            <div className="mb-6">
+              <h2 className="text-base font-bold text-white">User Audit & Quick-Impersonation</h2>
+              <p className="text-xs text-white/40">Nutzer nach E-Mail oder ID suchen, Profil- & Aktivitätsdaten einsehen und Troubleshooting durchführen.</p>
+            </div>
+
+            {impersonatingToken && (
+              <div className="mb-6 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-xs text-yellow-300 flex items-center justify-between">
+                <div>
+                  <strong className="font-semibold block">Impersonation Mode Aktiv</strong>
+                  <span className="opacity-90">Session-Token für {selectedAuditUser?.email || selectedAuditUser?.id} generiert.</span>
+                </div>
+                <button
+                  onClick={() => setImpersonatingToken(null)}
+                  className="rounded-lg bg-yellow-500/20 px-3 py-1.5 font-semibold text-yellow-200 hover:bg-yellow-500/30"
+                >
+                  Beenden
+                </button>
+              </div>
+            )}
+
+            <form onSubmit={handleSearchUsers} className="mb-6 flex gap-3 max-w-md">
+              <input
+                type="text"
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                placeholder="Nutzer E-Mail oder ID eingeben..."
+                className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2 text-xs text-white outline-none focus:border-white/20"
+              />
+              <button
+                type="submit"
+                disabled={usersLoading}
+                className="rounded-xl bg-white px-4 py-2 text-xs font-semibold text-black hover:bg-white/90"
+              >
+                {usersLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Suchen"}
+              </button>
+            </form>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {/* Results list */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-white/40 mb-2">Ergebnisse ({searchedUsers.length})</h3>
+                {searchedUsers.map((u) => (
+                  <div
+                    key={u.id}
+                    onClick={() => inspectUserAudit(u)}
+                    className="flex cursor-pointer items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 hover:bg-white/[0.05]"
+                  >
+                    <div>
+                      <p className="text-xs font-bold text-white">{u.email || u.id}</p>
+                      <p className="text-[10px] text-white/40">ID: {u.id} · Plan: <span className="uppercase font-mono text-white/70">{u.plan || "free"}</span></p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-white/30" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Audit Detail Card */}
+              {selectedAuditUser && (
+                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
+                  <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
+                    <div>
+                      <h3 className="text-sm font-bold text-white">{selectedAuditUser.email || selectedAuditUser.id}</h3>
+                      <span className="text-[10px] font-mono text-white/40">{selectedAuditUser.id}</span>
+                    </div>
+
+                    <button
+                      onClick={() => startImpersonation(selectedAuditUser)}
+                      className="rounded-lg bg-yellow-400 text-black px-3 py-1 text-xs font-semibold hover:bg-yellow-300"
+                    >
+                      Impersonate Mode
+                    </button>
+                  </div>
+
+                  {auditLoading ? (
+                    <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-white/20" /></div>
+                  ) : auditData ? (
+                    <div className="space-y-4 text-xs">
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-center">
+                          <span className="text-[10px] text-white/40 uppercase block">Notizen</span>
+                          <span className="text-base font-bold text-white">{auditData.stats.notes}</span>
+                        </div>
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-center">
+                          <span className="text-[10px] text-white/40 uppercase block">Tasks</span>
+                          <span className="text-base font-bold text-white">{auditData.stats.tasks}</span>
+                        </div>
+                        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 text-center">
+                          <span className="text-[10px] text-white/40 uppercase block">Bookmarks</span>
+                          <span className="text-base font-bold text-white">{auditData.stats.bookmarks}</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-white/40 block mb-1">Ticket Historie ({auditData.tickets.length}):</span>
+                        {auditData.tickets.length === 0 ? (
+                          <p className="text-white/20 italic">Keine Support-Tickets vorhanden</p>
+                        ) : (
+                          <div className="space-y-1">
+                            {auditData.tickets.map((t: any) => (
+                              <div key={t.id} className="rounded-lg border border-white/[0.06] bg-white/[0.01] p-2 flex justify-between">
+                                <span className="font-mono text-white/60">{t.ticketNumber}</span>
+                                <span className="text-white/80">{t.subject}</span>
+                                <span className="text-white/40">{t.status}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : activeTab === "settings" ? (
+          <div>
+            <div className="mb-6">
+              <h2 className="text-base font-bold text-white">Service Controls & Read-Only / Kill-Switch Mode</h2>
+              <p className="text-xs text-white/40">Globale Schalter zur Steuerung der Systemverfügbarkeit und Schreibzugriffe.</p>
+            </div>
+
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 max-w-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">Read-Only / Maintenance Mode</h3>
+                  <p className="text-xs text-white/50 mt-1 leading-relaxed">
+                    Sperrt alle schreibenden Operationen im User-Frontend (Erstellen/Speichern von Notizen, Tasks etc.).
+                  </p>
+                </div>
+
+                <button
+                  onClick={toggleReadOnlyMode}
+                  disabled={settingsLoading}
+                  className={cn(
+                    "rounded-xl px-4 py-2 text-xs font-semibold transition-all border shrink-0",
+                    readOnlyMode
+                      ? "border-red-500/40 bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                      : "border-white/10 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                  )}
+                >
+                  {readOnlyMode ? "Wartungsmodus AKTIV" : "Wartungsmodus Inaktiv"}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : activeTab === "banners" ? (
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-white">System-Banner Konfiguration</h2>
+                <p className="text-xs text-white/40">Verwalten und schalten Sie Benachrichtigungsbanner für Frontend-Routen.</p>
+              </div>
+              <button
+                onClick={() => setBannerModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 py-1.5 text-xs font-semibold hover:bg-white/90 transition-all"
+              >
+                <Plus className="h-3.5 w-3.5" /> Banner Hinzufügen
+              </button>
+            </div>
+
+            {bannersLoading ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-white/20" /></div>
+            ) : banners.length === 0 ? (
+              <div className="py-12 text-center rounded-2xl border border-dashed border-white/[0.08] text-white/40 text-xs">
+                Keine System-Banner vorhanden.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {banners.map((b) => (
+                  <div key={b.id} className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm text-white">{b.title}</span>
+                        <span className="rounded bg-white/[0.06] px-2 py-0.5 text-[10px] uppercase font-mono text-white/60">{b.type}</span>
+                        <span className="rounded bg-blue-500/10 text-blue-300 border border-blue-500/20 px-2 py-0.5 text-[10px] font-mono">
+                          Route: {b.targetRoute}
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/70">{b.message}</p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => toggleBannerActive(b)}
+                        className={cn(
+                          "rounded-lg px-3 py-1 text-xs font-medium transition-all border",
+                          b.isActive ? "border-green-500/30 bg-green-500/10 text-green-400" : "border-white/[0.1] bg-white/[0.03] text-white/40"
+                        )}
+                      >
+                        {b.isActive ? "Aktiv" : "Inaktiv"}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteBanner(b.id)}
+                        className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-1.5 text-white/40 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
           <div
             onClick={() => setStatusFilter("ALL")}
@@ -423,6 +949,8 @@ export function AdminDashboard() {
             })}
           </div>
         )}
+          </>
+        )}
       </div>
 
       {/* CREATE TICKET MODAL */}
@@ -556,6 +1084,213 @@ export function AdminDashboard() {
                         <Send className="h-3.5 w-3.5" /> Ticket Erstellen
                       </>
                     )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* CREATE FEATURE FLAG MODAL */}
+      <AnimatePresence>
+        {flagModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-xl rounded-2xl border border-white/[0.1] bg-[#111111] p-6 shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.05]">
+                    <Plus className="h-4 w-4 text-white/80" />
+                  </div>
+                  <h2 className="text-base font-bold text-white">Neues Feature Flag erstellen</h2>
+                </div>
+                <button
+                  onClick={() => setFlagModalOpen(false)}
+                  className="rounded-lg p-1 text-white/40 hover:bg-white/[0.08] hover:text-white transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateFlag} className="mt-4 space-y-4">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-white/60">Flag Key * (z. B. focus_timer_v2)</label>
+                  <input
+                    type="text"
+                    required
+                    value={flagKey}
+                    onChange={(e) => setFlagKey(e.target.value)}
+                    placeholder="focus_timer_v2"
+                    className="w-full font-mono rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5 text-xs text-white outline-none focus:border-white/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-white/60">Beschreibung</label>
+                  <textarea
+                    rows={2}
+                    value={flagDesc}
+                    onChange={(e) => setFlagDesc(e.target.value)}
+                    placeholder="Beschreibung der neuen Funktionalität..."
+                    className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5 text-xs text-white outline-none focus:border-white/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-white/60">Freigeschaltete User IDs (Kommagetrennt für Beta-Tester)</label>
+                  <input
+                    type="text"
+                    value={flagUsers}
+                    onChange={(e) => setFlagUsers(e.target.value)}
+                    placeholder="user_123, user_456"
+                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5 text-xs text-white outline-none focus:border-white/20 font-mono"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="flagGlobal"
+                    checked={flagGlobal}
+                    onChange={(e) => setFlagGlobal(e.target.checked)}
+                    className="rounded border-white/20 bg-white/5"
+                  />
+                  <label htmlFor="flagGlobal" className="text-xs text-white/80 cursor-pointer">
+                    Global für ALLE User aktivieren
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setFlagModalOpen(false)}
+                    className="rounded-xl border border-white/[0.08] px-4 py-2 text-xs font-medium text-white/60 hover:bg-white/[0.05] transition-all"
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={flagSaving}
+                    className="flex items-center gap-2 rounded-xl bg-white px-5 py-2 text-xs font-semibold text-black hover:bg-white/90 transition-all disabled:opacity-50"
+                  >
+                    {flagSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Flag Speichern"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* CREATE BANNER MODAL */}
+      <AnimatePresence>
+        {bannerModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-xl rounded-2xl border border-white/[0.1] bg-[#111111] p-6 shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.05]">
+                    <Plus className="h-4 w-4 text-white/80" />
+                  </div>
+                  <h2 className="text-base font-bold text-white">Neues System-Banner erstellen</h2>
+                </div>
+                <button
+                  onClick={() => setBannerModalOpen(false)}
+                  className="rounded-lg p-1 text-white/40 hover:bg-white/[0.08] hover:text-white transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateBanner} className="mt-4 space-y-4">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-white/60">Titel *</label>
+                  <input
+                    type="text"
+                    required
+                    value={bannerTitle}
+                    onChange={(e) => setBannerTitle(e.target.value)}
+                    placeholder="z. B. Geplante Wartungsarbeiten"
+                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5 text-xs text-white outline-none focus:border-white/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-white/60">Nachricht *</label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={bannerMessage}
+                    onChange={(e) => setBannerMessage(e.target.value)}
+                    placeholder="z. B. Am Sonntag zwischen 02:00 und 04:00 Uhr finden Updates statt."
+                    className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5 text-xs text-white outline-none focus:border-white/20"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-white/60">Typ</label>
+                    <select
+                      value={bannerType}
+                      onChange={(e) => setBannerType(e.target.value)}
+                      className="w-full rounded-xl border border-white/[0.08] bg-[#181818] px-3.5 py-2.5 text-xs text-white outline-none focus:border-white/20"
+                    >
+                      <option value="info">Info (Blau)</option>
+                      <option value="warning">Warnung (Gelb/Orange)</option>
+                      <option value="error">Fehler (Rot)</option>
+                      <option value="success">Erfolg (Grün)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-white/60">Ziel-Route (* für alle)</label>
+                    <input
+                      type="text"
+                      value={bannerTargetRoute}
+                      onChange={(e) => setBannerTargetRoute(e.target.value)}
+                      placeholder="z. B. /notes oder *"
+                      className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-2.5 text-xs text-white outline-none focus:border-white/20"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="bannerActive"
+                    checked={bannerIsActive}
+                    onChange={(e) => setBannerIsActive(e.target.checked)}
+                    className="rounded border-white/20 bg-white/5"
+                  />
+                  <label htmlFor="bannerActive" className="text-xs text-white/80 cursor-pointer">
+                    Sofort aktivieren
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setBannerModalOpen(false)}
+                    className="rounded-xl border border-white/[0.08] px-4 py-2 text-xs font-medium text-white/60 hover:bg-white/[0.05] transition-all"
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={bannerSaving}
+                    className="flex items-center gap-2 rounded-xl bg-white px-5 py-2 text-xs font-semibold text-black hover:bg-white/90 transition-all disabled:opacity-50"
+                  >
+                    {bannerSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Banner Speichern"}
                   </button>
                 </div>
               </form>
