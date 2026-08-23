@@ -124,7 +124,7 @@ export function Pricing() {
                   <p className="mt-1 text-sm text-yellow-200/60">Unbegrenzte Produktivität & alle Profi-Tools</p>
                 </div>
                 <div className="mb-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">2 €</span>
+                  <span className="text-4xl font-bold text-white">5 $</span>
                   <span className="text-sm text-white/40">/ Monat</span>
                 </div>
                 <ul className="space-y-3 mb-8 text-sm text-white/90">
