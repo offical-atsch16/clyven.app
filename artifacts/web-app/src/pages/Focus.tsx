@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Play, Pause, RotateCcw, Timer, CircleCheck as CheckCircle, Flame, Clock, Volume2, VolumeX, CloudRain, Trees, Coffee, Flame as FlameIcon, Save as Waves, Wind } from "lucide-react";
+import { Play, Pause, RotateCcw, Timer, CircleCheck as CheckCircle, Flame, Clock, Volume2, VolumeX, CloudRain, Music, Radio } from "lucide-react";
 import { api } from "../lib/api";
 import { cn, formatMinutes } from "../lib/utils";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const MODES = [
   { key: "pomodoro", label: "Pomodoro", work: 25, break: 5 },
@@ -13,12 +15,9 @@ const MODES = [
 ];
 
 const AMBIENT_SOUNDS = [
-  { key: "rain", label: "Rain", icon: CloudRain, url: "https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3" },
-  { key: "forest", label: "Forest", icon: Trees, url: "https://cdn.pixabay.com/download/audio/2021/08/09/audio_dc39a0b8eb.mp3" },
-  { key: "cafe", label: "Café", icon: Coffee, url: "https://cdn.pixabay.com/download/audio/2022/10/25/audio_7c5e3b9c4a.mp3" },
-  { key: "fireplace", label: "Fireplace", icon: FlameIcon, url: "https://cdn.pixabay.com/download/audio/2022/03/10/audio_8e0f5e7c8e.mp3" },
-  { key: "waves", label: "Waves", icon: Waves, url: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_9f5f5e3e9d.mp3" },
-  { key: "wind", label: "Wind", icon: Wind, url: "https://cdn.pixabay.com/download/audio/2022/02/23/audio_b6b0e6e0f9.mp3" },
+  { key: "rain", label: "Rain", icon: CloudRain, url: `${basePath}/sounds/rain.mp3` },
+  { key: "lofi", label: "Lofi", icon: Music, url: `${basePath}/sounds/lofi.mp3` },
+  { key: "white-noise", label: "White Noise", icon: Radio, url: `${basePath}/sounds/white-noise.mp3` },
 ];
 
 const MOTIVATIONS = [
@@ -228,9 +227,9 @@ export function Focus() {
             {/* Ambient Sounds */}
             <div className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
               <div className="mb-4 flex items-center justify-between">
-                <p className="text-xs font-medium uppercase tracking-widest text-white/25">Ambient Sounds</p>
+                <p className="text-xs font-medium uppercase tracking-widest text-white/25">Ambient Soundscapes</p>
                 <button onClick={() => setAmbientEnabled(!ambientEnabled)}
-                  className={cn("rounded-lg p-1.5 transition-colors", ambientEnabled ? "text-white/70" : "text-white/25 hover:text-white/60")}>
+                  className={cn("rounded-lg p-1.5 transition-colors cursor-pointer", ambientEnabled ? "text-white/70" : "text-white/25 hover:text-white/60")}>
                   {ambientEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                 </button>
               </div>
@@ -239,12 +238,12 @@ export function Focus() {
                   const Icon = sound.icon;
                   return (
                     <button key={sound.key} onClick={() => { setAmbientSound(sound); setAmbientEnabled(true); }}
-                      className={cn("flex flex-col items-center gap-1.5 rounded-xl p-3 transition-all",
+                      className={cn("flex flex-col items-center gap-1.5 rounded-xl p-3 transition-all cursor-pointer",
                         ambientSound.key === sound.key && ambientEnabled
                           ? "border border-white/20 bg-white/[0.08]"
                           : "border border-transparent hover:bg-white/[0.04]")}>
-                      <Icon className={cn("h-4 w-4", ambientSound.key === sound.key && ambientEnabled ? "text-white/70" : "text-white/30")} />
-                      <span className={cn("text-[10px]", ambientSound.key === sound.key && ambientEnabled ? "text-white/60" : "text-white/30")}>{sound.label}</span>
+                      <Icon className={cn("h-4 w-4", ambientSound.key === sound.key && ambientEnabled ? "text-indigo-400" : "text-white/30")} />
+                      <span className={cn("text-[10px]", ambientSound.key === sound.key && ambientEnabled ? "text-white/80 font-medium" : "text-white/30")}>{sound.label}</span>
                     </button>
                   );
                 })}
@@ -254,7 +253,7 @@ export function Focus() {
                   <VolumeX className="h-3 w-3 text-white/30" />
                   <input type="range" value={ambientVolume} onChange={(e) => setAmbientVolume(Number(e.target.value))}
                     min={0} max={100}
-                    className="flex-1 h-1 rounded-full appearance-none bg-white/10 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/60 cursor-pointer" />
+                    className="flex-1 h-1 rounded-full appearance-none bg-white/10 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-400 cursor-pointer" />
                   <Volume2 className="h-3 w-3 text-white/30" />
                 </div>
               )}

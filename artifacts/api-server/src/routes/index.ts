@@ -12,6 +12,7 @@ import webhooksRouter from "./webhooks.js";
 import attachmentsRouter from "./attachments.js";
 import bannersRouter from "./banners.js";
 import flagsRouter from "./flags.js";
+import aiRouter from "./ai.js";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use("/tickets", ticketsRouter);
 router.use("/admin", adminRouter);
 router.use("/tasks", tasksRouter);
 router.use("/webhooks", webhooksRouter);
+router.use("/ai", aiRouter);
 
 export default router;

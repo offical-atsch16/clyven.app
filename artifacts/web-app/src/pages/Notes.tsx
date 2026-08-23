@@ -1,16 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Plus, Search, FileText, Star, Pin, Trash2, X, Save,
-  Download, Zap, Crown, Copy, Check, Tag,
+  Download, Zap, Crown, Copy, Check, Tag, Sparkles, Link as LinkIcon, ArrowUpRight, Wand2
 } from "lucide-react";
 import { api } from "../lib/api";
 import { cn, countWords, formatRelative } from "../lib/utils";
 import { usePremium, FREE_LIMITS } from "../hooks/usePremium";
 import { UpgradeModal } from "../components/UpgradeModal";
 import { NoteFileUpload } from "../components/NoteFileUpload";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 
 const COLORS = [
   { key: "default", cls: "bg-white/[0.03]" },
@@ -30,8 +30,8 @@ function NoteColor({ selected, cls, onClick }: any) {
 
 export function Notes() {
   const qc = useQueryClient();
-  const { isPremium, openUpgrade } = usePremium();
-  const [, navigate] = useLocation();
+  const { isPremium } = usePremium();
+  const searchParams = useSearch();
 
   const { data: notes = [], isLoading } = useQuery({ queryKey: ["notes"], queryFn: api.getNotes, retry: 1 });
   const createNote = useMutation({
@@ -56,8 +56,10 @@ export function Notes() {
   const [editColor, setEditColor] = useState("default");
   const [saving, setSaving] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [upgradeReason, setUpgradeReason] = useState<string | undefined>(undefined);
   const [noteCopied, setNoteCopied] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [aiLoading, setAiLoading] = useState(false);
 
   const atLimit = !isPremium && notes.length >= FREE_LIMITS.notes;
 
@@ -67,6 +69,16 @@ export function Notes() {
     setEditContent(note.content);
     setEditColor(note.color || "default");
   };
+
+  // Handle URL search params e.g. /notes?id=xxx or ?new=1
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    const noteId = params.get("id");
+    if (noteId && notes.length > 0) {
+      const found = notes.find((n: any) => n.id === noteId);
+      if (found) selectNote(found);
+    }
+  }, [searchParams, notes]);
 
   const save = useCallback(async () => {
     if (!selected) return;
@@ -82,11 +94,85 @@ export function Notes() {
   }, [editTitle, editContent, editColor]);
 
   const handleNew = async () => {
-    if (atLimit) { setUpgradeOpen(true); return; }
+    if (atLimit) {
+      setUpgradeReason(`Du hast das Free-Limit von ${FREE_LIMITS.notes} Notizen erreicht. Upgrade für unbegrenzte Notizen.`);
+      setUpgradeOpen(true);
+      return;
+    }
     try {
       const note = await createNote.mutateAsync({ title: "New Note", content: "" });
       selectNote(note);
     } catch {}
+  };
+
+  // AI Assistant Action Handlers
+  const handleAiAction = async (action: "fix_spelling" | "summarize" | "todo_list") => {
+    if (!isPremium) {
+      setUpgradeReason("Schalte Clyven AI mit Premium frei, um automatische Korrekturen, Zusammenfassungen und To-Do-Listen zu generieren.");
+      setUpgradeOpen(true);
+      return;
+    }
+
+    if (!editContent.trim()) return;
+
+    try {
+      setAiLoading(true);
+      const res = await api.getNotesAIAssistant({ action, text: editContent });
+      if (res.result) {
+        if (action === "fix_spelling") {
+          setEditContent(res.result);
+        } else {
+          setEditContent((prev) => prev + "\n\n" + res.result);
+        }
+      }
+    } catch (err: any) {
+      if (err.message?.includes("PREMIUM_REQUIRED")) {
+        setUpgradeReason("Schalte Clyven AI mit Premium frei, um automatische Korrekturen, Zusammenfassungen und To-Do-Listen zu generieren.");
+        setUpgradeOpen(true);
+      }
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Bidirectional Backlinks logic
+  const backlinks = useMemo(() => {
+    if (!selected) return [];
+    const currentTitle = selected.title.trim().toLowerCase();
+    if (!currentTitle) return [];
+
+    return notes.filter((n: any) => {
+      if (n.id === selected.id) return false;
+      const content = (n.content || "").toLowerCase();
+      return content.includes(`[[${currentTitle}]]`);
+    });
+  }, [selected, notes]);
+
+  const renderContentWithWikiLinks = (content: string) => {
+    const parts = content.split(/(\[\[.*?\]\])/g);
+    return parts.map((part, index) => {
+      if (part.startsWith("[[") && part.endsWith("]]")) {
+        const title = part.slice(2, -2).trim();
+        const targetNote = notes.find((n: any) => n.title.toLowerCase().trim() === title.toLowerCase());
+        return (
+          <span
+            key={index}
+            onClick={() => targetNote && selectNote(targetNote)}
+            className={cn(
+              "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium cursor-pointer transition-colors border",
+              targetNote
+                ? "border-sky-500/30 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20"
+                : "border-white/10 bg-white/5 text-white/40 hover:text-white/60"
+            )}
+            title={targetNote ? `Zur Notiz: "${targetNote.title}"` : `Notiz "${title}" existiert noch nicht`}
+          >
+            <LinkIcon className="h-3 w-3" />
+            {title}
+          </span>
+        );
+      }
+      return part;
+    });
   };
 
   const exportMarkdown = () => {
@@ -115,7 +201,7 @@ export function Notes() {
       {upgradeOpen && (
         <UpgradeModal
           onClose={() => setUpgradeOpen(false)}
-          reason={`Du hast das Free-Limit von ${FREE_LIMITS.notes} Notizen erreicht. Upgrade für unbegrenzte Notizen.`}
+          reason={upgradeReason || `Du hast das Free-Limit von ${FREE_LIMITS.notes} Notizen erreicht. Upgrade für unbegrenzte Notizen.`}
         />
       )}
 
@@ -148,7 +234,7 @@ export function Notes() {
               <div className="mb-1 flex justify-between text-[10px] text-white/25">
                 <span>{notes.length}/{FREE_LIMITS.notes} notes</span>
                 {atLimit && (
-                  <button onClick={() => setUpgradeOpen(true)} className="text-yellow-400/60 hover:text-yellow-400 cursor-pointer">
+                  <button onClick={() => { setUpgradeReason(`Du hast das Free-Limit von ${FREE_LIMITS.notes} Notizen erreicht. Upgrade für unbegrenzte Notizen.`); setUpgradeOpen(true); }} className="text-yellow-400/60 hover:text-yellow-400 cursor-pointer">
                     Upgrade →
                   </button>
                 )}
@@ -227,15 +313,46 @@ export function Notes() {
       {/* Editor */}
       {selected ? (
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-3">
-            <button onClick={() => setSelected(null)} className="lg:hidden text-white/40 hover:text-white cursor-pointer">
-              <X className="h-4 w-4" />
-            </button>
-            <div className="flex flex-1 items-center gap-2">
-              {COLORS.map((c) => (
-                <NoteColor key={c.key} cls={c.cls} selected={editColor === c.key} onClick={() => setEditColor(c.key)} />
-              ))}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] px-5 py-3">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setSelected(null)} className="lg:hidden text-white/40 hover:text-white cursor-pointer">
+                <X className="h-4 w-4" />
+              </button>
+              <div className="flex items-center gap-2">
+                {COLORS.map((c) => (
+                  <NoteColor key={c.key} cls={c.cls} selected={editColor === c.key} onClick={() => setEditColor(c.key)} />
+                ))}
+              </div>
             </div>
+
+            {/* AI Action Toolbar */}
+            <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/10 rounded-xl p-1">
+              <span className="text-[10px] font-semibold text-indigo-300 px-2 flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-sky-400" /> AI
+              </span>
+              <button
+                onClick={() => handleAiAction("fix_spelling")}
+                disabled={aiLoading}
+                className="px-2 py-1 text-[11px] font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+              >
+                Korrektur
+              </button>
+              <button
+                onClick={() => handleAiAction("summarize")}
+                disabled={aiLoading}
+                className="px-2 py-1 text-[11px] font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+              >
+                Zusammenfassen
+              </button>
+              <button
+                onClick={() => handleAiAction("todo_list")}
+                disabled={aiLoading}
+                className="px-2 py-1 text-[11px] font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+              >
+                + To-Dos
+              </button>
+            </div>
+
             <div className="flex items-center gap-2">
               <button onClick={() => updateNote.mutateAsync({ id: selected.id, isPinned: !selected.isPinned })}
                 className={cn("rounded-lg p-1.5 transition-colors cursor-pointer", selected.isPinned ? "text-white/70" : "text-white/25 hover:text-white/60")}>
@@ -281,9 +398,33 @@ export function Notes() {
             <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)}
               className="mb-4 w-full bg-transparent text-2xl font-bold text-white outline-none placeholder:text-white/20"
               placeholder="Title..." />
+
             <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)}
-              className="min-h-[200px] flex-1 resize-none bg-transparent text-sm text-white/70 outline-none placeholder:text-white/20 leading-relaxed"
-              placeholder="Start writing..." />
+              className="min-h-[220px] flex-1 resize-none bg-transparent text-sm text-white/70 outline-none placeholder:text-white/20 leading-relaxed font-mono"
+              placeholder="Schreibe deinen Text... Tippe [[Notiz-Titel]], um andere Notizen bidirektional zu verknüpfen." />
+
+            {/* Backlinks display panel */}
+            {backlinks.length > 0 && (
+              <div className="mt-6 border-t border-white/10 pt-4">
+                <div className="flex items-center gap-2 text-xs font-semibold text-indigo-300 uppercase tracking-wider mb-2">
+                  <LinkIcon className="h-3.5 w-3.5 text-sky-400" />
+                  Backlinks ({backlinks.length}) — Verknüpfte Notizen
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {backlinks.map((b: any) => (
+                    <div
+                      key={b.id}
+                      onClick={() => selectNote(b)}
+                      className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] p-3 hover:bg-white/[0.08] cursor-pointer transition-all"
+                    >
+                      <span className="text-xs font-medium text-white/80 truncate">{b.title}</span>
+                      <ArrowUpRight className="h-3.5 w-3.5 text-white/40 shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="mt-4 flex items-center gap-4 text-xs text-white/20">
               <span>{countWords(editContent)} words</span>
               <span>{editContent.length} characters</span>
@@ -306,7 +447,7 @@ export function Notes() {
               </button>
             )}
             {atLimit && (
-              <button onClick={() => setUpgradeOpen(true)}
+              <button onClick={() => { setUpgradeReason(`Du hast das Free-Limit von ${FREE_LIMITS.notes} Notizen erreicht. Upgrade für unbegrenzte Notizen.`); setUpgradeOpen(true); }}
                 className="mt-4 flex items-center gap-2 rounded-lg border border-yellow-400/20 bg-yellow-400/5 px-4 py-2 text-sm text-yellow-400/70 hover:bg-yellow-400/10 mx-auto transition-colors cursor-pointer">
                 <Crown className="h-4 w-4" /> Upgrade for more notes
               </button>
