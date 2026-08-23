@@ -22,21 +22,29 @@ router.post("/", setupLimiter, async (_req, res) => {
       // Check if admin user already exists using Supabase Client
       const { data: existing, error: checkError } = await supabase
         .from("admin_users")
-        .select("id")
+        .select("id, name")
         .eq("email", seedEmail);
 
       if (checkError) {
         throw new Error(`Failed to check existing admin: ${checkError.message}. Make sure the tables exist in Supabase (you can run migration SQL in your Supabase Dashboard SQL Editor).`);
       }
 
+      const seedName = process.env.ADMIN_INITIAL_NAME || "Arien Tschemeris";
+
       if (!existing || existing.length === 0) {
         const hash = await bcrypt.hash(seedPassword, 12);
         const { error: insertError } = await supabase
           .from("admin_users")
-          .insert({ email: seedEmail, password_hash: hash });
+          .insert({ email: seedEmail, password_hash: hash, name: seedName });
 
         if (insertError) {
-          throw new Error(`Failed to seed admin user: ${insertError.message}`);
+          // If inserting with name fails due to missing column, fallback to without name
+          const { error: fallbackError } = await supabase
+            .from("admin_users")
+            .insert({ email: seedEmail, password_hash: hash });
+          if (fallbackError) {
+            throw new Error(`Failed to seed admin user: ${insertError.message}`);
+          }
         }
         seeded = true;
       }
