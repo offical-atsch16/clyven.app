@@ -80,6 +80,12 @@ export const api = {
   updateTask: (id: string, data: any) => request<any>(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteTask: (id: string) => request<any>(`/tasks/${id}`, { method: "DELETE" }),
 
+  // System Status & Settings
+  getSystemStatus: () => fetch(`${API_BASE_URL}/banners/active?route=*`).then(handleResponse),
+
+  // System Banners
+  getActiveBanner: (route: string) => fetch(`${API_BASE_URL}/banners/active?route=${encodeURIComponent(route)}`).then(handleResponse),
+
   // User
   getMe: () => request<any>("/user/me"),
   syncPlan: () => request<any>("/user/sync-plan", { method: "POST" }),
@@ -169,6 +175,82 @@ export const api = {
   }).then(handleResponse),
   deleteAdminTicket: (id: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}`, {
     method: "DELETE",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+
+  // Admin Banners
+  getAdminBanners: () => fetch(`${API_BASE_URL}/admin/banners`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  createAdminBanner: (data: any) => fetch(`${API_BASE_URL}/admin/banners`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data),
+  }).then(handleResponse),
+  updateAdminBanner: (id: string, data: any) => fetch(`${API_BASE_URL}/admin/banners/${id}`, {
+    method: "PATCH",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data),
+  }).then(handleResponse),
+  deleteAdminBanner: (id: string) => fetch(`${API_BASE_URL}/admin/banners/${id}`, {
+    method: "DELETE",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+
+  // Admin System Settings
+  getAdminSettings: () => fetch(`${API_BASE_URL}/admin/settings`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  updateAdminSetting: (key: string, value: any, description?: string) => fetch(`${API_BASE_URL}/admin/settings`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ key, value, description }),
+  }).then(handleResponse),
+
+  // Feature Flags
+  getFeatureFlags: () => request<{ flags: Record<string, boolean> }>("/feature-flags"),
+
+  // Admin Feature Flags
+  getAdminFeatureFlags: () => fetch(`${API_BASE_URL}/admin/feature-flags`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  createAdminFeatureFlag: (data: any) => fetch(`${API_BASE_URL}/admin/feature-flags`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data),
+  }).then(handleResponse),
+  updateAdminFeatureFlag: (id: string, data: any) => fetch(`${API_BASE_URL}/admin/feature-flags/${id}`, {
+    method: "PATCH",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data),
+  }).then(handleResponse),
+  deleteAdminFeatureFlag: (id: string) => fetch(`${API_BASE_URL}/admin/feature-flags/${id}`, {
+    method: "DELETE",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+
+  // User Audit & Impersonation
+  searchAdminUsers: (query: string) => fetch(`${API_BASE_URL}/admin/users/search?q=${encodeURIComponent(query)}`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  getAdminUserAudit: (id: string) => fetch(`${API_BASE_URL}/admin/users/${id}/audit`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  impersonateAdminUser: (id: string) => fetch(`${API_BASE_URL}/admin/users/${id}/impersonate`, {
+    method: "POST",
     headers: api.getAdminAuthHeaders(),
     credentials: "include",
   }).then(handleResponse),
