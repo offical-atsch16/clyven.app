@@ -30,7 +30,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
       apiKey: authToken,
     });
 
-    const user_name = options.userName || options.name || "";
+    const user_name = options.userName || options.name || "Kunde";
     const ticket_email = options.ticketEmail || options.to || "";
     const ticket_subject = options.ticketSubject || options.subject || "";
     const ticket_details = options.ticketDetails || options.message || options.html || "";
@@ -42,7 +42,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
         },
         template: templateId,
         data: {
-          user_name,
+          user_name: user_name || "Kunde",
           ticket_email,
           ticket_number,
           ticket_subject,
