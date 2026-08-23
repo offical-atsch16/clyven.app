@@ -110,43 +110,15 @@ router.post("/", async (req, res, next) => {
     }
 
     // Send confirmation email (non-blocking, graceful error handling)
-    const escapedName = escapeHTML(name);
-    const escapedSubject = escapeHTML(subject);
-    const escapedMessage = escapeHTML(message);
-
     const emailSent = await sendEmail({
+      userName: name,
+      ticketEmail: email,
+      ticketNumber,
+      ticketSubject: subject,
+      ticketDetails: message,
       to: email,
       subject: `[CLYVEN Support] Ticket Erstellt: ${ticketNumber}`,
-      ticketNumber,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
-          <div style="text-align: center; margin-bottom: 24px;">
-            <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
-            <p style="color: #666; margin: 4px 0 0;">Ihr Support-Ticket wurde erfolgreich erstellt</p>
-          </div>
-
-          <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
-            <p style="margin: 0 0 10px; color: #aaa;">Hallo <strong>${escapedName}</strong>,</p>
-            <p style="margin: 0 0 20px; color: #aaa; line-height: 1.5;">Vielen Dank für Ihre Anfrage. Unser Support-Team wird sich so schnell wie möglich bei Ihnen melden.</p>
-
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-              <tr>
-                <td style="padding: 12px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #222; text-align: center;">
-                  <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 4px;">Ticketnummer</span>
-                  <strong style="font-size: 20px; color: #ffffff; font-family: monospace;">${ticketNumber}</strong>
-                </td>
-              </tr>
-            </table>
-
-            <div style="border-top: 1px solid #222; padding-top: 15px;">
-              <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 8px;">Zusammenfassung Ihres Anliegens</span>
-              <div style="color: #888; font-size: 13px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;"><strong>Betreff:</strong> ${escapedSubject}\n\n${escapedMessage}</div>
-            </div>
-          </div>
-
-          <p style="font-size: 11px; color: #444; text-align: center; margin: 0;">Diese E-Mail wurde automatisch von Clyven.app generiert.</p>
-        </div>
-      `,
+      message: message,
     });
 
     res.json({ ...snakeToCamel(ticket), emailSent });
@@ -271,25 +243,15 @@ router.post("/:ticketNumber/messages", async (req, res) => {
     }
 
     // Send email notification on reply (non-blocking)
-    const escapedSender = escapeHTML(senderName);
-    const escapedMsg = escapeHTML(message);
-
     await sendEmail({
+      userName: ticket.name || senderName,
+      ticketEmail: ticket.email,
+      ticketNumber,
+      ticketSubject: ticket.subject,
+      ticketDetails: message,
       to: ticket.email,
       subject: `[CLYVEN Support] Neue Antwort zu Ticket #${ticketNumber}`,
-      ticketNumber,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
-            <p style="color: #666; margin: 4px 0 0;">Neue Antwort zu Ihrem Ticket #${ticketNumber}</p>
-          </div>
-          <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
-            <p style="margin: 0 0 10px; color: #aaa;"><strong>${escapedSender}:</strong></p>
-            <div style="color: #ddd; font-size: 14px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;">${escapedMsg}</div>
-          </div>
-        </div>
-      `
+      message: message,
     });
 
     res.json(snakeToCamel(insertedMsg));
