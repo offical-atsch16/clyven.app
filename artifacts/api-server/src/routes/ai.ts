@@ -14,46 +14,44 @@ interface GeminiContent {
   parts: GeminiPart[];
 }
 
-async function callGeminiApi(contents: GeminiContent[]): Promise<string> {
+async function callGeminiApi(contents: GeminiContent[], endpointName: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+
   if (!apiKey) {
-    const err = new Error("GEMINI_API_KEY environment variable is missing.");
-    console.error("Gemini API Error:", err);
-    throw new Error("Fehler bei der Verarbeitung über die Gemini API");
+    console.error(`CRITICAL ERROR [${endpointName}]: GEMINI_API_KEY ist nicht in den Environment Variables gesetzt!`);
+    throw new Error("API Key fehlt auf dem Server (GEMINI_API_KEY nicht konfiguriert).");
   }
 
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents }),
-      }
-    );
+  console.log(`[${endpointName}] Sende Anfrage an Gemini API mit Key-Länge:`, apiKey.length);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      const err = new Error(`Gemini API returned status ${response.status}: ${errorText}`);
-      console.error("Gemini API Error:", err);
-      throw new Error("Fehler bei der Verarbeitung über die Gemini API");
-    }
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents }),
+    });
 
     const data = (await response.json()) as any;
+
+    if (!response.ok) {
+      console.error(`[${endpointName}] Gemini API Error Response:`, JSON.stringify(data, null, 2));
+      const details = data?.error?.message || `HTTP ${response.status} Status von Gemini API`;
+      throw new Error(`Gemini API Fehler: ${details}`);
+    }
+
     const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!generatedText) {
-      const err = new Error("No text content found in Gemini API response.");
-      console.error("Gemini API Error:", err);
-      throw new Error("Fehler bei der Verarbeitung über die Gemini API");
+      console.error(`[${endpointName}] Unerwartete Gemini Struktur:`, JSON.stringify(data, null, 2));
+      throw new Error("Keine Textantwort von Gemini erhalten.");
     }
 
     return generatedText.trim();
   } catch (error: any) {
-    if (error.message !== "Fehler bei der Verarbeitung über die Gemini API") {
-      console.error("Gemini API Error:", error);
-    }
-    throw new Error("Fehler bei der Verarbeitung über die Gemini API");
+    console.error(`Server Catch Error in ${endpointName}:`, error?.message || error);
+    throw error;
   }
 }
 
@@ -75,16 +73,22 @@ router.post("/journal-summary", requireAuth, async (req, res) => {
 
     const userQuery = `Analysiere die folgenden Journal-Einträge und erstelle eine prägnante wöchentliche Zusammenfassung mit Mood-Trend und konkreten Empfehlungen:\n\n${entriesText}`;
 
-    const summary = await callGeminiApi([
-      {
-        role: "user",
-        parts: [{ text: `${SYSTEM_CONTEXT}\n\nUser Anfrage: ${userQuery}` }],
-      },
-    ]);
+    const summary = await callGeminiApi(
+      [
+        {
+          role: "user",
+          parts: [{ text: `${SYSTEM_CONTEXT}\n\nUser Anfrage: ${userQuery}` }],
+        },
+      ],
+      "/api/ai/journal-summary"
+    );
 
     res.json({ success: true, summary });
   } catch (err: any) {
-    res.status(500).json({ error: "AI_GENERATION_FAILED", message: "Fehler bei der Verarbeitung über die Gemini API" });
+    res.status(500).json({
+      error: "AI_GENERATION_FAILED",
+      message: err?.message || "Fehler bei der Verarbeitung über die Gemini API",
+    });
   }
 });
 
@@ -154,7 +158,7 @@ router.post("/chat", requireAuth, async (req, res) => {
       }
     }
 
-    const responseText = await callGeminiApi(contents);
+    const responseText = await callGeminiApi(contents, "/api/ai/chat");
 
     res.json({
       success: true,
@@ -165,7 +169,10 @@ router.post("/chat", requireAuth, async (req, res) => {
       },
     });
   } catch (err: any) {
-    res.status(500).json({ error: "AI_CHAT_FAILED", message: "Fehler bei der Verarbeitung über die Gemini API" });
+    res.status(500).json({
+      error: "AI_CHAT_FAILED",
+      message: err?.message || "Fehler bei der Verarbeitung über die Gemini API",
+    });
   }
 });
 
@@ -195,16 +202,22 @@ router.post("/notes-assistant", requireAuth, async (req, res) => {
 
     const userQuery = `${instruction}\n\nText:\n${text}`;
 
-    const result = await callGeminiApi([
-      {
-        role: "user",
-        parts: [{ text: `${SYSTEM_CONTEXT}\n\nUser Anfrage: ${userQuery}` }],
-      },
-    ]);
+    const result = await callGeminiApi(
+      [
+        {
+          role: "user",
+          parts: [{ text: `${SYSTEM_CONTEXT}\n\nUser Anfrage: ${userQuery}` }],
+        },
+      ],
+      "/api/ai/notes-assistant"
+    );
 
     res.json({ success: true, result, action });
   } catch (err: any) {
-    res.status(500).json({ error: "AI_GENERATION_FAILED", message: "Fehler bei der Verarbeitung über die Gemini API" });
+    res.status(500).json({
+      error: "AI_GENERATION_FAILED",
+      message: err?.message || "Fehler bei der Verarbeitung über die Gemini API",
+    });
   }
 });
 
