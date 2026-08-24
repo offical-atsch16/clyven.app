@@ -140,7 +140,7 @@ export function Journal() {
             <button
               onClick={handleGenerateAiSummary}
               disabled={loadingAi}
-              className="flex items-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/15 backdrop-blur-md px-3.5 py-1.5 text-xs font-semibold text-indigo-300 hover:bg-indigo-500/25 active:scale-95 transition-all cursor-pointer shadow-sm"
+              className="flex items-center gap-1.5 rounded-xl border border-sky-500/30 bg-sky-500/10 px-3.5 py-1.5 text-xs font-semibold text-sky-300 hover:bg-sky-500/20 active:scale-95 transition-all cursor-pointer shadow-xs"
             >
               <Sparkles className="h-3.5 w-3.5 text-sky-400" />
               {loadingAi ? "Analysiere..." : "KI Insights"}
@@ -171,9 +171,9 @@ export function Journal() {
 
         {/* AI Summary Display */}
         {aiSummary && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 rounded-2xl glass-panel border-indigo-500/30 bg-indigo-950/20 p-5 backdrop-blur-md">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 rounded-2xl glass-panel border-sky-500/30 bg-zinc-950/90 p-5">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-indigo-300 text-xs font-semibold uppercase tracking-wider">
+              <div className="flex items-center gap-2 text-sky-300 text-xs font-semibold uppercase tracking-wider">
                 <Sparkles className="h-4 w-4 text-sky-400" /> Clyven AI Journal Analysis
               </div>
               <button onClick={() => setAiSummary(null)} className="text-zinc-400 hover:text-zinc-100 text-xs">Schließen</button>

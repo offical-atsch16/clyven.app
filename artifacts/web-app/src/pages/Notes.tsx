@@ -326,28 +326,28 @@ export function Notes() {
             </div>
 
             {/* AI Action Toolbar */}
-            <div className="flex items-center gap-1.5 border border-indigo-500/30 bg-indigo-500/10 backdrop-blur-md rounded-xl p-1 shadow-sm">
-              <span className="text-[10px] font-bold text-indigo-300 px-2 flex items-center gap-1">
+            <div className="flex items-center gap-1.5 border border-zinc-800 bg-zinc-900/80 rounded-xl p-1">
+              <span className="text-[10px] font-bold text-sky-400 px-2 flex items-center gap-1">
                 <Sparkles className="h-3 w-3 text-sky-400" /> AI
               </span>
               <button
                 onClick={() => handleAiAction("fix_spelling")}
                 disabled={aiLoading}
-                className="px-2.5 py-1 text-[11px] font-medium text-indigo-200 hover:text-white hover:bg-indigo-500/20 rounded-lg active:scale-95 transition-all cursor-pointer"
+                className="px-2.5 py-1 text-[11px] font-medium text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg active:scale-95 transition-all cursor-pointer"
               >
                 Korrektur
               </button>
               <button
                 onClick={() => handleAiAction("summarize")}
                 disabled={aiLoading}
-                className="px-2.5 py-1 text-[11px] font-medium text-indigo-200 hover:text-white hover:bg-indigo-500/20 rounded-lg active:scale-95 transition-all cursor-pointer"
+                className="px-2.5 py-1 text-[11px] font-medium text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg active:scale-95 transition-all cursor-pointer"
               >
                 Zusammenfassen
               </button>
               <button
                 onClick={() => handleAiAction("todo_list")}
                 disabled={aiLoading}
-                className="px-2.5 py-1 text-[11px] font-medium text-indigo-200 hover:text-white hover:bg-indigo-500/20 rounded-lg active:scale-95 transition-all cursor-pointer"
+                className="px-2.5 py-1 text-[11px] font-medium text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 rounded-lg active:scale-95 transition-all cursor-pointer"
               >
                 + To-Dos
               </button>
@@ -405,8 +405,8 @@ export function Notes() {
 
             {/* Backlinks display panel */}
             {backlinks.length > 0 && (
-              <div className="mt-6 border-t border-white/[0.06] pt-4">
-                <div className="flex items-center gap-2 text-xs font-semibold text-indigo-300 uppercase tracking-wider mb-2">
+              <div className="mt-6 border-t border-zinc-800/80 pt-4">
+                <div className="flex items-center gap-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-2">
                   <LinkIcon className="h-3.5 w-3.5 text-sky-400" />
                   Backlinks ({backlinks.length}) — Verknüpfte Notizen
                 </div>
@@ -415,7 +415,7 @@ export function Notes() {
                     <div
                       key={b.id}
                       onClick={() => selectNote(b)}
-                      className="glass-panel-interactive flex items-center justify-between rounded-xl p-3 cursor-pointer"
+                      className="glass-panel-interactive flex items-center justify-between rounded-xl p-3 cursor-pointer hover:border-white/20"
                     >
                       <span className="text-xs font-semibold text-zinc-200 truncate">{b.title}</span>
                       <ArrowUpRight className="h-3.5 w-3.5 text-zinc-400 shrink-0" />

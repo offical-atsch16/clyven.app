@@ -156,17 +156,17 @@ export function Focus() {
             </div>
 
             {/* Phase */}
-            <div className="mb-6 status-pill border-white/10 bg-white/[0.04] text-xs font-semibold uppercase tracking-widest text-zinc-300">
-              <span className={phase === "work" ? "glow-dot-amber shrink-0" : "glow-dot-emerald shrink-0"} />
+            <div className="mb-6 status-pill border-zinc-800 bg-zinc-900/60 text-xs font-semibold uppercase tracking-widest text-zinc-300">
+              <span className={phase === "work" ? "glow-dot-cyan shrink-0" : "glow-dot-emerald shrink-0"} />
               {phase === "work" ? "Focus Time" : "Break"}
             </div>
 
             {/* SVG Circle Timer */}
             <div className="relative mb-8">
               <svg width="260" height="260" className="-rotate-90">
-                <circle cx="130" cy="130" r="110" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
+                <circle cx="130" cy="130" r="110" fill="none" stroke="rgba(39,39,42,0.6)" strokeWidth="6" />
                 <motion.circle cx="130" cy="130" r="110" fill="none"
-                  stroke="rgba(255,255,255,0.75)" strokeWidth="6"
+                  stroke={running ? "#38bdf8" : "rgba(255,255,255,0.75)"} strokeWidth="6"
                   strokeLinecap="round" strokeDasharray={circumference}
                   strokeDashoffset={circumference * (1 - progress)}
                   transition={{ duration: 0.5 }} />
@@ -231,7 +231,7 @@ export function Focus() {
               <div className="mb-4 flex items-center justify-between">
                 <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Ambient Soundscapes</p>
                 <button onClick={() => setAmbientEnabled(!ambientEnabled)}
-                  className={cn("rounded-xl p-1.5 transition-colors cursor-pointer active:scale-95", ambientEnabled ? "text-indigo-400" : "text-zinc-500 hover:text-zinc-200")}>
+                  className={cn("rounded-xl p-1.5 transition-colors cursor-pointer active:scale-95", ambientEnabled ? "text-sky-400" : "text-zinc-500 hover:text-zinc-200")}>
                   {ambientEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                 </button>
               </div>
@@ -240,12 +240,12 @@ export function Focus() {
                   const Icon = sound.icon;
                   return (
                     <button key={sound.key} onClick={() => { setAmbientSound(sound); setAmbientEnabled(true); }}
-                      className={cn("flex flex-col items-center gap-1.5 rounded-2xl p-3 transition-all cursor-pointer active:scale-95",
+                      className={cn("flex flex-col items-center gap-1.5 rounded-2xl p-3 transition-all cursor-pointer active:scale-95 border",
                         ambientSound.key === sound.key && ambientEnabled
-                          ? "border border-indigo-500/30 bg-indigo-500/10 backdrop-blur-md"
-                          : "border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.06]")}>
-                      <Icon className={cn("h-4 w-4", ambientSound.key === sound.key && ambientEnabled ? "text-indigo-400" : "text-zinc-400")} />
-                      <span className={cn("text-[10px]", ambientSound.key === sound.key && ambientEnabled ? "text-indigo-300 font-semibold" : "text-zinc-400 font-medium")}>{sound.label}</span>
+                          ? "border-sky-500/40 bg-sky-500/10 text-sky-300"
+                          : "border-zinc-800 bg-zinc-900/40 hover:border-white/20 hover:bg-zinc-900/60")}>
+                      <Icon className={cn("h-4 w-4", ambientSound.key === sound.key && ambientEnabled ? "text-sky-400" : "text-zinc-400")} />
+                      <span className={cn("text-[10px]", ambientSound.key === sound.key && ambientEnabled ? "text-sky-300 font-semibold" : "text-zinc-400 font-medium")}>{sound.label}</span>
                     </button>
                   );
                 })}
@@ -255,7 +255,7 @@ export function Focus() {
                   <VolumeX className="h-3 w-3 text-zinc-500" />
                   <input type="range" value={ambientVolume} onChange={(e) => setAmbientVolume(Number(e.target.value))}
                     min={0} max={100}
-                    className="flex-1 h-1 rounded-full appearance-none bg-white/10 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-400 cursor-pointer" />
+                    className="flex-1 h-1 rounded-full appearance-none bg-zinc-800 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-400 cursor-pointer" />
                   <Volume2 className="h-3 w-3 text-zinc-500" />
                 </div>
               )}
