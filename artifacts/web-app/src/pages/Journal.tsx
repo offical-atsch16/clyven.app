@@ -125,7 +125,7 @@ export function Journal() {
       {upgradeOpen && (
         <UpgradeModal
           onClose={() => setUpgradeOpen(false)}
-          reason="Schalte Clyven AI mit Premium frei, um wöchentliche Journal-Zusammenfassungen und Mood-Analysen zu nutzen."
+          reason="Schalte CLYVEN AI mit CLYVEN PLUS frei, um wöchentliche Journal-Zusammenfassungen und Mood-Analysen zu nutzen."
         />
       )}
 

@@ -108,7 +108,7 @@ export function Notes() {
   // AI Assistant Action Handlers
   const handleAiAction = async (action: "fix_spelling" | "summarize" | "todo_list") => {
     if (!isPremium) {
-      setUpgradeReason("Schalte Clyven AI mit Premium frei, um automatische Korrekturen, Zusammenfassungen und To-Do-Listen zu generieren.");
+      setUpgradeReason("Schalte CLYVEN AI mit CLYVEN PLUS frei, um automatische Korrekturen, Zusammenfassungen und To-Do-Listen zu generieren.");
       setUpgradeOpen(true);
       return;
     }
@@ -127,7 +127,7 @@ export function Notes() {
       }
     } catch (err: any) {
       if (err.message?.includes("PREMIUM_REQUIRED")) {
-        setUpgradeReason("Schalte Clyven AI mit Premium frei, um automatische Korrekturen, Zusammenfassungen und To-Do-Listen zu generieren.");
+        setUpgradeReason("Schalte CLYVEN AI mit CLYVEN PLUS frei, um automatische Korrekturen, Zusammenfassungen und To-Do-Listen zu generieren.");
         setUpgradeOpen(true);
       }
     } finally {
