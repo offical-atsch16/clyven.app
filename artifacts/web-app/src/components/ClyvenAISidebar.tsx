@@ -105,22 +105,22 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="fixed right-0 top-0 z-50 flex h-full w-80 sm:w-96 flex-col border-l border-white/[0.08] bg-[#0c0c10]/95 backdrop-blur-xl shadow-2xl"
+            className="fixed right-0 top-0 z-50 flex h-full w-80 sm:w-96 flex-col border-l border-white/10 bg-black/50 backdrop-blur-xl shadow-2xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-3.5">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-indigo-500 to-sky-400 text-white shadow-md shadow-indigo-500/20">
-                  <Sparkles className="h-4 w-4 animate-pulse" />
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500 text-zinc-950 font-bold shadow-md shadow-sky-500/20">
+                  <Sparkles className="h-4 w-4" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
                     CLYVEN AI
-                    <span className="rounded border border-indigo-400/30 bg-indigo-500/10 px-1.5 py-0.2 text-[9px] font-semibold text-indigo-300">
+                    <span className="rounded border border-sky-400/30 bg-sky-500/10 px-1.5 py-0.2 text-[9px] font-semibold text-sky-300">
                       PLUS
                     </span>
                   </h3>
-                  <p className="text-[10px] text-white/40">Shortcut: Cmd + Shift + A</p>
+                  <p className="text-[10px] text-zinc-400">Shortcut: Cmd + Shift + A</p>
                 </div>
               </div>
 
@@ -181,8 +181,8 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
                         className={cn(
                           "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
                           m.role === "assistant"
-                            ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/20"
-                            : "bg-white/10 text-white border border-white/10"
+                            ? "bg-sky-500/20 text-sky-300 border border-sky-500/30"
+                            : "bg-zinc-800 text-zinc-200 border border-zinc-700"
                         )}
                       >
                         {m.role === "assistant" ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
@@ -190,10 +190,10 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
 
                       <div
                         className={cn(
-                          "max-w-[82%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed shadow-sm",
+                          "max-w-[82%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed shadow-xs",
                           m.role === "assistant"
-                            ? "border border-white/[0.08] bg-white/[0.03] text-white/80"
-                            : "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-medium"
+                            ? "border border-zinc-800 bg-zinc-950/90 text-zinc-200"
+                            : "bg-sky-500 text-zinc-950 font-semibold"
                         )}
                       >
                         <p className="whitespace-pre-wrap">{m.content}</p>
@@ -212,7 +212,7 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
                 </div>
 
                 {/* Input form */}
-                <form onSubmit={handleSend} className="border-t border-white/[0.08] p-3 bg-white/[0.01]">
+                <form onSubmit={handleSend} className="border-t border-white/10 p-3 bg-black/30">
                   <div className="relative flex items-center">
                     <input
                       type="text"
@@ -220,12 +220,12 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
                       onChange={(e) => setInput(e.target.value)}
                       placeholder="Frage CLYVEN AI etwas..."
                       disabled={loading}
-                      className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] py-2.5 pl-3.5 pr-10 text-xs text-white outline-none placeholder:text-white/20 focus:border-indigo-500/40 focus:bg-white/[0.05] transition-all disabled:opacity-50"
+                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 pl-3.5 pr-10 text-xs text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-cyan-500/50 transition-all disabled:opacity-50"
                     />
                     <button
                       type="submit"
                       disabled={!input.trim() || loading}
-                      className="absolute right-1.5 rounded-lg bg-indigo-600 p-1.5 text-white hover:bg-indigo-500 transition-all disabled:opacity-40 cursor-pointer"
+                      className="absolute right-1.5 rounded-lg bg-sky-500 p-1.5 text-zinc-950 hover:bg-sky-400 transition-all disabled:opacity-40 cursor-pointer"
                     >
                       <Send className="h-3.5 w-3.5" />
                     </button>

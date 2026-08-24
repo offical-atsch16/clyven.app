@@ -15,16 +15,16 @@ const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } 
 function StatCard({ icon: Icon, label, value, sub, onClick }: any) {
   return (
     <motion.div variants={fade} whileHover={{ y: -2 }} onClick={onClick}
-      className={cn("group relative overflow-hidden rounded-2xl border border-white/10 bg-[#12141D]/50 p-5 backdrop-blur-md transition-all duration-300 hover:border-cyan-500/30 hover:bg-white/[0.03]", onClick && "cursor-pointer")}>
+      className={cn("group relative overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-950/90 p-5 transition-all duration-200 hover:border-white/20", onClick && "cursor-pointer")}>
       <div className="mb-4 flex items-start justify-between">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] border border-white/10 text-cyan-400 group-hover:border-cyan-500/30 transition-colors">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-sky-400 group-hover:border-sky-500/40 transition-colors">
           <Icon className="h-4 w-4" />
         </div>
-        {onClick && <ArrowRight className="h-4 w-4 text-white/20 group-hover:text-cyan-400 transition-colors" />}
+        {onClick && <ArrowRight className="h-4 w-4 text-zinc-600 group-hover:text-sky-400 transition-colors" />}
       </div>
-      <div className="text-2xl font-bold text-white font-mono tracking-tight">{value}</div>
-      <div className="mt-0.5 text-xs font-medium text-white/50">{label}</div>
-      {sub && <div className="mt-2 text-[11px] font-mono text-cyan-400/70">{sub}</div>}
+      <div className="text-2xl font-bold text-zinc-100 font-mono tracking-tight">{value}</div>
+      <div className="mt-0.5 text-xs font-medium text-zinc-400">{label}</div>
+      {sub && <div className="mt-2 text-[11px] font-mono text-sky-400/80">{sub}</div>}
     </motion.div>
   );
 }
@@ -95,9 +95,9 @@ export function Dashboard() {
             </div>
             <span className="text-xs font-mono text-zinc-400">{formatMinutes(todayFocus)} / {formatMinutes(goalMinutes)}</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-white/[0.06] border border-white/[0.04]">
+          <div className="h-2 overflow-hidden rounded-full bg-zinc-900 border border-zinc-800">
             <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full rounded-full bg-gradient-to-r from-zinc-200 to-white shadow-sm" />
+              className="h-full rounded-full bg-sky-400 shadow-xs" />
           </div>
           <p className="mt-2 text-xs text-zinc-400 font-medium">{progress.toFixed(0)}% reached</p>
         </motion.div>

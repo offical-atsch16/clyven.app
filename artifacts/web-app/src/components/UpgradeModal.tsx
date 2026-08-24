@@ -25,7 +25,7 @@ export function UpgradeModal({ onClose, reason }: Props) {
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="relative w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-[#0c0c0c] p-6 sm:p-8 shadow-2xl text-white"
+        className="relative w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-black/80 backdrop-blur-xl p-6 sm:p-8 shadow-2xl text-white"
       >
         <button
           onClick={onClose}
@@ -80,7 +80,7 @@ export function UpgradeModal({ onClose, reason }: Props) {
         {/* CTA Button */}
         <button
           onClick={() => { openUpgrade(); onClose(); }}
-          className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg cursor-pointer bg-gradient-to-r from-amber-400 to-amber-500 text-black hover:from-amber-300 hover:to-amber-400 shadow-amber-500/20"
+          className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg cursor-pointer bg-sky-500 text-zinc-950 hover:bg-sky-400 shadow-sky-500/20"
         >
           Zu Clyven Plus upgraden →
         </button>

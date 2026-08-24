@@ -65,18 +65,18 @@ export function CommandPalette() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#0f0f14] shadow-2xl"
+              className="w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-black/80 backdrop-blur-xl shadow-2xl"
             >
               <Command label="Clyven Command Palette" className="flex flex-col">
-                <div className="flex items-center gap-3 border-b border-white/[0.08] px-4 py-3.5 bg-white/[0.02]">
-                  <Search className="h-4 w-4 text-indigo-400 shrink-0" />
+                <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3.5 bg-black/40">
+                  <Search className="h-4 w-4 text-sky-400 shrink-0" />
                   <Command.Input
                     value={query}
                     onValueChange={setQuery}
                     placeholder="Suche nach Notizen, Befehlen oder Views (Cmd + K)..."
-                    className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/30 font-medium"
+                    className="flex-1 bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-500 font-medium"
                   />
-                  <kbd className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-white/40 font-mono">ESC</kbd>
+                  <kbd className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-zinc-400 font-mono">ESC</kbd>
                 </div>
 
                 <Command.List className="max-h-80 overflow-y-auto p-2">
@@ -135,7 +135,7 @@ function CmdGroup({ heading, children }: { heading: string; children: React.Reac
   return (
     <Command.Group
       heading={heading}
-      className="[&_[cmdk-group-heading]]:mb-1 [&_[cmdk-group-heading]]:mt-2 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-indigo-400 [&_[cmdk-group-heading]]:uppercase"
+      className="[&_[cmdk-group-heading]]:mb-1 [&_[cmdk-group-heading]]:mt-2 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-sky-400 [&_[cmdk-group-heading]]:uppercase"
     >
       {children}
     </Command.Group>
@@ -156,14 +156,14 @@ function CmdItem({
   return (
     <Command.Item
       onSelect={onSelect}
-      className="flex cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-sm text-white/70 hover:bg-white/[0.06] hover:text-white data-[selected=true]:bg-indigo-500/15 data-[selected=true]:text-white transition-all outline-none my-0.5"
+      className="flex cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-sm text-zinc-300 hover:bg-white/[0.06] hover:text-zinc-100 data-[selected=true]:bg-white/10 data-[selected=true]:text-zinc-100 transition-all outline-none my-0.5"
     >
       <div className="flex items-center gap-3 overflow-hidden">
-        <span className="text-white/40 shrink-0">{icon}</span>
+        <span className="text-zinc-400 shrink-0">{icon}</span>
         <span className="truncate font-medium">{label}</span>
       </div>
       {sublabel && (
-        <span className="text-xs text-white/30 truncate ml-4 font-mono">{sublabel}</span>
+        <span className="text-xs text-zinc-500 truncate ml-4 font-mono">{sublabel}</span>
       )}
     </Command.Item>
   );
