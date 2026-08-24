@@ -159,6 +159,7 @@ export function Landing() {
   useCookieBanner();
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
     const rect = e.currentTarget.getBoundingClientRect();
     cardX.set(e.clientX - (rect.left + rect.width / 2));
     cardY.set(e.clientY - (rect.top + rect.height / 2));
@@ -186,7 +187,7 @@ export function Landing() {
   };
 
   return (
-    <div className="min-h-[100dvh] overflow-x-hidden bg-[#090A0F] text-[#FAFAFA] font-sans selection:bg-cyan-500/20 selection:text-cyan-200">
+    <div className="min-h-[100dvh] w-full max-w-full overflow-x-hidden bg-[#090A0F] text-[#FAFAFA] font-sans selection:bg-cyan-500/20 selection:text-cyan-200">
 
       {/* Soft Ambient Static Cyan Background Glow */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
@@ -201,8 +202,8 @@ export function Landing() {
       </div>
 
       {/* Navigation Header */}
-      <header className="fixed top-0 z-50 w-full border-b border-white/[0.08] bg-[#090A0F]/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <header className="fixed top-0 z-50 w-full max-w-full border-b border-white/[0.08] bg-[#090A0F]/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 py-4">
           <Link href="/">
             <div className="flex items-center gap-3 cursor-pointer group">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900/60 border border-white/10 group-hover:border-cyan-500/40 transition-colors">
@@ -308,7 +309,7 @@ export function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section ref={heroRef} className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 pt-32 pb-20 overflow-hidden">
+      <section ref={heroRef} className="relative flex min-h-[100dvh] w-full max-w-full flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-32 pb-20 overflow-x-hidden">
         <motion.div style={{ y: yHero, opacity: opacityHero }} className="relative z-10 flex flex-col items-center text-center max-w-5xl mx-auto">
 
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 text-xs font-mono text-cyan-400">
@@ -450,7 +451,7 @@ export function Landing() {
       </section>
 
       {/* Bento Grid */}
-      <section id="features" className="px-6 py-28 relative z-10 scroll-mt-20">
+      <section id="features" className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 relative z-10 scroll-mt-20 max-w-full overflow-x-hidden">
         <div className="mx-auto max-w-7xl">
           <div className="mb-20 text-center">
             <p className="mb-3 text-xs font-mono uppercase tracking-widest text-cyan-400">System Module</p>
@@ -488,7 +489,7 @@ export function Landing() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="px-6 py-28 relative z-10 scroll-mt-20 border-t border-white/[0.08] bg-[#0A0B10]">
+      <section id="pricing" className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 relative z-10 scroll-mt-20 border-t border-white/[0.08] bg-[#0A0B10] max-w-full overflow-x-hidden">
         <div className="mx-auto max-w-6xl">
           <div className="mb-20 text-center">
             <p className="mb-3 text-xs font-mono uppercase tracking-widest text-cyan-400">Transparente Tarife</p>
@@ -535,25 +536,27 @@ export function Landing() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#12141D]/50 backdrop-blur-md">
-            <div className="grid grid-cols-3 border-b border-white/10 bg-white/[0.02] p-4 text-xs font-mono uppercase text-white/50">
-              <div>Feature</div>
-              <div className="text-center">Free</div>
-              <div className="text-center text-cyan-400">CLYVEN PLUS</div>
-            </div>
-            {COMPARISON.map((row, idx) => (
-              <div key={idx} className="grid grid-cols-3 border-b border-white/[0.05] p-4 text-xs text-white/70 items-center">
-                <div className="font-medium text-white/90">{row.feature}</div>
-                <div className="text-center text-white/40">{row.free}</div>
-                <div className="text-center font-semibold text-cyan-300">{row.plus}</div>
+          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#12141D]/50 backdrop-blur-md">
+            <div className="min-w-[480px]">
+              <div className="grid grid-cols-3 border-b border-white/10 bg-white/[0.02] p-4 text-xs font-mono uppercase text-white/50">
+                <div>Feature</div>
+                <div className="text-center">Free</div>
+                <div className="text-center text-cyan-400">CLYVEN PLUS</div>
               </div>
-            ))}
+              {COMPARISON.map((row, idx) => (
+                <div key={idx} className="grid grid-cols-3 border-b border-white/[0.05] p-4 text-xs text-white/70 items-center">
+                  <div className="font-medium text-white/90">{row.feature}</div>
+                  <div className="text-center text-white/40">{row.free}</div>
+                  <div className="text-center font-semibold text-cyan-300">{row.plus}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="px-6 py-28 relative z-10">
+      <section className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 relative z-10 max-w-full overflow-x-hidden">
         <div className="mx-auto max-w-3xl">
           <div className="mb-12 text-center">
             <p className="mb-2 text-xs font-mono uppercase tracking-widest text-cyan-400">FAQ</p>
@@ -582,7 +585,7 @@ export function Landing() {
       </section>
 
       {/* Liquid Glass CTA Section */}
-      <section className="px-6 pb-28 pt-8 relative z-10">
+      <section className="px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24 lg:pb-28 pt-8 relative z-10 max-w-full overflow-x-hidden">
         <div className="mx-auto max-w-4xl text-center">
           <div className="relative rounded-2xl border border-cyan-500/30 bg-[#12141D]/60 p-10 sm:p-14 shadow-2xl backdrop-blur-md overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-1/2 bg-cyan-500/10 blur-3xl pointer-events-none" />
@@ -618,7 +621,7 @@ export function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.08] px-6 py-8 relative z-10 bg-[#06070B]">
+      <footer className="border-t border-white/[0.08] px-4 sm:px-6 lg:px-8 py-8 relative z-10 bg-[#06070B] max-w-full overflow-x-hidden">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <div className="flex items-center gap-3">
             <img src={`${basePath}/logo.svg`} alt="CLYVEN" className="h-4 w-4" />

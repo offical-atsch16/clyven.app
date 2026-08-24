@@ -105,7 +105,7 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="fixed right-0 top-0 z-50 flex h-full w-80 sm:w-96 flex-col border-l border-white/10 bg-black/50 backdrop-blur-xl shadow-2xl"
+            className="fixed right-0 top-0 z-50 flex h-full w-full sm:w-96 max-w-full flex-col border-l border-white/10 bg-black/80 backdrop-blur-xl shadow-2xl transform-gpu"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5">
@@ -126,9 +126,10 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
 
               <button
                 onClick={onClose}
-                className="rounded-lg p-1.5 text-white/40 hover:bg-white/[0.06] hover:text-white transition-colors cursor-pointer"
+                className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg p-1.5 text-white/40 hover:bg-white/[0.06] hover:text-white transition-colors cursor-pointer"
+                aria-label="Close AI sidebar"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 

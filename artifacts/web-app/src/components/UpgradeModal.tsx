@@ -25,11 +25,12 @@ export function UpgradeModal({ onClose, reason }: Props) {
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="relative w-full max-w-xl overflow-hidden rounded-3xl border border-white/10 bg-black/80 backdrop-blur-xl p-6 sm:p-8 shadow-2xl text-white"
+        className="relative w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-3xl border border-white/10 bg-black/90 backdrop-blur-xl p-5 sm:p-8 shadow-2xl text-white transform-gpu"
       >
         <button
           onClick={onClose}
-          className="absolute right-5 top-5 p-2 rounded-full bg-white/[0.05] hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+          className="absolute right-4 top-4 flex items-center justify-center min-w-[44px] min-h-[44px] p-2 rounded-full bg-white/[0.05] hover:bg-white/10 text-white/50 hover:text-white transition-colors cursor-pointer z-10"
+          aria-label="Close modal"
         >
           <X className="h-4 w-4" />
         </button>
@@ -80,7 +81,7 @@ export function UpgradeModal({ onClose, reason }: Props) {
         {/* CTA Button */}
         <button
           onClick={() => { openUpgrade(); onClose(); }}
-          className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg cursor-pointer bg-sky-500 text-zinc-950 hover:bg-sky-400 shadow-sky-500/20"
+          className="w-full py-3.5 min-h-[44px] rounded-2xl font-bold text-sm transition-all shadow-lg cursor-pointer bg-sky-500 text-zinc-950 hover:bg-sky-400 shadow-sky-500/20"
         >
           Zu Clyven Plus upgraden →
         </button>
