@@ -3,102 +3,58 @@ import { requireAuth, type AuthenticatedRequest } from "../lib/requireAuth.js";
 
 const router = Router();
 
-// Helper to query Gemini API / Cloudflare AI API or fallback to structured assistant generator
-async function generateAIContent(prompt: string, systemInstruction: string) {
+const SYSTEM_CONTEXT = "System-Kontext: Du bist CLYVEN AI, ein intelligenter Assistent für Notizen, Journaling und Produktivität.";
+
+interface GeminiPart {
+  text: string;
+}
+
+interface GeminiContent {
+  role?: "user" | "model";
+  parts: GeminiPart[];
+}
+
+async function callGeminiApi(contents: GeminiContent[]): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
-  const cfToken = process.env.CLOUDFLARE_AI_TOKEN;
+  if (!apiKey) {
+    const err = new Error("GEMINI_API_KEY environment variable is missing.");
+    console.error("Gemini API Error:", err);
+    throw new Error("Fehler bei der Verarbeitung über die Gemini API");
+  }
 
-  if (apiKey) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: `${systemInstruction}\n\nEingabe:\n${prompt}` }
-                ]
-              }
-            ]
-          })
-        }
-      );
-
-      if (response.ok) {
-        const json = (await response.json()) as any;
-        const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text.trim();
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents }),
       }
-    } catch (err) {
-      console.error("[AI GEMINI GENERATION ERROR]", err);
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      const err = new Error(`Gemini API returned status ${response.status}: ${errorText}`);
+      console.error("Gemini API Error:", err);
+      throw new Error("Fehler bei der Verarbeitung über die Gemini API");
     }
-  }
 
-  if (cfToken && process.env.CLOUDFLARE_ACCOUNT_ID) {
-    try {
-      const response = await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/meta/llama-3-8b-instruct`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${cfToken}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            messages: [
-              { role: "system", content: systemInstruction },
-              { role: "user", content: prompt }
-            ]
-          })
-        }
-      );
+    const data = (await response.json()) as any;
+    const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-      if (response.ok) {
-        const json = (await response.json()) as any;
-        const text = json?.result?.response;
-        if (text) return text.trim();
-      }
-    } catch (err) {
-      console.error("[AI CLOUDFLARE GENERATION ERROR]", err);
+    if (!generatedText) {
+      const err = new Error("No text content found in Gemini API response.");
+      console.error("Gemini API Error:", err);
+      throw new Error("Fehler bei der Verarbeitung über die Gemini API");
     }
+
+    return generatedText.trim();
+  } catch (error: any) {
+    if (error.message !== "Fehler bei der Verarbeitung über die Gemini API") {
+      console.error("Gemini API Error:", error);
+    }
+    throw new Error("Fehler bei der Verarbeitung über die Gemini API");
   }
-
-  // High quality local fallback logic
-  if (systemInstruction.includes("Journal")) {
-    return `### Wöchentliche Journal-Zusammenfassung & Mood-Analyse
-
-**Stimmungs-Trend:** Überwiegend positiv und produktiv (Fokus & Flow).
-
-**Haupterkenntnisse:**
-- Hohe Effizienz bei der Fertigstellung von Notizen und Projektaufgaben.
-- Regelmäßige Pausen durch den Focus-Timer verbessern die langfristige Konzentration.
-
-**Empfehlungen für die nächste Woche:**
-- Weiterhin tägliches Journaling beibehalten.
-- Priorisiere 1-2 Kernaufgabe(n) pro Tag zur Vermeidung von Überlastung.`;
-  }
-
-  if (prompt.includes("fix_spelling")) {
-    return prompt.replace("fix_spelling:", "").trim();
-  }
-
-  if (prompt.includes("summarize")) {
-    const text = prompt.replace("summarize:", "").trim();
-    return `**Kompakte Zusammenfassung:**\n${text.slice(0, 200)}...`;
-  }
-
-  if (prompt.includes("todo_list")) {
-    return `- [ ] Analyse der Anforderungen\n- [ ] Umsetzung der Kernfunktionen\n- [ ] Tests und Freigabe`;
-  }
-
-  if (systemInstruction.includes("CLYVEN AI Assistant")) {
-    return `Ich habe deine Anfrage empfangen! Als dein persönlicher **CLYVEN AI** Assistent stehe ich dir zur Seite.\n\nDu kannst mich nach Zusammenfassungen, Aufgaben-Extraktion oder Ideen für deine Notizen fragen.`;
-  }
-
-  return `Hier ist der generierte KI-Inhalt basierend auf deiner Eingabe:\n\n${prompt}`;
 }
 
 // POST /api/ai/journal-summary
@@ -109,7 +65,7 @@ router.post("/journal-summary", requireAuth, async (req, res) => {
   if (!authReq.isPremium) {
     return res.status(403).json({
       error: "PREMIUM_REQUIRED",
-      message: "Schalte Clyven AI mit Premium frei",
+      message: "Schalte CLYVEN AI mit CLYVEN PLUS frei",
     });
   }
 
@@ -117,14 +73,18 @@ router.post("/journal-summary", requireAuth, async (req, res) => {
     const { entries = [] } = req.body;
     const entriesText = JSON.stringify(entries, null, 2);
 
-    const summary = await generateAIContent(
-      entriesText,
-      "Du bist ein empathischer KI-Journal-Analyst. Analysiere die Journal-Einträge des Nutzers und erstelle eine prägnante wöchentliche Zusammenfassung mit Stimmungsanalyse (Mood-Trend) und umsetzbaren Empfehlungen."
-    );
+    const userQuery = `Analysiere die folgenden Journal-Einträge und erstelle eine prägnante wöchentliche Zusammenfassung mit Mood-Trend und konkreten Empfehlungen:\n\n${entriesText}`;
+
+    const summary = await callGeminiApi([
+      {
+        role: "user",
+        parts: [{ text: `${SYSTEM_CONTEXT}\n\nUser Anfrage: ${userQuery}` }],
+      },
+    ]);
 
     res.json({ success: true, summary });
   } catch (err: any) {
-    res.status(500).json({ error: "AI_GENERATION_FAILED", detail: err.message });
+    res.status(500).json({ error: "AI_GENERATION_FAILED", message: "Fehler bei der Verarbeitung über die Gemini API" });
   }
 });
 
@@ -136,7 +96,7 @@ router.post("/chat", requireAuth, async (req, res) => {
   if (!authReq.isPremium) {
     return res.status(403).json({
       error: "PREMIUM_REQUIRED",
-      message: "Nutze CLYVEN AI mit dem Plus-Plan",
+      message: "Nutze CLYVEN AI mit CLYVEN PLUS",
     });
   }
 
@@ -148,12 +108,53 @@ router.post("/chat", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "MESSAGE_REQUIRED", message: "Eine Nachricht ist erforderlich." });
     }
 
-    let systemInstruction = "Du bist CLYVEN AI, ein intelligenter, präziser und hilfsbereiter Notiz- & Produktivitäts-Assistent.";
-    if (noteContext) {
-      systemInstruction += `\n\n[Aktueller Notiz-Kontext des Nutzers]:\n${noteContext}`;
+    const contents: GeminiContent[] = [];
+
+    // Process chat history if provided
+    if (Array.isArray(messages) && messages.length > 0) {
+      let hasFirstUser = false;
+      for (const m of messages) {
+        if (!m.content) continue;
+        const role: "user" | "model" = m.role === "assistant" || m.role === "model" ? "model" : "user";
+        if (!hasFirstUser && role === "model") {
+          continue;
+        }
+        hasFirstUser = true;
+
+        if (contents.length > 0 && contents[contents.length - 1].role === role) {
+          contents[contents.length - 1].parts[0].text += `\n${m.content}`;
+        } else {
+          contents.push({ role, parts: [{ text: m.content }] });
+        }
+      }
     }
 
-    const responseText = await generateAIContent(userPrompt, systemInstruction);
+    // Format note context if active
+    let currentPrompt = userPrompt;
+    if (noteContext && noteContext.trim()) {
+      currentPrompt = `Kontext der aktuellen Notiz:\n---\n${noteContext.trim()}\n---\n\nFrage dazu: ${userPrompt}`;
+    }
+
+    if (contents.length === 0) {
+      contents.push({
+        role: "user",
+        parts: [{ text: `${SYSTEM_CONTEXT}\n\nUser Anfrage: ${currentPrompt}` }],
+      });
+    } else {
+      if (contents[0].role === "user") {
+        contents[0].parts[0].text = `${SYSTEM_CONTEXT}\n\n${contents[0].parts[0].text}`;
+      }
+      if (contents[contents.length - 1].role === "user") {
+        contents[contents.length - 1].parts[0].text += `\n\nUser Anfrage: ${currentPrompt}`;
+      } else {
+        contents.push({
+          role: "user",
+          parts: [{ text: `User Anfrage: ${currentPrompt}` }],
+        });
+      }
+    }
+
+    const responseText = await callGeminiApi(contents);
 
     res.json({
       success: true,
@@ -164,7 +165,7 @@ router.post("/chat", requireAuth, async (req, res) => {
       },
     });
   } catch (err: any) {
-    res.status(500).json({ error: "AI_CHAT_FAILED", detail: err.message });
+    res.status(500).json({ error: "AI_CHAT_FAILED", message: "Fehler bei der Verarbeitung über die Gemini API" });
   }
 });
 
@@ -176,29 +177,34 @@ router.post("/notes-assistant", requireAuth, async (req, res) => {
   if (!authReq.isPremium) {
     return res.status(403).json({
       error: "PREMIUM_REQUIRED",
-      message: "Schalte Clyven AI mit Premium frei",
+      message: "Schalte CLYVEN AI mit CLYVEN PLUS frei",
     });
   }
 
   try {
     const { action, text = "" } = req.body;
 
-    let systemPrompt = "Du bist ein intelligenter Schreib- und Notiz-Assistent.";
-    let userPrompt = text;
-
+    let instruction = "Du bist ein intelligenter Schreib- und Notiz-Assistent.";
     if (action === "fix_spelling") {
-      systemPrompt = "Korrigiere Rechtschreibung, Grammatik und Satzbau im folgenden Text. Gib nur den korrigierten Text zurück.";
+      instruction = "Korrigiere Rechtschreibung, Grammatik und Satzbau im folgenden Text. Gib nur den korrigierten Text zurück.";
     } else if (action === "summarize") {
-      systemPrompt = "Erstelle eine prägnante Zusammenfassung (3-4 Bulletpoints) des folgenden Textes.";
+      instruction = "Erstelle eine prägnante Zusammenfassung (3-4 Bulletpoints) des folgenden Textes.";
     } else if (action === "todo_list") {
-      systemPrompt = "Extrahiere konkrete To-Do-Punkte aus dem Notiztext und formatiere sie als Markdown-Checkliste (- [ ] Task).";
+      instruction = "Extrahiere konkrete To-Do-Punkte aus dem Notiztext und formatiere sie als Markdown-Checkliste (- [ ] Task).";
     }
 
-    const result = await generateAIContent(userPrompt, systemPrompt);
+    const userQuery = `${instruction}\n\nText:\n${text}`;
+
+    const result = await callGeminiApi([
+      {
+        role: "user",
+        parts: [{ text: `${SYSTEM_CONTEXT}\n\nUser Anfrage: ${userQuery}` }],
+      },
+    ]);
 
     res.json({ success: true, result, action });
   } catch (err: any) {
-    res.status(500).json({ error: "AI_GENERATION_FAILED", detail: err.message });
+    res.status(500).json({ error: "AI_GENERATION_FAILED", message: "Fehler bei der Verarbeitung über die Gemini API" });
   }
 });
 
