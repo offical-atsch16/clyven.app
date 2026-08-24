@@ -38,11 +38,12 @@ export function PlanBadge({ tier = "free", size = "md", className, showFree = fa
     return (
       <span
         className={cn(
-          "inline-flex items-center font-bold tracking-wide rounded-full border bg-amber-500/15 text-amber-300 border-amber-500/30 shadow-sm shadow-amber-500/20 animate-pulse-slow",
+          "status-pill font-bold tracking-wide border-amber-500/30 bg-amber-500/10 text-amber-300 shadow-sm shadow-amber-500/10 backdrop-blur-md",
           sizes[size],
           className
         )}
       >
+        <span className="glow-dot-amber shrink-0" />
         <Zap className={cn("shrink-0 text-amber-400 fill-amber-400/20", iconSizes[size])} />
         <span>CLYVEN PLUS</span>
       </span>
@@ -52,11 +53,12 @@ export function PlanBadge({ tier = "free", size = "md", className, showFree = fa
   return (
     <span
       className={cn(
-        "inline-flex items-center font-semibold rounded-full border bg-white/[0.05] text-white/40 border-white/10",
+        "status-pill font-medium border-white/10 bg-white/[0.03] text-zinc-400 backdrop-blur-md",
         sizes[size],
         className
       )}
     >
+      <span className="glow-dot-blue shrink-0" />
       <span>FREE</span>
     </span>
   );

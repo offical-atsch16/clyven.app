@@ -31,10 +31,10 @@ function StatCard({ icon: Icon, label, value, sub, onClick }: any) {
 
 function QuickAction({ icon: Icon, label, onClick }: any) {
   return (
-    <motion.button variants={fade} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+    <motion.button variants={fade} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
       onClick={onClick}
-      className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#12141D]/50 px-4 py-3 text-xs font-medium text-white/70 backdrop-blur-md hover:border-cyan-500/30 hover:bg-white/[0.04] hover:text-cyan-300 transition-all duration-300 cursor-pointer">
-      <Icon className="h-4 w-4 text-cyan-400" />
+      className="flex items-center gap-3 rounded-2xl glass-panel px-4 py-3 text-sm font-medium text-zinc-300 hover:text-zinc-100 cursor-pointer transition-all">
+      <Icon className="h-4 w-4 text-zinc-400" />
       {label}
     </motion.button>
   );
@@ -62,15 +62,15 @@ export function Dashboard() {
 
         {/* Header */}
         <motion.div variants={fade}>
-          <p className="text-xs text-white/25 uppercase tracking-widest mb-1">{new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" })}</p>
-          <h1 className="text-2xl font-bold text-white">Welcome back, {displayName} 👋</h1>
+          <p className="text-xs text-zinc-400 uppercase tracking-widest mb-1 font-medium">{new Date().toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" })}</p>
+          <h1 className="text-2xl font-bold text-zinc-100">Welcome back, {displayName} 👋</h1>
         </motion.div>
 
         {/* Daily Quote */}
         <motion.div variants={fade}
-          className="rounded-2xl border border-white/10 bg-[#12141D]/40 backdrop-blur-md p-5">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 mb-2">Daily Inspiration</p>
-          <p className="text-sm text-white/70 italic leading-relaxed">"{getDailyQuote()}"</p>
+          className="glass-panel rounded-2xl p-5">
+          <p className="text-xs uppercase tracking-widest text-zinc-400 font-semibold mb-2">Daily Inspiration</p>
+          <p className="text-sm text-zinc-200 italic leading-relaxed">"{getDailyQuote()}"</p>
         </motion.div>
 
         {/* Stats Grid */}
@@ -87,25 +87,25 @@ export function Dashboard() {
 
         {/* Focus Progress */}
         <motion.div variants={fade}
-          className="rounded-2xl border border-white/10 bg-[#12141D]/50 backdrop-blur-md p-5">
+          className="glass-panel rounded-2xl p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-cyan-400" />
-              <span className="text-sm font-medium text-white/80">Daily Focus Goal</span>
+              <Target className="h-4 w-4 text-zinc-400" />
+              <span className="text-sm font-semibold text-zinc-200">Daily Focus Goal</span>
             </div>
-            <span className="text-xs font-mono text-cyan-400">{formatMinutes(todayFocus)} / {formatMinutes(goalMinutes)}</span>
+            <span className="text-xs font-mono text-zinc-400">{formatMinutes(todayFocus)} / {formatMinutes(goalMinutes)}</span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
-            <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.8, ease: "easeOut" }}
-              className="h-full rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
+          <div className="h-2 overflow-hidden rounded-full bg-white/[0.06] border border-white/[0.04]">
+            <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 1, ease: "easeOut" }}
+              className="h-full rounded-full bg-gradient-to-r from-zinc-200 to-white shadow-sm" />
           </div>
-          <p className="mt-2 text-xs font-mono text-white/40">{progress.toFixed(0)}% reached</p>
+          <p className="mt-2 text-xs text-zinc-400 font-medium">{progress.toFixed(0)}% reached</p>
         </motion.div>
 
         {/* Quick Actions */}
         <motion.div variants={fade}>
-          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-white/25">Quick Actions</p>
-          <motion.div variants={container} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400">Quick Actions</p>
+          <motion.div variants={container} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <QuickAction icon={Plus} label="New Note" onClick={() => navigate("/notes?new=1")} />
             <QuickAction icon={Timer} label="Start Focus" onClick={() => navigate("/focus?start=1")} />
             <QuickAction icon={BookOpen} label="Open Journal" onClick={() => navigate("/journal")} />
@@ -115,48 +115,48 @@ export function Dashboard() {
 
         {/* Recent Notes + Bookmarks */}
         <div className="grid gap-4 lg:grid-cols-2">
-          <motion.div variants={fade} className="rounded-2xl border border-white/10 bg-[#12141D]/50 backdrop-blur-md p-5">
+          <motion.div variants={fade} className="glass-panel rounded-2xl p-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-cyan-400" />
-                <span className="text-sm font-medium text-white/80">Recent Notes</span>
+                <FileText className="h-4 w-4 text-zinc-400" />
+                <span className="text-sm font-semibold text-zinc-200">Recent Notes</span>
               </div>
-              <button onClick={() => navigate("/notes")} className="text-xs font-mono text-cyan-400/70 hover:text-cyan-300 transition-colors cursor-pointer">All →</button>
+              <button onClick={() => navigate("/notes")} className="text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer">All →</button>
             </div>
             {recentNotes.length === 0 ? (
-              <div className="py-6 text-center text-xs font-mono text-white/30">No notes yet</div>
+              <div className="py-6 text-center text-sm text-zinc-500">No notes yet</div>
             ) : (
               <div className="space-y-2">
                 {recentNotes.map((n: any) => (
                   <div key={n.id} onClick={() => navigate("/notes")}
-                    className="cursor-pointer rounded-xl border border-white/5 bg-white/[0.02] p-3 hover:border-cyan-500/30 hover:bg-white/[0.04] transition-all duration-300">
-                    <p className="truncate text-xs font-semibold text-white/90">{n.title}</p>
-                    <p className="mt-0.5 line-clamp-1 text-[11px] text-white/40">{n.content || "No content"}</p>
+                    className="cursor-pointer rounded-xl p-3 hover:bg-white/[0.06] hover:border hover:border-white/10 transition-all border border-transparent">
+                    <p className="truncate text-sm font-semibold text-zinc-200">{n.title}</p>
+                    <p className="mt-0.5 line-clamp-1 text-xs text-zinc-400">{n.content || "No content"}</p>
                   </div>
                 ))}
               </div>
             )}
           </motion.div>
 
-          <motion.div variants={fade} className="rounded-2xl border border-white/10 bg-[#12141D]/50 backdrop-blur-md p-5">
+          <motion.div variants={fade} className="glass-panel rounded-2xl p-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Bookmark className="h-4 w-4 text-cyan-400" />
-                <span className="text-sm font-medium text-white/80">Recent Bookmarks</span>
+                <Bookmark className="h-4 w-4 text-zinc-400" />
+                <span className="text-sm font-semibold text-zinc-200">Recent Bookmarks</span>
               </div>
-              <button onClick={() => navigate("/bookmarks")} className="text-xs font-mono text-cyan-400/70 hover:text-cyan-300 transition-colors cursor-pointer">All →</button>
+              <button onClick={() => navigate("/bookmarks")} className="text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer">All →</button>
             </div>
             {recentBookmarks.length === 0 ? (
-              <div className="py-6 text-center text-xs font-mono text-white/30">No bookmarks yet</div>
+              <div className="py-6 text-center text-sm text-zinc-500">No bookmarks yet</div>
             ) : (
               <div className="space-y-2">
                 {recentBookmarks.map((b: any) => (
                   <a key={b.id} href={b.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3 hover:border-cyan-500/30 hover:bg-white/[0.04] transition-all duration-300">
-                    <Globe className="h-4 w-4 shrink-0 text-cyan-400/70" />
+                    className="flex items-center gap-3 rounded-xl p-3 hover:bg-white/[0.06] hover:border hover:border-white/10 transition-all border border-transparent">
+                    <Globe className="h-4 w-4 shrink-0 text-zinc-400" />
                     <div className="overflow-hidden">
-                      <p className="truncate text-xs font-semibold text-white/90">{b.title || b.url}</p>
-                      <p className="truncate text-[11px] font-mono text-white/40">{b.siteName || new URL(b.url).hostname}</p>
+                      <p className="truncate text-sm font-semibold text-zinc-200">{b.title || b.url}</p>
+                      <p className="truncate text-xs text-zinc-400">{b.siteName || new URL(b.url).hostname}</p>
                     </div>
                   </a>
                 ))}
@@ -166,22 +166,22 @@ export function Dashboard() {
         </div>
 
         {/* Streak + Total Focus */}
-        <motion.div variants={container} className="grid grid-cols-2 gap-3">
-          <motion.div variants={fade} className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
+        <motion.div variants={container} className="grid grid-cols-2 gap-4">
+          <motion.div variants={fade} className="glass-panel rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-2">
-              <Flame className="h-4 w-4 text-orange-400/60" />
-              <span className="text-sm text-white/50">Focus Sessions</span>
+              <Flame className="h-4 w-4 text-amber-400" />
+              <span className="text-sm font-medium text-zinc-400">Focus Sessions</span>
             </div>
-            <div className="text-3xl font-bold text-white">{stats?.totalFocusSessions ?? 0}</div>
-            <p className="text-xs text-white/25 mt-1">Completed</p>
+            <div className="text-3xl font-bold text-zinc-100">{stats?.totalFocusSessions ?? 0}</div>
+            <p className="text-xs text-zinc-400 mt-1">Completed</p>
           </motion.div>
-          <motion.div variants={fade} className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
+          <motion.div variants={fade} className="glass-panel rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-white/40" />
-              <span className="text-sm text-white/50">Total Focus Time</span>
+              <TrendingUp className="h-4 w-4 text-emerald-400" />
+              <span className="text-sm font-medium text-zinc-400">Total Focus Time</span>
             </div>
-            <div className="text-3xl font-bold text-white">{formatMinutes(stats?.totalFocusMinutes ?? 0)}</div>
-            <p className="text-xs text-white/25 mt-1">Across all sessions</p>
+            <div className="text-3xl font-bold text-zinc-100">{formatMinutes(stats?.totalFocusMinutes ?? 0)}</div>
+            <p className="text-xs text-zinc-400 mt-1">Across all sessions</p>
           </motion.div>
         </motion.div>
 

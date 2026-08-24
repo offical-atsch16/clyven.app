@@ -133,14 +133,14 @@ export function Journal() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Journal</h1>
-            <p className="mt-1 text-sm text-white/40">Reflect daily and grow.</p>
+            <h1 className="text-2xl font-bold text-zinc-100">Journal</h1>
+            <p className="mt-1 text-sm text-zinc-400 font-medium">Reflect daily and grow.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleGenerateAiSummary}
               disabled={loadingAi}
-              className="flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-300 hover:bg-indigo-500/20 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/15 backdrop-blur-md px-3.5 py-1.5 text-xs font-semibold text-indigo-300 hover:bg-indigo-500/25 active:scale-95 transition-all cursor-pointer shadow-sm"
             >
               <Sparkles className="h-3.5 w-3.5 text-sky-400" />
               {loadingAi ? "Analysiere..." : "KI Insights"}
@@ -150,20 +150,20 @@ export function Journal() {
             {view === "entry" && (
               <>
                 <button onClick={() => setDate((d) => addDays(d, -1))}
-                  className="rounded-lg p-2 text-white/40 hover:bg-white/[0.06] hover:text-white transition-colors">
+                  className="rounded-xl p-2 text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-100 transition-colors active:scale-95">
                   <ChevronLeft className="h-4 w-4" />
                 </button>
-                <span className="min-w-[120px] text-center text-sm font-medium text-white/70">
+                <span className="min-w-[120px] text-center text-sm font-semibold text-zinc-200">
                   {formatDisplayDate(date)}
                 </span>
                 <button onClick={() => setDate((d) => addDays(d, 1))} disabled={isToday}
-                  className="rounded-lg p-2 text-white/40 hover:bg-white/[0.06] hover:text-white transition-colors disabled:opacity-30">
+                  className="rounded-xl p-2 text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-100 transition-colors disabled:opacity-30 active:scale-95">
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </>
             )}
             <button onClick={() => setView(view === "entry" ? "calendar" : "entry")}
-              className={cn("rounded-lg p-2 transition-colors", view === "calendar" ? "text-white bg-white/[0.08]" : "text-white/40 hover:bg-white/[0.06] hover:text-white")}>
+              className={cn("rounded-xl p-2 transition-all active:scale-95 border border-white/[0.06]", view === "calendar" ? "text-zinc-100 bg-white/10" : "text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-100")}>
               {view === "calendar" ? <Edit3 className="h-4 w-4" /> : <Calendar className="h-4 w-4" />}
             </button>
           </div>
@@ -171,14 +171,14 @@ export function Journal() {
 
         {/* AI Summary Display */}
         {aiSummary && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 rounded-2xl border border-indigo-500/30 bg-indigo-950/20 p-5 backdrop-blur-md">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 rounded-2xl glass-panel border-indigo-500/30 bg-indigo-950/20 p-5 backdrop-blur-md">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-indigo-300 text-xs font-semibold uppercase tracking-wider">
                 <Sparkles className="h-4 w-4 text-sky-400" /> Clyven AI Journal Analysis
               </div>
-              <button onClick={() => setAiSummary(null)} className="text-white/30 hover:text-white text-xs">Schließen</button>
+              <button onClick={() => setAiSummary(null)} className="text-zinc-400 hover:text-zinc-100 text-xs">Schließen</button>
             </div>
-            <div className="text-xs sm:text-sm text-white/80 whitespace-pre-wrap leading-relaxed">
+            <div className="text-xs sm:text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed">
               {aiSummary}
             </div>
           </motion.div>
@@ -190,29 +190,29 @@ export function Journal() {
             {/* Month navigation */}
             <div className="flex items-center justify-between">
               <button onClick={() => setCalendarMonth(({ year, month }) => month === 0 ? { year: year - 1, month: 11 } : { year, month: month - 1 })}
-                className="rounded-lg p-2 text-white/40 hover:bg-white/[0.06] hover:text-white transition-colors">
+                className="rounded-lg p-2 text-zinc-400 hover:bg-white/[0.06] hover:text-white transition-colors">
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="text-sm font-medium text-white/70">
+              <span className="text-sm font-medium text-zinc-200">
                 {new Date(calendarMonth.year, calendarMonth.month).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </span>
               <button onClick={() => setCalendarMonth(({ year, month }) => month === 11 ? { year: year + 1, month: 0 } : { year, month: month + 1 })}
-                className="rounded-lg p-2 text-white/40 hover:bg-white/[0.06] hover:text-white transition-colors">
+                className="rounded-lg p-2 text-zinc-400 hover:bg-white/[0.06] hover:text-white transition-colors">
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
 
             {/* Calendar grid */}
-            <div className="rounded-2xl border border-white/[0.07] bg-[#111111] p-4">
+            <div className="glass-panel rounded-3xl p-4">
               {/* Weekday headers */}
               <div className="mb-2 grid grid-cols-7 text-center">
                 {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                  <div key={d} className="py-2 text-[10px] font-medium uppercase text-white/30">{d}</div>
+                  <div key={d} className="py-2 text-[10px] font-semibold uppercase text-zinc-400">{d}</div>
                 ))}
               </div>
 
               {/* Days */}
-              <div className="grid grid-cols-7 gap-1" style={{ gridAutoRows: "minmax(44px, auto)" }}>
+              <div className="grid grid-cols-7 gap-1.5" style={{ gridAutoRows: "minmax(44px, auto)" }}>
                 {getMonthDays(calendarMonth.year, calendarMonth.month).map((d, i) => {
                   if (!d) return <div key={`empty-${i}`} />;
                   const mood = moodMap.get(d);
@@ -224,11 +224,11 @@ export function Journal() {
                   return (
                     <button key={d} onClick={() => { if (!isFuture) { setDate(d); setView("entry"); } }}
                       disabled={isFuture}
-                      className={cn("flex flex-col items-center justify-center rounded-lg transition-all relative",
-                        isToday ? "border border-yellow-400/30" : "",
-                        hasEntry && !isFuture ? "bg-white/[0.04] hover:bg-white/[0.08]" : "",
-                        isFuture ? "opacity-30 cursor-not-allowed" : "cursor-pointer hover:bg-white/[0.04]")}>
-                      <span className={cn("text-xs", isToday ? "text-yellow-400/70 font-bold" : "text-white/50")}>
+                      className={cn("flex flex-col items-center justify-center rounded-xl transition-all relative border",
+                        isToday ? "border-amber-400/40 bg-amber-400/10" : "border-transparent",
+                        hasEntry && !isFuture ? "bg-white/[0.05] hover:bg-white/10 hover:border-white/15" : "",
+                        isFuture ? "opacity-30 cursor-not-allowed" : "cursor-pointer hover:bg-white/[0.06]")}>
+                      <span className={cn("text-xs font-medium", isToday ? "text-amber-300 font-bold" : "text-zinc-300")}>
                         {new Date(d + "T12:00:00").getDate()}
                       </span>
                       {mood && (
@@ -244,17 +244,17 @@ export function Journal() {
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-xl border border-white/[0.07] bg-[#111111] p-4">
-                <p className="text-xs text-white/40 mb-1">Entries this month</p>
-                <p className="text-2xl font-bold text-white">
+              <div className="glass-panel rounded-2xl p-4">
+                <p className="text-xs text-zinc-400 font-medium mb-1">Entries this month</p>
+                <p className="text-2xl font-bold text-zinc-100">
                   {(allEntries as any[]).filter((e: any) => {
                     const d = new Date(e.date);
                     return d.getMonth() === calendarMonth.month && d.getFullYear() === calendarMonth.year;
                   }).length}
                 </p>
               </div>
-              <div className="rounded-xl border border-white/[0.07] bg-[#111111] p-4">
-                <p className="text-xs text-white/40 mb-1">Most common mood</p>
+              <div className="glass-panel rounded-2xl p-4">
+                <p className="text-xs text-zinc-400 font-medium mb-1">Most common mood</p>
                 <p className="text-2xl">
                   {(() => {
                     const monthEntries = (allEntries as any[]).filter((e: any) => {
@@ -275,26 +275,26 @@ export function Journal() {
         {view === "entry" && (
           isFuture ? (
             <div className="flex flex-col items-center py-20 text-center">
-              <BookOpen className="mb-3 h-8 w-8 text-white/10" />
-              <p className="text-sm text-white/25">Future entries are not available</p>
+              <BookOpen className="mb-3 h-8 w-8 text-zinc-600" />
+              <p className="text-sm text-zinc-500 font-medium">Future entries are not available</p>
             </div>
           ) : isLoading ? (
             <div className="space-y-4">
-              {[...Array(4)].map((_, i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-white/[0.03]" />)}
+              {[...Array(4)].map((_, i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-white/[0.03] border border-white/[0.04]" />)}
             </div>
           ) : (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} key={date} className="space-y-4">
               {/* Mood */}
-              <div className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
-                <p className="mb-4 text-xs font-medium uppercase tracking-widest text-white/30">How was your day?</p>
+              <div className="glass-panel rounded-3xl p-5">
+                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-zinc-400">How was your day?</p>
                 <div className="flex gap-3 flex-wrap">
                   {MOODS.map((m) => (
-                    <motion.button key={m.key} whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }}
+                    <motion.button key={m.key} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.94 }}
                       onClick={() => setForm((f) => ({ ...f, mood: m.key }))}
-                      className={cn("flex flex-col items-center gap-1 rounded-xl border px-3 py-2.5 transition-all",
-                        form.mood === m.key ? "border-white/20 bg-white/[0.08]" : "border-white/[0.06] bg-transparent hover:border-white/10")}>
+                      className={cn("flex flex-col items-center gap-1 rounded-2xl border px-3.5 py-2.5 transition-all cursor-pointer",
+                        form.mood === m.key ? "border-white/20 bg-white/10 shadow-sm backdrop-blur-md" : "border-white/[0.06] bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.06]")}>
                       <span className="text-xl">{m.emoji}</span>
-                      <span className="text-[10px] text-white/40">{m.label}</span>
+                      <span className="text-[10px] text-zinc-400 font-medium">{m.label}</span>
                     </motion.button>
                   ))}
                 </div>
@@ -302,22 +302,22 @@ export function Journal() {
 
               {/* Sections */}
               {SECTIONS.map((s) => (
-                <div key={s.key} className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
-                  <p className="mb-3 text-sm font-medium text-white/60">{s.label}</p>
+                <div key={s.key} className="glass-panel rounded-3xl p-5">
+                  <p className="mb-3 text-sm font-semibold text-zinc-200">{s.label}</p>
                   <textarea value={(form as any)[s.key]} onChange={(e) => setForm((f) => ({ ...f, [s.key]: e.target.value }))}
                     placeholder={s.placeholder}
                     rows={s.key === "freeText" ? 5 : 3}
-                    className="w-full resize-none bg-transparent text-sm text-white/70 outline-none placeholder:text-white/20 leading-relaxed" />
+                    className="w-full resize-none bg-transparent text-sm text-zinc-200 outline-none placeholder:text-zinc-500 leading-relaxed focus:ring-0" />
                 </div>
               ))}
 
               {/* Save */}
               <div className="flex items-center justify-between">
-                <p className="text-xs text-white/25">
+                <p className="text-xs text-zinc-400 font-medium">
                   {saved ? "✓ Saved" : saving ? "Saving..." : "Auto-saved after 2s"}
                 </p>
-                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={save}
-                  className="flex items-center gap-2 rounded-xl bg-white/[0.07] px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all">
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }} onClick={save}
+                  className="btn-liquid-primary flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-wider cursor-pointer shadow-md">
                   <Save className="h-3.5 w-3.5" />
                   Save
                 </motion.button>

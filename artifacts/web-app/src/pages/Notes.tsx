@@ -206,24 +206,24 @@ export function Notes() {
       )}
 
       {/* Note list */}
-      <div className={cn("flex w-full flex-col border-r border-white/[0.06] lg:w-72 xl:w-80", selected && "hidden lg:flex")}>
+      <div className={cn("flex w-full flex-col border-r border-white/[0.06] bg-zinc-950/40 backdrop-blur-md lg:w-72 xl:w-80", selected && "hidden lg:flex")}>
         <div className="border-b border-white/[0.06] p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h1 className="text-sm font-semibold text-white/80">Notes</h1>
+            <h1 className="text-sm font-bold text-zinc-100">Notes</h1>
             <div className="flex items-center gap-1.5">
               {isPremium && (
                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={exportMarkdown}
                   title="Export as Markdown"
-                  className="flex items-center gap-1 rounded-lg bg-yellow-400/10 border border-yellow-400/20 px-2 py-1.5 text-xs font-medium text-yellow-400/70 hover:bg-yellow-400/20 transition-all cursor-pointer">
+                  className="flex items-center gap-1 rounded-xl bg-amber-500/10 border border-amber-500/20 px-2 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-500/20 transition-all cursor-pointer">
                   <Download className="h-3 w-3" />
                 </motion.button>
               )}
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleNew}
-                className={cn("flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={handleNew}
+                className={cn("flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-95 shadow-sm",
                   atLimit
-                    ? "bg-yellow-400/10 border border-yellow-400/20 text-yellow-400/70 hover:bg-yellow-400/20"
-                    : "bg-white/[0.07] text-white/70 hover:bg-white/10 hover:text-white")}>
-                {atLimit ? <><Crown className="h-3.5 w-3.5" /> Limit</> : <><Plus className="h-3.5 w-3.5" /> New</>}
+                    ? "bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/25"
+                    : "btn-liquid-primary")}>
+                {atLimit ? <><Crown className="h-3.5 w-3.5 text-amber-400" /> Limit</> : <><Plus className="h-3.5 w-3.5" /> New</>}
               </motion.button>
             </div>
           </div>
@@ -231,25 +231,25 @@ export function Notes() {
           {/* Limit bar */}
           {!isPremium && (
             <div className="mb-3">
-              <div className="mb-1 flex justify-between text-[10px] text-white/25">
+              <div className="mb-1 flex justify-between text-[10px] text-zinc-400 font-mono">
                 <span>{notes.length}/{FREE_LIMITS.notes} notes</span>
                 {atLimit && (
-                  <button onClick={() => { setUpgradeReason(`Du hast das Free-Limit von ${FREE_LIMITS.notes} Notizen erreicht. Upgrade für unbegrenzte Notizen.`); setUpgradeOpen(true); }} className="text-yellow-400/60 hover:text-yellow-400 cursor-pointer">
+                  <button onClick={() => { setUpgradeReason(`Du hast das Free-Limit von ${FREE_LIMITS.notes} Notizen erreicht. Upgrade für unbegrenzte Notizen.`); setUpgradeOpen(true); }} className="text-amber-400 hover:underline cursor-pointer font-semibold">
                     Upgrade →
                   </button>
                 )}
               </div>
-              <div className="h-0.5 overflow-hidden rounded-full bg-white/[0.06]">
-                <div className={cn("h-full rounded-full transition-all", atLimit ? "bg-yellow-400/60" : "bg-white/30")}
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06] border border-white/[0.04]">
+                <div className={cn("h-full rounded-full transition-all", atLimit ? "bg-amber-400" : "bg-gradient-to-r from-indigo-400 to-sky-400")}
                   style={{ width: `${Math.min((notes.length / FREE_LIMITS.notes) * 100, 100)}%` }} />
               </div>
             </div>
           )}
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/25" />
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..."
-              className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] py-2 pl-9 pr-3 text-sm text-white/70 outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
+              className="glass-input w-full rounded-xl py-2 pl-9 pr-3 text-xs text-zinc-200 outline-none placeholder:text-zinc-500 transition-all" />
           </div>
 
           {categories.length > 1 && (
@@ -259,10 +259,10 @@ export function Notes() {
                   key={c}
                   onClick={() => setCategoryFilter(c)}
                   className={cn(
-                    "shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-medium transition-all cursor-pointer",
+                    "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition-all cursor-pointer active:scale-95 border",
                     categoryFilter === c
-                      ? "bg-white/[0.1] text-white"
-                      : "text-white/35 hover:text-white/60"
+                      ? "bg-white/10 text-zinc-100 border-white/20 shadow-xs"
+                      : "border-white/[0.06] bg-white/[0.02] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06]"
                   )}
                 >
                   {c === "all" ? "All" : c}
@@ -272,37 +272,37 @@ export function Notes() {
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2">
+        <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {isLoading ? (
             <div className="space-y-2 p-2">
-              {[...Array(4)].map((_, i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-white/[0.03]" />)}
+              {[...Array(4)].map((_, i) => <div key={i} className="h-16 animate-pulse rounded-2xl bg-white/[0.03] border border-white/[0.04]" />)}
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <FileText className="mb-3 h-8 w-8 text-white/10" />
-              <p className="text-sm text-white/25">{search ? "No results" : "No notes yet"}</p>
-              {!search && !atLimit && <button onClick={handleNew} className="mt-3 text-xs text-white/40 hover:text-white/70 underline cursor-pointer">Create your first note</button>}
+              <FileText className="mb-3 h-8 w-8 text-zinc-600" />
+              <p className="text-sm text-zinc-500 font-medium">{search ? "No results" : "No notes yet"}</p>
+              {!search && !atLimit && <button onClick={handleNew} className="mt-3 text-xs text-zinc-400 hover:text-zinc-200 underline cursor-pointer">Create your first note</button>}
             </div>
           ) : (
             <AnimatePresence initial={false}>
               {filtered.map((note: any) => (
                 <motion.div key={note.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }}
-                  whileHover={{ scale: 1.015, x: 2 }}
+                  whileHover={{ scale: 1.01 }}
                   onClick={() => selectNote(note)}
-                  className={cn("group mb-1 cursor-pointer rounded-xl border border-transparent p-3 transition-all hover:border-white/[0.07]",
+                  className={cn("glass-panel-interactive group mb-1 cursor-pointer rounded-2xl p-3 shadow-xs",
                     COLORS.find((c) => c.key === note.color)?.cls,
-                    selected?.id === note.id && "border-white/[0.1] bg-white/[0.06]")}>
+                    selected?.id === note.id && "border-white/20 bg-zinc-800/60 [box-shadow:inset_0_1px_1px_rgba(255,255,255,0.12)]")}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 overflow-hidden">
-                      <p className="truncate text-sm font-medium text-white/80">{note.title}</p>
-                      <p className="mt-0.5 line-clamp-2 text-xs text-white/35 leading-relaxed">{note.content || "No content"}</p>
+                      <p className="truncate text-sm font-semibold text-zinc-100">{note.title}</p>
+                      <p className="mt-0.5 line-clamp-2 text-xs text-zinc-400 leading-relaxed font-sans">{note.content || "No content"}</p>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
-                      {note.isPinned && <Pin className="h-3 w-3 text-white/30" />}
-                      {note.isFavorite && <Star className="h-3 w-3 text-yellow-400/40" />}
+                      {note.isPinned && <Pin className="h-3 w-3 text-zinc-400" />}
+                      {note.isFavorite && <Star className="h-3 w-3 text-amber-400" />}
                     </div>
                   </div>
-                  <p className="mt-2 text-[10px] text-white/20">{formatRelative(note.updatedAt)}</p>
+                  <p className="mt-2 text-[10px] text-zinc-500 font-mono">{formatRelative(note.updatedAt)}</p>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -326,28 +326,28 @@ export function Notes() {
             </div>
 
             {/* AI Action Toolbar */}
-            <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/10 rounded-xl p-1">
-              <span className="text-[10px] font-semibold text-indigo-300 px-2 flex items-center gap-1">
+            <div className="flex items-center gap-1.5 border border-indigo-500/30 bg-indigo-500/10 backdrop-blur-md rounded-xl p-1 shadow-sm">
+              <span className="text-[10px] font-bold text-indigo-300 px-2 flex items-center gap-1">
                 <Sparkles className="h-3 w-3 text-sky-400" /> AI
               </span>
               <button
                 onClick={() => handleAiAction("fix_spelling")}
                 disabled={aiLoading}
-                className="px-2 py-1 text-[11px] font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+                className="px-2.5 py-1 text-[11px] font-medium text-indigo-200 hover:text-white hover:bg-indigo-500/20 rounded-lg active:scale-95 transition-all cursor-pointer"
               >
                 Korrektur
               </button>
               <button
                 onClick={() => handleAiAction("summarize")}
                 disabled={aiLoading}
-                className="px-2 py-1 text-[11px] font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+                className="px-2.5 py-1 text-[11px] font-medium text-indigo-200 hover:text-white hover:bg-indigo-500/20 rounded-lg active:scale-95 transition-all cursor-pointer"
               >
                 Zusammenfassen
               </button>
               <button
                 onClick={() => handleAiAction("todo_list")}
                 disabled={aiLoading}
-                className="px-2 py-1 text-[11px] font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+                className="px-2.5 py-1 text-[11px] font-medium text-indigo-200 hover:text-white hover:bg-indigo-500/20 rounded-lg active:scale-95 transition-all cursor-pointer"
               >
                 + To-Dos
               </button>
@@ -405,7 +405,7 @@ export function Notes() {
 
             {/* Backlinks display panel */}
             {backlinks.length > 0 && (
-              <div className="mt-6 border-t border-white/10 pt-4">
+              <div className="mt-6 border-t border-white/[0.06] pt-4">
                 <div className="flex items-center gap-2 text-xs font-semibold text-indigo-300 uppercase tracking-wider mb-2">
                   <LinkIcon className="h-3.5 w-3.5 text-sky-400" />
                   Backlinks ({backlinks.length}) — Verknüpfte Notizen
@@ -415,10 +415,10 @@ export function Notes() {
                     <div
                       key={b.id}
                       onClick={() => selectNote(b)}
-                      className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] p-3 hover:bg-white/[0.08] cursor-pointer transition-all"
+                      className="glass-panel-interactive flex items-center justify-between rounded-xl p-3 cursor-pointer"
                     >
-                      <span className="text-xs font-medium text-white/80 truncate">{b.title}</span>
-                      <ArrowUpRight className="h-3.5 w-3.5 text-white/40 shrink-0" />
+                      <span className="text-xs font-semibold text-zinc-200 truncate">{b.title}</span>
+                      <ArrowUpRight className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
                     </div>
                   ))}
                 </div>
