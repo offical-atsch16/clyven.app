@@ -79,12 +79,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-[#080808]">
+    <div className="flex h-[100dvh] overflow-hidden bg-[#090A0F]">
       {/* Mobile overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md lg:hidden"
             onClick={() => setMobileOpen(false)} />
         )}
       </AnimatePresence>
@@ -94,6 +94,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {mobileOpen && (
           <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", damping: 30 }}
             className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl lg:hidden">
+          <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ duration: 0.2 }}
+            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/10 bg-[#12141D]/90 backdrop-blur-md lg:hidden shadow-2xl">
             <SidebarContent collapsed={false} displayName={displayName} avatarUrl={avatarUrl}
               onToggle={() => setMobileOpen(false)} onCommandOpen={() => { setMobileOpen(false); openCommandPalette(); }}
               onSignOut={() => signOut()} mobile onMobileClose={() => setMobileOpen(false)} />

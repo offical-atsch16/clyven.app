@@ -12,19 +12,19 @@ import { cn, formatMinutes, getDailyQuote, getTodayISO } from "../lib/utils";
 const fade = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
 
-function StatCard({ icon: Icon, label, value, sub, color, onClick }: any) {
+function StatCard({ icon: Icon, label, value, sub, onClick }: any) {
   return (
     <motion.div variants={fade} whileHover={{ y: -2 }} onClick={onClick}
-      className={cn("glass-panel-interactive group relative cursor-pointer overflow-hidden rounded-2xl p-5", onClick && "cursor-pointer")}>
+      className={cn("group relative overflow-hidden rounded-2xl border border-white/10 bg-[#12141D]/50 p-5 backdrop-blur-md transition-all duration-300 hover:border-cyan-500/30 hover:bg-white/[0.03]", onClick && "cursor-pointer")}>
       <div className="mb-4 flex items-start justify-between">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.06] border border-white/10 group-hover:bg-white/[0.1] transition-colors">
-          <Icon className="h-4 w-4 text-zinc-300" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] border border-white/10 text-cyan-400 group-hover:border-cyan-500/30 transition-colors">
+          <Icon className="h-4 w-4" />
         </div>
-        {onClick && <ArrowRight className="h-4 w-4 text-zinc-500 group-hover:text-zinc-200 transition-colors" />}
+        {onClick && <ArrowRight className="h-4 w-4 text-white/20 group-hover:text-cyan-400 transition-colors" />}
       </div>
-      <div className="text-2xl font-bold text-zinc-100 tracking-tight">{value}</div>
-      <div className="mt-0.5 text-sm font-medium text-zinc-400">{label}</div>
-      {sub && <div className="mt-2 text-xs text-zinc-500">{sub}</div>}
+      <div className="text-2xl font-bold text-white font-mono tracking-tight">{value}</div>
+      <div className="mt-0.5 text-xs font-medium text-white/50">{label}</div>
+      {sub && <div className="mt-2 text-[11px] font-mono text-cyan-400/70">{sub}</div>}
     </motion.div>
   );
 }
