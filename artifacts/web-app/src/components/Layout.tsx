@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, FileText, Bookmark, Timer, BookOpen, ChartBar as BarChart2, Trophy, User, Settings, ChevronLeft, ChevronRight, Command, Menu, X, Zap, Crown, Terminal, CheckSquare, Sparkles } from "lucide-react";
+import { LayoutDashboard, FileText, Bookmark, Timer, BookOpen, ChartBar as BarChart2, Trophy, User, Settings, ChevronLeft, ChevronRight, Command, Menu, X, Zap, Crown, CheckSquare, Sparkles } from "lucide-react";
 import { useUser, useClerk } from "@clerk/react";
 import { useAppStore } from "../stores/useAppStore";
 import { usePremium } from "../hooks/usePremium";
@@ -27,7 +27,6 @@ const NAV = [
 const BOTTOM_NAV = [
   { href: "/profile", icon: User, label: "Profile" },
   { href: "/settings", icon: Settings, label: "Settings" },
-  { href: "/documentation", icon: Terminal, label: "Docs" },
 ];
 
 function NavItem({ href, icon: Icon, label, collapsed, mobile, onMobileClose }: any) {
@@ -38,14 +37,17 @@ function NavItem({ href, icon: Icon, label, collapsed, mobile, onMobileClose }: 
     <Link href={href} onClick={mobile ? onMobileClose : undefined}>
       <motion.div whileHover={{ x: 3 }} whileTap={{ scale: 0.98 }}
         className={cn(
-          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 cursor-pointer",
+          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 cursor-pointer border border-transparent",
           collapsed && !mobile ? "justify-center px-2" : "",
           active
-            ? "bg-white/[0.1] text-zinc-100 font-semibold border border-white/10 shadow-sm backdrop-blur-md [box-shadow:inset_0_1px_1px_rgba(255,255,255,0.1)]"
-            : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200 hover:border hover:border-white/[0.06]",
+            ? "bg-white/10 text-zinc-100 font-semibold border-white/10 shadow-xs backdrop-blur-md"
+            : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200 hover:border-white/10",
         )}>
-        <Icon className={cn("shrink-0 transition-colors", collapsed && !mobile ? "h-5 w-5" : "h-4 w-4", active ? "text-zinc-100" : "text-zinc-400")} />
+        <Icon className={cn("shrink-0 transition-colors", collapsed && !mobile ? "h-5 w-5" : "h-4 w-4", active ? "text-sky-400" : "text-zinc-400")} />
         {(!collapsed || mobile) && <span>{label}</span>}
+        {active && (!collapsed || mobile) && (
+          <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_#38bdf8]" />
+        )}
       </motion.div>
     </Link>
   );
@@ -92,10 +94,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Mobile sidebar */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", damping: 30 }}
-            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl lg:hidden">
           <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ duration: 0.2 }}
-            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/10 bg-[#12141D]/90 backdrop-blur-md lg:hidden shadow-2xl">
+            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/10 bg-black/50 backdrop-blur-xl lg:hidden shadow-2xl">
             <SidebarContent collapsed={false} displayName={displayName} avatarUrl={avatarUrl}
               onToggle={() => setMobileOpen(false)} onCommandOpen={() => { setMobileOpen(false); openCommandPalette(); }}
               onSignOut={() => signOut()} mobile onMobileClose={() => setMobileOpen(false)} />
@@ -104,7 +104,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Desktop sidebar */}
-      <aside className={cn("hidden shrink-0 flex-col border-r border-white/[0.06] bg-zinc-950/70 backdrop-blur-xl transition-all duration-300 lg:flex [box-shadow:inset_-1px_0_0_rgba(255,255,255,0.04)]", collapsed ? "w-16" : "w-56")}>
+      <aside className={cn("hidden shrink-0 flex-col border-r border-white/10 bg-black/50 backdrop-blur-xl shadow-2xl transition-all duration-300 lg:flex", collapsed ? "w-16" : "w-56")}>
         <SidebarContent collapsed={collapsed} displayName={displayName} avatarUrl={avatarUrl}
           onToggle={() => setCollapsed(!collapsed)} onCommandOpen={openCommandPalette}
           onToggleAI={() => setAiSidebarOpen((prev) => !prev)}
@@ -115,9 +115,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex flex-1 flex-col overflow-hidden relative">
         <SystemBanner />
         {/* Mobile top bar */}
-        <div className="flex items-center justify-between border-b border-white/[0.06] bg-zinc-950/60 backdrop-blur-md px-4 py-3 lg:hidden">
+        <div className="flex items-center justify-between border-b border-white/10 bg-black/50 backdrop-blur-xl px-4 py-3 lg:hidden shadow-lg">
           <div className="flex items-center gap-3">
-            <button onClick={() => setMobileOpen(true)} className="text-zinc-400 hover:text-zinc-100 transition-colors">
+            <button onClick={() => setMobileOpen(true)} className="text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer">
               <Menu className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2">
@@ -127,9 +127,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <button
             onClick={() => setAiSidebarOpen(true)}
-            className="flex items-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/15 px-3 py-1.5 text-xs font-semibold text-indigo-300 active:scale-95 transition-all backdrop-blur-md"
+            className="flex items-center gap-1.5 rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-300 hover:border-sky-500/50 active:scale-95 transition-all backdrop-blur-md cursor-pointer"
           >
-            <Sparkles className="h-3.5 w-3.5 text-indigo-400" /> AI
+            <Sparkles className="h-3.5 w-3.5 text-sky-400" /> AI
           </button>
         </div>
 
@@ -203,10 +203,10 @@ function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommand
           </button>
 
           <button onClick={onToggleAI}
-            className="w-full flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 backdrop-blur-md px-3 py-2 text-xs font-semibold text-indigo-300 hover:bg-indigo-500/20 hover:border-indigo-500/40 active:scale-95 transition-all cursor-pointer shadow-sm">
+            className="w-full flex items-center gap-2 rounded-xl border border-sky-500/30 bg-sky-500/10 backdrop-blur-md px-3 py-2 text-xs font-semibold text-sky-300 hover:bg-sky-500/20 hover:border-sky-500/50 active:scale-95 transition-all cursor-pointer shadow-sm">
             <Sparkles className="h-3.5 w-3.5 text-sky-400" />
             <span className="flex-1 text-left">CLYVEN AI</span>
-            <span className="text-[9px] text-indigo-300/60 font-mono">⌘⇧A</span>
+            <span className="text-[9px] text-sky-300/70 font-mono">⌘⇧A</span>
           </button>
         </div>
       )}

@@ -221,7 +221,6 @@ export function Landing() {
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
             <Link href="/pricing"><span className="hover:text-white transition-colors cursor-pointer">Tarife</span></Link>
             <Link href="/support"><span className="hover:text-white transition-colors cursor-pointer">Support</span></Link>
-            <Link href="/documentation"><span className="hover:text-white transition-colors cursor-pointer">Docs</span></Link>
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
@@ -279,7 +278,6 @@ export function Landing() {
                 <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5">Pricing</a>
                 <Link href="/pricing"><span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5 block cursor-pointer">Tarife</span></Link>
                 <Link href="/support"><span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5 block cursor-pointer">Support</span></Link>
-                <Link href="/documentation"><span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5 block cursor-pointer">Dokumentation</span></Link>
               </div>
 
               <div className="pt-4 border-t border-white/[0.08] flex flex-col gap-2.5">
