@@ -14,15 +14,15 @@ import { UpgradeModal } from "../components/UpgradeModal";
 import { PlanBadge } from "../components/PlanBadge";
 
 const COLUMNS = [
-  { id: "TODO", title: "To Do", color: "border-blue-500/10 bg-blue-500/[0.01]", text: "text-blue-400" },
-  { id: "IN_PROGRESS", title: "In Progress", color: "border-yellow-500/10 bg-yellow-500/[0.01]", text: "text-yellow-400" },
-  { id: "DONE", title: "Completed", color: "border-green-500/10 bg-green-500/[0.01]", text: "text-green-400" }
+  { id: "TODO", title: "To Do", color: "border-blue-500/20 bg-blue-500/[0.03] backdrop-blur-md", text: "text-blue-400", dot: "glow-dot-blue" },
+  { id: "IN_PROGRESS", title: "In Progress", color: "border-amber-500/20 bg-amber-500/[0.03] backdrop-blur-md", text: "text-amber-400", dot: "glow-dot-amber" },
+  { id: "DONE", title: "Completed", color: "border-emerald-500/20 bg-emerald-500/[0.03] backdrop-blur-md", text: "text-emerald-400", dot: "glow-dot-emerald" }
 ];
 
 const PRIORITIES = {
-  LOW: { label: "Niedrig", color: "bg-blue-400/10 text-blue-400 border-blue-400/15" },
-  MEDIUM: { label: "Mittel", color: "bg-yellow-400/10 text-yellow-400 border-yellow-400/15" },
-  HIGH: { label: "Hoch", color: "bg-red-400/10 text-red-400 border-red-400/15" }
+  LOW: { label: "Niedrig", color: "bg-blue-400/10 text-blue-300 border-blue-400/20", dot: "glow-dot-blue" },
+  MEDIUM: { label: "Mittel", color: "bg-amber-400/10 text-amber-300 border-amber-400/20", dot: "glow-dot-amber" },
+  HIGH: { label: "Hoch", color: "bg-rose-400/10 text-rose-300 border-rose-400/20", dot: "glow-dot-rose" }
 };
 
 interface Subtask {
@@ -332,15 +332,15 @@ export function Tasks() {
       )}
 
       {/* Top Header */}
-      <div className="border-b border-white/[0.06] bg-[#0c0c0c]/80 p-6 backdrop-blur-md">
+      <div className="border-b border-white/[0.06] bg-zinc-950/70 p-6 backdrop-blur-xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
               <Sparkles className="h-5 w-5 text-amber-400" />
-              <h1 className="text-xl font-bold tracking-tight">Aufgabenverwaltung</h1>
+              <h1 className="text-xl font-bold tracking-tight text-zinc-100">Aufgabenverwaltung</h1>
               <PlanBadge tier={planTier} size="sm" showFree />
             </div>
-            <p className="text-xs text-white/40 mt-1">
+            <p className="text-xs text-zinc-400 mt-1 font-medium">
               Verwalte deine To-Dos, erfasse Arbeitszeiten und behalte den Überblick in der Listen-, Kanban- oder Gantt-Ansicht.
             </p>
           </div>
@@ -348,14 +348,14 @@ export function Tasks() {
           <div className="flex items-center gap-3">
             {!isPremium && (
               <div className="mr-2 text-right">
-                <div className="text-[10px] text-white/30">
+                <div className="text-[10px] text-zinc-400 font-mono">
                   {tasks.length}/{FREE_LIMITS.tasks} Aufgaben
                 </div>
-                <div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/[0.06] mt-1">
+                <div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/[0.06] mt-1 border border-white/[0.04]">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all",
-                      atLimit ? "bg-amber-400" : "bg-indigo-400"
+                      atLimit ? "bg-amber-400" : "bg-gradient-to-r from-indigo-400 to-sky-400"
                     )}
                     style={{ width: `${Math.min((tasks.length / FREE_LIMITS.tasks) * 100, 100)}%` }}
                   />
@@ -366,15 +366,15 @@ export function Tasks() {
             <button
               onClick={handleOpenCreate}
               className={cn(
-                "flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-lg",
+                "flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold uppercase tracking-wider active:scale-95 transition-all cursor-pointer shadow-md",
                 atLimit
-                  ? "bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 shadow-amber-500/10"
-                  : "bg-white text-black hover:bg-white/90"
+                  ? "bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/25"
+                  : "btn-liquid-primary"
               )}
             >
               {atLimit ? (
                 <>
-                  <Crown className="h-3.5 w-3.5" /> Upgrade
+                  <Crown className="h-3.5 w-3.5 text-amber-400" /> Upgrade
                 </>
               ) : (
                 <>
@@ -388,12 +388,12 @@ export function Tasks() {
         {/* Filters & View Switcher Bar */}
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {/* View Switcher Tabs */}
-          <div className="flex rounded-xl bg-white/[0.03] p-1 border border-white/[0.06] shrink-0">
+          <div className="flex rounded-xl glass-panel p-1 shrink-0">
             <button
               onClick={() => handleSwitchView("list")}
               className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer",
-                view === "list" ? "bg-white/[0.1] text-white" : "text-white/40 hover:text-white/70"
+                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-95",
+                view === "list" ? "bg-white/10 text-zinc-100 border border-white/10 shadow-sm" : "text-zinc-400 hover:text-zinc-200"
               )}
             >
               <ListTodo className="h-3.5 w-3.5" /> Listenansicht
@@ -402,8 +402,8 @@ export function Tasks() {
             <button
               onClick={() => handleSwitchView("kanban")}
               className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer relative",
-                view === "kanban" ? "bg-white/[0.1] text-white" : "text-white/40 hover:text-white/70"
+                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-95 relative",
+                view === "kanban" ? "bg-white/10 text-zinc-100 border border-white/10 shadow-sm" : "text-zinc-400 hover:text-zinc-200"
               )}
             >
               <LayoutGrid className="h-3.5 w-3.5" /> Kanban-Board
@@ -413,8 +413,8 @@ export function Tasks() {
             <button
               onClick={() => handleSwitchView("gantt")}
               className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer relative",
-                view === "gantt" ? "bg-white/[0.1] text-white" : "text-white/40 hover:text-white/70"
+                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer active:scale-95 relative",
+                view === "gantt" ? "bg-white/10 text-zinc-100 border border-white/10 shadow-sm" : "text-zinc-400 hover:text-zinc-200"
               )}
             >
               <BarChart2 className="h-3.5 w-3.5" /> Gantt-Diagramm
@@ -425,24 +425,24 @@ export function Tasks() {
           {/* Search & Filter */}
           <div className="flex items-center gap-2 flex-1 sm:max-w-md">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30" />
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Aufgaben durchsuchen..."
-                className="w-full rounded-xl border border-white/[0.07] bg-white/[0.02] py-2 pl-9 pr-4 text-xs text-white/80 outline-none placeholder:text-white/20 focus:border-white/15 focus:bg-white/[0.04] transition-all"
+                className="glass-input w-full rounded-xl py-2 pl-9 pr-4 text-xs text-zinc-200 outline-none placeholder:text-zinc-500 transition-all"
               />
             </div>
 
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-3 py-2 text-xs text-white/60 outline-none focus:border-white/15 cursor-pointer"
+              className="glass-input rounded-xl px-3 py-2 text-xs text-zinc-300 outline-none cursor-pointer"
             >
-              <option value="ALL" className="bg-[#0c0c0c]">Alle Prio</option>
-              <option value="LOW" className="bg-[#0c0c0c]">Prio: Niedrig</option>
-              <option value="MEDIUM" className="bg-[#0c0c0c]">Prio: Mittel</option>
-              <option value="HIGH" className="bg-[#0c0c0c]">Prio: Hoch</option>
+              <option value="ALL" className="bg-zinc-900">Alle Prio</option>
+              <option value="LOW" className="bg-zinc-900">Prio: Niedrig</option>
+              <option value="MEDIUM" className="bg-zinc-900">Prio: Mittel</option>
+              <option value="HIGH" className="bg-zinc-900">Prio: Hoch</option>
             </select>
           </div>
         </div>
@@ -480,7 +480,7 @@ export function Tasks() {
               return (
                 <div
                   key={task.id}
-                  className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-4 hover:border-white/15 hover:bg-[#111111] transition-all shadow-sm"
+                  className="glass-panel-interactive group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl p-4 shadow-sm"
                 >
                   <div className="flex items-start gap-3 flex-1">
                     <button
@@ -490,10 +490,10 @@ export function Tasks() {
                           task.status === "DONE" ? "TODO" : "DONE"
                         )
                       }
-                      className="mt-0.5 text-white/30 hover:text-green-400 transition-colors cursor-pointer"
+                      className="mt-0.5 text-zinc-500 hover:text-emerald-400 transition-colors cursor-pointer active:scale-95"
                     >
                       {task.status === "DONE" ? (
-                        <CheckCircle className="h-5 w-5 text-green-400" />
+                        <CheckCircle className="h-5 w-5 text-emerald-400" />
                       ) : (
                         <Square className="h-5 w-5" />
                       )}
@@ -505,47 +505,48 @@ export function Tasks() {
                           className={cn(
                             "text-sm font-semibold transition-all",
                             task.status === "DONE"
-                              ? "line-through text-white/30"
-                              : "text-white/90"
+                              ? "line-through text-zinc-500"
+                              : "text-zinc-100"
                           )}
                         >
                           {task.title}
                         </span>
                         <span
                           className={cn(
-                            "rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider shrink-0",
+                            "status-pill border text-[10px] uppercase font-semibold shrink-0",
                             prio.color
                           )}
                         >
+                          <span className={cn(prio.dot, "shrink-0")} />
                           {prio.label}
                         </span>
                       </div>
 
                       {task.description && (
-                        <p className="mt-1 text-xs text-white/40 line-clamp-1 leading-relaxed">
+                        <p className="mt-1 text-xs text-zinc-400 line-clamp-1 leading-relaxed">
                           {task.description}
                         </p>
                       )}
 
                       {/* Subtasks & Time Spent Badge Row */}
-                      <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-white/40">
+                      <div className="mt-2.5 flex flex-wrap items-center gap-3 text-[11px] text-zinc-400">
                         {subtaskCount > 0 && (
-                          <span className="flex items-center gap-1 bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.04]">
-                            <CheckSquare className="h-3 w-3 text-indigo-400" />
+                          <span className="status-pill text-[10px] text-zinc-300">
+                            <CheckSquare className="h-3 w-3 text-indigo-400 shrink-0" />
                             {subtaskDone}/{subtaskCount} Subtasks
                           </span>
                         )}
 
                         {task.timeSpent > 0 && (
-                          <span className="flex items-center gap-1 bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.04] text-amber-400/80">
-                            <Clock className="h-3 w-3" />
+                          <span className="status-pill text-[10px] text-amber-300">
+                            <Clock className="h-3 w-3 text-amber-400 shrink-0" />
                             {formatDuration(task.timeSpent)}
                           </span>
                         )}
 
                         {task.tags && task.tags.map((t: string) => (
-                          <span key={t} className="flex items-center gap-0.5 text-white/30">
-                            <Tag className="h-2.5 w-2.5" /> #{t}
+                          <span key={t} className="flex items-center gap-1 text-[10px] text-zinc-400">
+                            <Tag className="h-2.5 w-2.5 text-zinc-500" /> #{t}
                           </span>
                         ))}
                       </div>
@@ -555,7 +556,7 @@ export function Tasks() {
                   <div className="flex items-center justify-end gap-2 shrink-0">
                     <button
                       onClick={() => handleOpenEdit(task)}
-                      className="p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-white/50 hover:text-white transition-colors cursor-pointer"
+                      className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/10 text-zinc-300 hover:text-zinc-100 active:scale-95 transition-all cursor-pointer border border-white/[0.06]"
                     >
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
@@ -563,7 +564,7 @@ export function Tasks() {
                       onClick={() => {
                         if (confirm("Aufgabe wirklich löschen?")) deleteTask.mutate(task.id);
                       }}
-                      className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors cursor-pointer"
+                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 active:scale-95 transition-all cursor-pointer"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
