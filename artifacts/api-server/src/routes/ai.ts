@@ -14,45 +14,66 @@ interface GeminiContent {
   parts: GeminiPart[];
 }
 
+const GEMINI_MODELS = [
+  "gemini-1.5-flash",
+  "gemini-2.0-flash",
+  "gemini-1.5-pro",
+];
+
 async function callGeminiApi(contents: GeminiContent[], endpointName: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
 
   if (!apiKey) {
     console.error(`CRITICAL ERROR [${endpointName}]: GEMINI_API_KEY ist nicht in den Environment Variables gesetzt!`);
-    throw new Error("API Key fehlt auf dem Server (GEMINI_API_KEY nicht konfiguriert).");
+    throw new Error("GEMINI_API_KEY ist nicht konfiguriert.");
   }
 
   console.log(`[${endpointName}] Sende Anfrage an Gemini API mit Key-Länge:`, apiKey.length);
 
-  try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  let lastErrorDetails = "";
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents }),
-    });
+  for (const modelName of GEMINI_MODELS) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-    const data = (await response.json()) as any;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents }),
+      });
 
-    if (!response.ok) {
-      console.error(`[${endpointName}] Gemini API Error Response:`, JSON.stringify(data, null, 2));
-      const details = data?.error?.message || `HTTP ${response.status} Status von Gemini API`;
-      throw new Error(`Gemini API Fehler: ${details}`);
+      const data = (await response.json()) as any;
+
+      if (!response.ok) {
+        lastErrorDetails = data?.error?.message || `HTTP ${response.status} Status`;
+        console.error(`[${endpointName}] Gemini API Error Response for model ${modelName}:`, JSON.stringify(data, null, 2));
+
+        // If 404 NOT_FOUND, try next model in loop
+        if (response.status === 404 || lastErrorDetails.includes("NOT_FOUND") || lastErrorDetails.includes("is not found")) {
+          console.warn(`[${endpointName}] Model ${modelName} returned 404, attempting next model fallback...`);
+          continue;
+        }
+
+        throw new Error(`Gemini API Fehler: ${lastErrorDetails}`);
+      }
+
+      const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!generatedText) {
+        console.error(`[${endpointName}] Unerwartete Gemini Struktur:`, JSON.stringify(data, null, 2));
+        throw new Error("Keine Textantwort von Gemini erhalten.");
+      }
+
+      return generatedText.trim();
+    } catch (error: any) {
+      if (error.message?.includes("Gemini API Fehler") || error.message?.includes("Keine Textantwort")) {
+        throw error;
+      }
+      console.warn(`[${endpointName}] Exception using model ${modelName}:`, error?.message || error);
     }
-
-    const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!generatedText) {
-      console.error(`[${endpointName}] Unerwartete Gemini Struktur:`, JSON.stringify(data, null, 2));
-      throw new Error("Keine Textantwort von Gemini erhalten.");
-    }
-
-    return generatedText.trim();
-  } catch (error: any) {
-    console.error(`Server Catch Error in ${endpointName}:`, error?.message || error);
-    throw error;
   }
+
+  throw new Error(`Gemini API Fehler: ${lastErrorDetails || "Alle Gemini Modelle schlugen fehl."}`);
 }
 
 // POST /api/ai/journal-summary
