@@ -12,29 +12,29 @@ import { cn, formatMinutes, getDailyQuote, getTodayISO } from "../lib/utils";
 const fade = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
 
-function StatCard({ icon: Icon, label, value, sub, color, onClick }: any) {
+function StatCard({ icon: Icon, label, value, sub, onClick }: any) {
   return (
     <motion.div variants={fade} whileHover={{ y: -2 }} onClick={onClick}
-      className={cn("group relative cursor-pointer overflow-hidden rounded-2xl border border-white/[0.07] bg-[#111111] p-5 transition-all hover:border-white/10", onClick && "cursor-pointer")}>
+      className={cn("group relative overflow-hidden rounded-2xl border border-white/10 bg-[#12141D]/50 p-5 backdrop-blur-md transition-all duration-300 hover:border-cyan-500/30 hover:bg-white/[0.03]", onClick && "cursor-pointer")}>
       <div className="mb-4 flex items-start justify-between">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] group-hover:bg-white/[0.08] transition-colors">
-          <Icon className="h-4 w-4 text-white/60" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] border border-white/10 text-cyan-400 group-hover:border-cyan-500/30 transition-colors">
+          <Icon className="h-4 w-4" />
         </div>
-        {onClick && <ArrowRight className="h-4 w-4 text-white/20 group-hover:text-white/50 transition-colors" />}
+        {onClick && <ArrowRight className="h-4 w-4 text-white/20 group-hover:text-cyan-400 transition-colors" />}
       </div>
-      <div className="text-2xl font-bold text-white">{value}</div>
-      <div className="mt-0.5 text-sm text-white/40">{label}</div>
-      {sub && <div className="mt-2 text-xs text-white/25">{sub}</div>}
+      <div className="text-2xl font-bold text-white font-mono tracking-tight">{value}</div>
+      <div className="mt-0.5 text-xs font-medium text-white/50">{label}</div>
+      {sub && <div className="mt-2 text-[11px] font-mono text-cyan-400/70">{sub}</div>}
     </motion.div>
   );
 }
 
 function QuickAction({ icon: Icon, label, onClick }: any) {
   return (
-    <motion.button variants={fade} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+    <motion.button variants={fade} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
       onClick={onClick}
-      className="flex items-center gap-3 rounded-xl border border-white/[0.07] bg-[#111111] px-4 py-3 text-sm text-white/60 hover:border-white/10 hover:bg-white/[0.06] hover:text-white transition-all">
-      <Icon className="h-4 w-4" />
+      className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#12141D]/50 px-4 py-3 text-xs font-medium text-white/70 backdrop-blur-md hover:border-cyan-500/30 hover:bg-white/[0.04] hover:text-cyan-300 transition-all duration-300 cursor-pointer">
+      <Icon className="h-4 w-4 text-cyan-400" />
       {label}
     </motion.button>
   );
@@ -68,8 +68,8 @@ export function Dashboard() {
 
         {/* Daily Quote */}
         <motion.div variants={fade}
-          className="rounded-2xl border border-white/[0.06] bg-gradient-to-r from-white/[0.03] to-white/[0.01] p-5">
-          <p className="text-xs uppercase tracking-widest text-white/25 mb-2">Daily Inspiration</p>
+          className="rounded-2xl border border-white/10 bg-[#12141D]/40 backdrop-blur-md p-5">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 mb-2">Daily Inspiration</p>
           <p className="text-sm text-white/70 italic leading-relaxed">"{getDailyQuote()}"</p>
         </motion.div>
 
@@ -87,19 +87,19 @@ export function Dashboard() {
 
         {/* Focus Progress */}
         <motion.div variants={fade}
-          className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
+          className="rounded-2xl border border-white/10 bg-[#12141D]/50 backdrop-blur-md p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-white/40" />
-              <span className="text-sm font-medium text-white/70">Daily Focus Goal</span>
+              <Target className="h-4 w-4 text-cyan-400" />
+              <span className="text-sm font-medium text-white/80">Daily Focus Goal</span>
             </div>
-            <span className="text-xs text-white/30">{formatMinutes(todayFocus)} / {formatMinutes(goalMinutes)}</span>
+            <span className="text-xs font-mono text-cyan-400">{formatMinutes(todayFocus)} / {formatMinutes(goalMinutes)}</span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
-            <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full rounded-full bg-white/60" />
+          <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
+            <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.8, ease: "easeOut" }}
+              className="h-full rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
           </div>
-          <p className="mt-2 text-xs text-white/25">{progress.toFixed(0)}% reached</p>
+          <p className="mt-2 text-xs font-mono text-white/40">{progress.toFixed(0)}% reached</p>
         </motion.div>
 
         {/* Quick Actions */}
@@ -115,48 +115,48 @@ export function Dashboard() {
 
         {/* Recent Notes + Bookmarks */}
         <div className="grid gap-4 lg:grid-cols-2">
-          <motion.div variants={fade} className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
+          <motion.div variants={fade} className="rounded-2xl border border-white/10 bg-[#12141D]/50 backdrop-blur-md p-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-white/40" />
-                <span className="text-sm font-medium text-white/70">Recent Notes</span>
+                <FileText className="h-4 w-4 text-cyan-400" />
+                <span className="text-sm font-medium text-white/80">Recent Notes</span>
               </div>
-              <button onClick={() => navigate("/notes")} className="text-xs text-white/30 hover:text-white/60 transition-colors">All →</button>
+              <button onClick={() => navigate("/notes")} className="text-xs font-mono text-cyan-400/70 hover:text-cyan-300 transition-colors cursor-pointer">All →</button>
             </div>
             {recentNotes.length === 0 ? (
-              <div className="py-6 text-center text-sm text-white/20">No notes yet</div>
+              <div className="py-6 text-center text-xs font-mono text-white/30">No notes yet</div>
             ) : (
               <div className="space-y-2">
                 {recentNotes.map((n: any) => (
                   <div key={n.id} onClick={() => navigate("/notes")}
-                    className="cursor-pointer rounded-lg px-3 py-2.5 hover:bg-white/[0.04] transition-colors">
-                    <p className="truncate text-sm font-medium text-white/70">{n.title}</p>
-                    <p className="mt-0.5 line-clamp-1 text-xs text-white/30">{n.content || "No content"}</p>
+                    className="cursor-pointer rounded-xl border border-white/5 bg-white/[0.02] p-3 hover:border-cyan-500/30 hover:bg-white/[0.04] transition-all duration-300">
+                    <p className="truncate text-xs font-semibold text-white/90">{n.title}</p>
+                    <p className="mt-0.5 line-clamp-1 text-[11px] text-white/40">{n.content || "No content"}</p>
                   </div>
                 ))}
               </div>
             )}
           </motion.div>
 
-          <motion.div variants={fade} className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
+          <motion.div variants={fade} className="rounded-2xl border border-white/10 bg-[#12141D]/50 backdrop-blur-md p-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Bookmark className="h-4 w-4 text-white/40" />
-                <span className="text-sm font-medium text-white/70">Recent Bookmarks</span>
+                <Bookmark className="h-4 w-4 text-cyan-400" />
+                <span className="text-sm font-medium text-white/80">Recent Bookmarks</span>
               </div>
-              <button onClick={() => navigate("/bookmarks")} className="text-xs text-white/30 hover:text-white/60 transition-colors">All →</button>
+              <button onClick={() => navigate("/bookmarks")} className="text-xs font-mono text-cyan-400/70 hover:text-cyan-300 transition-colors cursor-pointer">All →</button>
             </div>
             {recentBookmarks.length === 0 ? (
-              <div className="py-6 text-center text-sm text-white/20">No bookmarks yet</div>
+              <div className="py-6 text-center text-xs font-mono text-white/30">No bookmarks yet</div>
             ) : (
               <div className="space-y-2">
                 {recentBookmarks.map((b: any) => (
                   <a key={b.id} href={b.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-white/[0.04] transition-colors">
-                    <Globe className="h-4 w-4 shrink-0 text-white/30" />
+                    className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3 hover:border-cyan-500/30 hover:bg-white/[0.04] transition-all duration-300">
+                    <Globe className="h-4 w-4 shrink-0 text-cyan-400/70" />
                     <div className="overflow-hidden">
-                      <p className="truncate text-sm font-medium text-white/70">{b.title || b.url}</p>
-                      <p className="truncate text-xs text-white/30">{b.siteName || new URL(b.url).hostname}</p>
+                      <p className="truncate text-xs font-semibold text-white/90">{b.title || b.url}</p>
+                      <p className="truncate text-[11px] font-mono text-white/40">{b.siteName || new URL(b.url).hostname}</p>
                     </div>
                   </a>
                 ))}

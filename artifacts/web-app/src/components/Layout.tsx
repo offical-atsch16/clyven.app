@@ -79,12 +79,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-[#080808]">
+    <div className="flex h-[100dvh] overflow-hidden bg-[#090A0F]">
       {/* Mobile overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-black/70 backdrop-blur-md lg:hidden"
             onClick={() => setMobileOpen(false)} />
         )}
       </AnimatePresence>
@@ -92,8 +92,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Mobile sidebar */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", damping: 30 }}
-            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/[0.08] bg-[#0c0c0c]/90 backdrop-blur-lg lg:hidden">
+          <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ duration: 0.2 }}
+            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/10 bg-[#12141D]/90 backdrop-blur-md lg:hidden shadow-2xl">
             <SidebarContent collapsed={false} displayName={displayName} avatarUrl={avatarUrl}
               onToggle={() => setMobileOpen(false)} onCommandOpen={() => { setMobileOpen(false); openCommandPalette(); }}
               onSignOut={() => signOut()} mobile onMobileClose={() => setMobileOpen(false)} />
@@ -101,8 +101,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         )}
       </AnimatePresence>
 
-      {/* Desktop sidebar */}
-      <aside className={cn("hidden shrink-0 flex-col border-r border-white/[0.08] bg-[#0c0c0c]/85 backdrop-blur-md transition-all duration-300 lg:flex", collapsed ? "w-16" : "w-56")}>
+      {/* Desktop sidebar - Liquid Glass Floating Panel */}
+      <aside className={cn("hidden shrink-0 flex-col border-r border-white/10 bg-[#12141D]/50 backdrop-blur-md transition-all duration-300 lg:flex", collapsed ? "w-16" : "w-56")}>
         <SidebarContent collapsed={collapsed} displayName={displayName} avatarUrl={avatarUrl}
           onToggle={() => setCollapsed(!collapsed)} onCommandOpen={openCommandPalette}
           onToggleAI={() => setAiSidebarOpen((prev) => !prev)}
@@ -113,9 +113,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex flex-1 flex-col overflow-hidden relative">
         <SystemBanner />
         {/* Mobile top bar */}
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3 lg:hidden">
+        <div className="flex items-center justify-between border-b border-white/10 bg-[#12141D]/60 backdrop-blur-md px-4 py-3 lg:hidden">
           <div className="flex items-center gap-3">
-            <button onClick={() => setMobileOpen(true)} className="text-white/40 hover:text-white">
+            <button onClick={() => setMobileOpen(true)} className="text-white/50 hover:text-white">
               <Menu className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <button
             onClick={() => setAiSidebarOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-xs text-indigo-300"
+            className="flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-xs text-cyan-300 hover:bg-cyan-500/20 transition-colors"
           >
             <Sparkles className="h-3.5 w-3.5" /> AI
           </button>
