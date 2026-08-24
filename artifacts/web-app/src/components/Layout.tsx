@@ -93,9 +93,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <AnimatePresence>
         {mobileOpen && (
           <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: "spring", damping: 30 }}
-            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl lg:hidden">
-          <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ duration: 0.2 }}
-            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/10 bg-[#12141D]/90 backdrop-blur-md lg:hidden shadow-2xl">
+            className="fixed left-0 top-0 z-50 h-full w-64 border-r border-white/10 bg-[#090A0F]/95 backdrop-blur-xl lg:hidden shadow-2xl">
             <SidebarContent collapsed={false} displayName={displayName} avatarUrl={avatarUrl}
               onToggle={() => setMobileOpen(false)} onCommandOpen={() => { setMobileOpen(false); openCommandPalette(); }}
               onSignOut={() => signOut()} mobile onMobileClose={() => setMobileOpen(false)} />
