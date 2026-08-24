@@ -1,9 +1,10 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@clerk/react";
 import { useLocation } from "wouter";
 import {
-  Timer, FileText, Bookmark, BookOpen, Zap, Target,
+  Timer, FileText, Bookmark, BookOpen, Target,
   ArrowRight, TrendingUp, Plus, Flame, Globe,
 } from "lucide-react";
 import { api } from "../lib/api";
@@ -53,12 +54,14 @@ export function Dashboard() {
   const todayFocus = focus?.todayMinutes ?? 0;
   const goalMinutes = 120;
   const progress = Math.min((todayFocus / goalMinutes) * 100, 100);
-  const recentNotes = (notes || []).slice(0, 3);
-  const recentBookmarks = (bookmarks || []).slice(0, 3);
+
+  const recentNotes = useMemo(() => (notes || []).slice(0, 3), [notes]);
+  const recentBookmarks = useMemo(() => (bookmarks || []).slice(0, 3), [bookmarks]);
+  const dailyQuote = useMemo(() => getDailyQuote(), []);
 
   return (
-    <div className="min-h-full p-4 sm:p-6 lg:p-8">
-      <motion.div variants={container} initial="hidden" animate="show" className="mx-auto max-w-5xl space-y-8">
+    <div className="min-h-full w-full max-w-full overflow-x-hidden p-4 sm:p-6 lg:p-8">
+      <motion.div variants={container} initial="hidden" animate="show" className="mx-auto max-w-5xl space-y-6 sm:space-y-8">
 
         {/* Header */}
         <motion.div variants={fade}>
@@ -70,11 +73,11 @@ export function Dashboard() {
         <motion.div variants={fade}
           className="glass-panel rounded-2xl p-5">
           <p className="text-xs uppercase tracking-widest text-zinc-400 font-semibold mb-2">Daily Inspiration</p>
-          <p className="text-sm text-zinc-200 italic leading-relaxed">"{getDailyQuote()}"</p>
+          <p className="text-sm text-zinc-200 italic leading-relaxed">"{dailyQuote}"</p>
         </motion.div>
 
         {/* Stats Grid */}
-        <motion.div variants={container} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <motion.div variants={container} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard icon={Timer} label="Focus today" value={formatMinutes(todayFocus)}
             sub={`Goal: ${formatMinutes(goalMinutes)}`} onClick={() => navigate("/focus")} />
           <StatCard icon={FileText} label="Notes" value={stats?.notesCount ?? "—"}
@@ -105,7 +108,7 @@ export function Dashboard() {
         {/* Quick Actions */}
         <motion.div variants={fade}>
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-zinc-400">Quick Actions</p>
-          <motion.div variants={container} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <motion.div variants={container} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <QuickAction icon={Plus} label="New Note" onClick={() => navigate("/notes?new=1")} />
             <QuickAction icon={Timer} label="Start Focus" onClick={() => navigate("/focus?start=1")} />
             <QuickAction icon={BookOpen} label="Open Journal" onClick={() => navigate("/journal")} />
@@ -166,7 +169,7 @@ export function Dashboard() {
         </div>
 
         {/* Streak + Total Focus */}
-        <motion.div variants={container} className="grid grid-cols-2 gap-4">
+        <motion.div variants={container} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <motion.div variants={fade} className="glass-panel rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-2">
               <Flame className="h-4 w-4 text-amber-400" />

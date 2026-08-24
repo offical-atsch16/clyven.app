@@ -37,13 +37,13 @@ function NavItem({ href, icon: Icon, label, collapsed, mobile, onMobileClose }: 
     <Link href={href} onClick={mobile ? onMobileClose : undefined}>
       <motion.div whileHover={{ x: 3 }} whileTap={{ scale: 0.98 }}
         className={cn(
-          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 cursor-pointer border border-transparent",
+          "flex items-center gap-3 rounded-xl px-3 py-3 text-sm min-h-[44px] transition-all duration-200 cursor-pointer border border-transparent",
           collapsed && !mobile ? "justify-center px-2" : "",
           active
             ? "bg-white/10 text-zinc-100 font-semibold border-white/10 shadow-xs backdrop-blur-md"
             : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200 hover:border-white/10",
         )}>
-        <Icon className={cn("shrink-0 transition-colors", collapsed && !mobile ? "h-5 w-5" : "h-4 w-4", active ? "text-sky-400" : "text-zinc-400")} />
+        <Icon className={cn("shrink-0 transition-colors", collapsed && !mobile ? "h-5 w-5" : "h-4.5 w-4.5", active ? "text-sky-400" : "text-zinc-400")} />
         {(!collapsed || mobile) && <span>{label}</span>}
         {active && (!collapsed || mobile) && (
           <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_#38bdf8]" />
@@ -81,7 +81,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-[#090A0F]">
+    <div className="flex h-[100dvh] w-full max-w-full overflow-x-hidden overflow-y-hidden bg-[#090A0F]">
       {/* Mobile overlay */}
       <AnimatePresence>
         {mobileOpen && (
@@ -112,12 +112,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <main className="flex flex-1 flex-col overflow-hidden relative">
+      <main className="flex flex-1 flex-col min-w-0 max-w-full overflow-x-hidden overflow-y-hidden relative">
         <SystemBanner />
         {/* Mobile top bar */}
-        <div className="flex items-center justify-between border-b border-white/10 bg-black/50 backdrop-blur-xl px-4 py-3 lg:hidden shadow-lg">
+        <div className="flex items-center justify-between border-b border-white/10 bg-black/50 backdrop-blur-xl px-4 py-2.5 lg:hidden shadow-lg min-h-[52px]">
           <div className="flex items-center gap-3">
-            <button onClick={() => setMobileOpen(true)} className="text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer"
+              aria-label="Open menu"
+            >
               <Menu className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2">
@@ -127,9 +131,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <button
             onClick={() => setAiSidebarOpen(true)}
-            className="flex items-center gap-1.5 rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-300 hover:border-sky-500/50 active:scale-95 transition-all backdrop-blur-md cursor-pointer"
+            className="flex items-center justify-center gap-1.5 min-h-[44px] px-3.5 rounded-xl border border-sky-500/30 bg-sky-500/10 text-xs font-semibold text-sky-300 hover:border-sky-500/50 active:scale-95 transition-all backdrop-blur-md cursor-pointer"
           >
-            <Sparkles className="h-3.5 w-3.5 text-sky-400" /> AI
+            <Sparkles className="h-4 w-4 text-sky-400" /> AI
           </button>
         </div>
 
@@ -160,9 +164,10 @@ function SidebarContent({ collapsed, displayName, avatarUrl, onToggle, onCommand
         )}
         <button
           onClick={onToggle}
-          className={cn("rounded-md p-1 text-white/30 hover:bg-white/[0.05] hover:text-white/70 transition-colors", mobile && "ml-auto")}
+          className={cn("flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg text-white/40 hover:bg-white/[0.05] hover:text-white/80 transition-colors cursor-pointer", mobile && "ml-auto")}
+          aria-label={mobile ? "Close menu" : "Toggle sidebar"}
         >
-          {mobile ? <X className="h-4 w-4" /> : collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          {mobile ? <X className="h-5 w-5" /> : collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
       </div>
 

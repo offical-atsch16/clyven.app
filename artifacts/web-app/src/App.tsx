@@ -91,7 +91,7 @@ const clerkAppearance = {
 
 function AuthBg({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-[#080808] px-4 py-12">
+    <div className="relative flex min-h-[100dvh] w-full max-w-full flex-col items-center justify-center overflow-x-hidden bg-[#080808] px-4 py-12">
       <div className="pointer-events-none absolute inset-0"
         style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
       <div className="relative z-10 flex w-full flex-col items-center">{children}</div>
