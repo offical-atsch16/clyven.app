@@ -88,7 +88,17 @@ router.get("/settings", requireAuth, async (req, res) => {
       .eq("user_id", userId)
       .maybeSingle();
     if (error) throw error;
-    res.json(data ? snakeToCamel(data) : { theme: "dark", dailyFocusGoal: 120 });
+
+    const defaults = {
+      theme: "dark",
+      dailyFocusGoal: 120,
+      notificationsEnabled: true,
+      taskEmailsEnabled: true,
+      journalRemindersEnabled: true,
+      streakAlertsEnabled: true,
+    };
+
+    res.json(data ? { ...defaults, ...snakeToCamel(data) } : defaults);
   } catch (e: any) {
     res.status(500).json({ error: "Failed to fetch settings", detail: e.message });
   }
@@ -96,7 +106,16 @@ router.get("/settings", requireAuth, async (req, res) => {
 
 router.post("/settings", requireAuth, async (req, res) => {
   const { userId } = req as AuthenticatedRequest;
-  const { theme, dailyFocusGoal, notificationsEnabled, timezone } = req.body;
+  const {
+    theme,
+    dailyFocusGoal,
+    notificationsEnabled,
+    taskEmailsEnabled,
+    journalRemindersEnabled,
+    streakAlertsEnabled,
+    timezone,
+  } = req.body;
+
   try {
     const { data: existing } = await supabase
       .from("user_settings")
@@ -104,10 +123,22 @@ router.post("/settings", requireAuth, async (req, res) => {
       .eq("user_id", userId)
       .maybeSingle();
 
+    const updateData: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (theme !== undefined) updateData.theme = theme;
+    if (dailyFocusGoal !== undefined) updateData.daily_focus_goal = dailyFocusGoal;
+    if (notificationsEnabled !== undefined) updateData.notifications_enabled = notificationsEnabled;
+    if (taskEmailsEnabled !== undefined) updateData.task_emails_enabled = taskEmailsEnabled;
+    if (journalRemindersEnabled !== undefined) updateData.journal_reminders_enabled = journalRemindersEnabled;
+    if (streakAlertsEnabled !== undefined) updateData.streak_alerts_enabled = streakAlertsEnabled;
+    if (timezone !== undefined) updateData.timezone = timezone;
+
     if (existing) {
       const { data, error } = await supabase
         .from("user_settings")
-        .update({ theme, daily_focus_goal: dailyFocusGoal, notifications_enabled: notificationsEnabled, timezone, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq("user_id", userId)
         .select()
         .single();
@@ -117,7 +148,16 @@ router.post("/settings", requireAuth, async (req, res) => {
 
     const { data, error } = await supabase
       .from("user_settings")
-      .insert({ user_id: userId, theme, daily_focus_goal: dailyFocusGoal, notifications_enabled: notificationsEnabled, timezone })
+      .insert({
+        user_id: userId,
+        theme: theme ?? "dark",
+        daily_focus_goal: dailyFocusGoal ?? 120,
+        notifications_enabled: notificationsEnabled ?? true,
+        task_emails_enabled: taskEmailsEnabled ?? true,
+        journal_reminders_enabled: journalRemindersEnabled ?? true,
+        streak_alerts_enabled: streakAlertsEnabled ?? true,
+        timezone,
+      })
       .select()
       .single();
     if (error) throw error;
