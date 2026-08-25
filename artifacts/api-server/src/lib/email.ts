@@ -129,6 +129,13 @@ export interface SendMilestoneEmailOptions {
   dashboardUrl?: string;
 }
 
+export interface SendNewsletterEmailOptions {
+  toEmail: string;
+  subject?: string;
+  content?: string;
+  unsubscribeUrl: string;
+}
+
 async function sendCourierNotification(
   toEmail: string,
   eventIdOrTemplateId: string,
@@ -219,6 +226,33 @@ export async function sendMilestoneEmail(options: SendMilestoneEmailOptions): Pr
     total_focus_minutes: options.totalFocusMinutes,
     dashboardUrl,
     dashboard_url: dashboardUrl,
+  });
+}
+
+export async function sendNewsletterEmail(options: SendNewsletterEmailOptions): Promise<boolean> {
+  const templateId = process.env.COURIER_NEWSLETTER_TEMPLATE_ID || "CLYVEN_NEWSLETTER";
+  const subject = options.subject || "Clyven Newsletter Update";
+  const content = options.content || "Welcome to the latest issue of the Clyven Newsletter.";
+
+  const htmlFormatted = `
+    <div style="font-family: 'Courier New', Courier, monospace; background-color: #090A0F; color: #FAFAFA; padding: 24px; border-radius: 8px;">
+      <h2 style="color: #00F2FE;">${subject}</h2>
+      <div style="font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+        ${content}
+      </div>
+      <hr style="border: none; border-top: 1px solid #333;" />
+      <p style="font-size: 12px; color: #888;">
+        If you wish to stop receiving these updates, you can <a href="${options.unsubscribeUrl}" style="color: #00F2FE;">unsubscribe here</a>.
+      </p>
+    </div>
+  `;
+
+  return sendCourierNotification(options.toEmail, templateId, {
+    subject,
+    content,
+    html: htmlFormatted,
+    unsubscribeUrl: options.unsubscribeUrl,
+    unsubscribe_url: options.unsubscribeUrl,
   });
 }
 

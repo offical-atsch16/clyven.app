@@ -5,6 +5,7 @@ import {
   sendReminderEmail,
   sendJournalReminderEmail,
   sendStreakWarningEmail,
+  sendNewsletterEmail,
 } from "../lib/email.js";
 
 const router = Router();
@@ -40,6 +41,20 @@ async function getUserInfo(userId: string): Promise<{ email: string | null; full
 }
 
 async function isNotificationEnabled(userId: string, type: "task" | "journal" | "streak"): Promise<boolean> {
+  // First check user_preferences table
+  const { data: prefs } = await supabase
+    .from("user_preferences")
+    .select("email_reminders, email_journal, email_streaks")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (prefs) {
+    if (type === "task") return prefs.email_reminders !== false;
+    if (type === "journal") return prefs.email_journal !== false;
+    if (type === "streak") return prefs.email_streaks !== false;
+  }
+
+  // Fallback to user_settings table
   const { data: settings } = await supabase
     .from("user_settings")
     .select("notifications_enabled, task_emails_enabled, journal_reminders_enabled, streak_alerts_enabled")
@@ -269,5 +284,51 @@ const streakWarningHandler = async (req: any, res: any) => {
 
 router.get("/streak-warning", streakWarningHandler);
 router.post("/streak-warning", streakWarningHandler);
+
+// 4. Newsletter Broadcast Trigger
+const newsletterBroadcastHandler = async (req: any, res: any) => {
+  try {
+    const { subject, content } = req.body || {};
+    const frontendUrl = process.env.FRONTEND_URL?.split(",")[0] || "https://clyven.app";
+
+    // Query active newsletter subscribers ONLY
+    const { data: subscribers, error } = await supabase
+      .from("newsletter_subscribers")
+      .select("email")
+      .eq("is_subscribed", true);
+
+    if (error) throw error;
+
+    const activeSubscribers = subscribers || [];
+    let sentCount = 0;
+    const details: any[] = [];
+
+    for (const sub of activeSubscribers) {
+      if (!sub.email) continue;
+
+      const unsubscribeUrl = `${frontendUrl}/unsubscribe?email=${encodeURIComponent(sub.email)}`;
+
+      const success = await sendNewsletterEmail({
+        toEmail: sub.email,
+        subject,
+        content,
+        unsubscribeUrl,
+      });
+
+      if (success) {
+        sentCount++;
+        details.push({ email: sub.email });
+      }
+    }
+
+    res.json({ success: true, recipientCount: activeSubscribers.length, sentCount, details });
+  } catch (e: any) {
+    console.error("[CRON NEWSLETTER BROADCAST ERROR]", e);
+    res.status(500).json({ error: "Failed to process newsletter broadcast", detail: e.message });
+  }
+};
+
+router.get("/newsletter-broadcast", newsletterBroadcastHandler);
+router.post("/newsletter-broadcast", newsletterBroadcastHandler);
 
 export default router;

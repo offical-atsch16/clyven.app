@@ -24,9 +24,9 @@ export function Settings() {
     if (settings) {
       setFocusGoal(settings.dailyFocusGoal ?? 120);
       setNotifications(settings.notificationsEnabled ?? true);
-      setTaskEmails(settings.taskEmailsEnabled ?? true);
-      setJournalReminders(settings.journalRemindersEnabled ?? true);
-      setStreakAlerts(settings.streakAlertsEnabled ?? true);
+      setTaskEmails(settings.emailReminders ?? settings.taskEmailsEnabled ?? true);
+      setJournalReminders(settings.emailJournal ?? settings.journalRemindersEnabled ?? true);
+      setStreakAlerts(settings.emailStreaks ?? settings.streakAlertsEnabled ?? true);
     }
   }, [settings]);
 
@@ -38,6 +38,9 @@ export function Settings() {
       taskEmailsEnabled: taskEmails,
       journalRemindersEnabled: journalReminders,
       streakAlertsEnabled: streakAlerts,
+      emailReminders: taskEmails,
+      emailJournal: journalReminders,
+      emailStreaks: streakAlerts,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -88,15 +91,15 @@ export function Settings() {
             </div>
           </motion.div>
 
-          {/* Notifications & Email Preferences */}
+          {/* Notifications & Preferences */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
               <div className="flex items-center gap-2">
                 <Bell className="h-4 w-4 text-white/40" />
                 <div>
-                  <p className="text-sm font-medium text-white/70">Global Notifications</p>
-                  <p className="text-xs text-white/30">Enable or disable all app notifications</p>
+                  <p className="text-sm font-medium text-white/70">Notifications</p>
+                  <p className="text-xs text-white/30">Manage global and email notification preferences</p>
                 </div>
               </div>
               <button onClick={() => setNotifications((n) => !n)}
@@ -105,10 +108,10 @@ export function Settings() {
               </button>
             </div>
 
-            {/* Task & Due Date Emails */}
+            {/* 1. Task & Reminder Emails */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-white/70">Task & Due Date Emails</p>
+                <p className="text-sm font-medium text-white/70">Task & Reminder Emails</p>
                 <p className="text-xs text-white/30">Receive email reminders when tasks hit their due date</p>
               </div>
               <button onClick={() => setTaskEmails((n) => !n)}
@@ -117,11 +120,11 @@ export function Settings() {
               </button>
             </div>
 
-            {/* Daily Journal Reminders */}
+            {/* 2. Daily Journal Prompts */}
             <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
               <div>
-                <p className="text-sm font-medium text-white/70">Daily Journal Reminders</p>
-                <p className="text-xs text-white/30">Receive daily nudges to log your journal entries</p>
+                <p className="text-sm font-medium text-white/70">Daily Journal Prompts</p>
+                <p className="text-xs text-white/30">Receive daily evening nudges to log your journal entries</p>
               </div>
               <button onClick={() => setJournalReminders((n) => !n)}
                 className={cn("relative h-6 w-11 rounded-full transition-colors", journalReminders ? "bg-white/40" : "bg-white/[0.1]")}>
@@ -129,11 +132,11 @@ export function Settings() {
               </button>
             </div>
 
-            {/* Focus Streak Alerts */}
+            {/* 3. Focus Streak Warnings */}
             <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
               <div>
-                <p className="text-sm font-medium text-white/70">Focus Streak Alerts</p>
-                <p className="text-xs text-white/30">Receive streak loss warnings and focus duration milestone alerts</p>
+                <p className="text-sm font-medium text-white/70">Focus Streak Warnings</p>
+                <p className="text-xs text-white/30">Receive warnings if your focus streak is at risk of breaking</p>
               </div>
               <button onClick={() => setStreakAlerts((n) => !n)}
                 className={cn("relative h-6 w-11 rounded-full transition-colors", streakAlerts ? "bg-white/40" : "bg-white/[0.1]")}>
@@ -149,8 +152,8 @@ export function Settings() {
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-white/40" />
                 <div>
-                  <p className="text-sm font-medium text-white/70">Cookie-Einstellungen</p>
-                  <p className="text-xs text-white/30">Passe deine Datenschutz- und Cookie-Präferenzen an</p>
+                  <p className="text-sm font-medium text-white/70">Cookie Settings</p>
+                  <p className="text-xs text-white/30">Manage your privacy and cookie preferences</p>
                 </div>
               </div>
               <button onClick={() => {
@@ -158,7 +161,7 @@ export function Settings() {
                   (window as any).silktideConsentManager.preferences();
                 }
               }} className="rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.05] px-3 py-1.5 text-xs font-semibold text-white transition-all cursor-pointer">
-                Verwalten
+                Manage
               </button>
             </div>
           </motion.div>
