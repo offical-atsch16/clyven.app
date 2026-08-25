@@ -125,12 +125,31 @@ export const userSettings = pgTable("user_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const userPreferences = pgTable("user_preferences", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull().unique(),
+  emailReminders: boolean("email_reminders").default(true),
+  emailJournal: boolean("email_journal").default(true),
+  emailStreaks: boolean("email_streaks").default(true),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull().unique(),
+  isSubscribed: boolean("is_subscribed").default(true),
+  subscribedAt: timestamp("subscribed_at").defaultNow(),
+  unsubscribedAt: timestamp("unsubscribed_at"),
+});
+
 export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertNoteSchema = createInsertSchema(notes).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertAttachmentSchema = createInsertSchema(attachments).omit({ id: true, createdAt: true });
 export const insertBookmarkSchema = createInsertSchema(bookmarks).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertFocusSessionSchema = createInsertSchema(focusSessions).omit({ id: true, completedAt: true });
 export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertUserPreferencesSchema = createInsertSchema(userPreferences).omit({ id: true, updatedAt: true });
+export const insertNewsletterSubscriberSchema = createInsertSchema(newsletterSubscribers).omit({ id: true, subscribedAt: true, unsubscribedAt: true });
 
 export type Task = typeof tasks.$inferSelect;
 export type Note = typeof notes.$inferSelect;
@@ -139,6 +158,9 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type FocusSession = typeof focusSessions.$inferSelect;
 export type JournalEntry = typeof journalEntries.$inferSelect;
+export type UserPreferences = typeof userPreferences.$inferSelect;
+export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
+
 export const profiles = pgTable("profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id"),

@@ -4,10 +4,11 @@ import { Link } from "wouter";
 import {
   FileText, Timer, BookOpen, Bookmark,
   ArrowRight, ChevronDown, Check, Sparkles, Menu, X, Github, Activity,
-  Play, Pause, Headphones, Layers, Lock, ArrowUpRight, Globe, Sparkle, Cpu
+  Play, Pause, Headphones, Layers, Lock, ArrowUpRight, Globe, Sparkle, Cpu, Mail, Send
 } from "lucide-react";
 import { useUser } from "@clerk/react";
 import { useCookieBanner } from "../hooks/useCookieBanner";
+import { api } from "../lib/api";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -149,6 +150,11 @@ export function Landing() {
   const [demoTimerRunning, setDemoTimerRunning] = useState(false);
   const [demoTimeLeft, setDemoTimeLeft] = useState(25 * 60);
 
+  // Newsletter State
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterSubmitting, setNewsletterSubmitting] = useState(false);
+  const [newsletterStatus, setNewsletterStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
   // Subtle Mouse Tilt Effect
   const cardX = useMotionValue(0);
   const cardY = useMotionValue(0);
@@ -183,6 +189,27 @@ export function Landing() {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const handleNewsletterSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail || !newsletterEmail.includes("@")) {
+      setNewsletterStatus({ type: "error", message: "Please enter a valid email address." });
+      return;
+    }
+
+    setNewsletterSubmitting(true);
+    setNewsletterStatus(null);
+
+    try {
+      await api.subscribeNewsletter(newsletterEmail);
+      setNewsletterStatus({ type: "success", message: "Subscribed! Welcome to the Clyven Newsletter." });
+      setNewsletterEmail("");
+    } catch (err: any) {
+      setNewsletterStatus({ type: "error", message: err.message || "Failed to subscribe. Please try again." });
+    } finally {
+      setNewsletterSubmitting(false);
+    }
   };
 
   return (
@@ -578,7 +605,7 @@ export function Landing() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA & Newsletter Opt-In Section */}
       <section className="px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24 lg:pb-28 pt-8 relative z-10 max-w-full overflow-x-hidden">
         <div className="mx-auto max-w-4xl text-center">
           <div className="relative rounded-2xl border border-cyan-500/30 bg-[#12141D]/60 p-10 sm:p-14 shadow-2xl backdrop-blur-md overflow-hidden">
@@ -597,7 +624,7 @@ export function Landing() {
                 Create your free account in seconds. No credit card required.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
                 <Link href="/sign-up">
                   <button className="w-full sm:w-auto rounded-xl border border-cyan-500/50 bg-cyan-500/20 px-8 py-3.5 text-xs sm:text-sm font-bold text-cyan-200 hover:bg-cyan-500/30 transition-all cursor-pointer">
                     Get Started Free
@@ -608,6 +635,38 @@ export function Landing() {
                     Contact Support
                   </button>
                 </Link>
+              </div>
+
+              {/* Newsletter Opt-In */}
+              <div className="max-w-md mx-auto pt-8 border-t border-white/10 text-left">
+                <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 uppercase tracking-widest mb-2">
+                  <Mail className="h-3.5 w-3.5" /> Newsletter Subscriptions
+                </div>
+                <p className="text-xs text-white/50 mb-4">
+                  Get product updates, productivity insights, and workspace tips directly in your inbox.
+                </p>
+                <form onSubmit={handleNewsletterSubscribe} className="flex gap-2">
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    required
+                    className="flex-1 rounded-xl border border-white/10 bg-black/40 px-3.5 py-2.5 text-xs text-white placeholder-white/30 focus:border-cyan-500/50 focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={newsletterSubmitting}
+                    className="rounded-xl border border-cyan-500/30 bg-cyan-500/20 px-4 py-2.5 text-xs font-semibold text-cyan-200 hover:bg-cyan-500/30 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-50"
+                  >
+                    {newsletterSubmitting ? "Subscribing..." : <><Send className="h-3.5 w-3.5" /> Subscribe</>}
+                  </button>
+                </form>
+                {newsletterStatus && (
+                  <p className={`mt-2 text-xs ${newsletterStatus.type === "success" ? "text-cyan-400" : "text-red-400"}`}>
+                    {newsletterStatus.message}
+                  </p>
+                )}
               </div>
             </div>
           </div>

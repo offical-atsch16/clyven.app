@@ -14,6 +14,7 @@ import bannersRouter from "./banners.js";
 import flagsRouter from "./flags.js";
 import aiRouter from "./ai.js";
 import cronRouter from "./cron.js";
+import newsletterRouter from "./newsletter.js";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use("/tasks", tasksRouter);
 router.use("/webhooks", webhooksRouter);
 router.use("/ai", aiRouter);
 router.use("/cron", cronRouter);
+router.use("/newsletter", newsletterRouter);
 
 export default router;

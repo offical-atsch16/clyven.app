@@ -29,6 +29,7 @@ import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminTicketDetail } from "./pages/AdminTicketDetail";
 import { AdminNewTicket } from "./pages/AdminNewTicket";
 import { Tasks } from "./pages/Tasks";
+import { Unsubscribe } from "./pages/Unsubscribe";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30000 } } });
 
@@ -281,6 +282,7 @@ function AppRoutes() {
           <Route path="/imprint" component={Impressum} />
           <Route path="/terms" component={Terms} />
           <Route path="/support" component={Support} />
+          <Route path="/unsubscribe" component={Unsubscribe} />
           <Route path="/admin">
             <Redirect to="/admin/dashboard" />
           </Route>

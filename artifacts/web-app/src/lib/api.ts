@@ -88,6 +88,18 @@ export const api = {
   updateTask: (id: string, data: any) => request<any>(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteTask: (id: string) => request<any>(`/tasks/${id}`, { method: "DELETE" }),
 
+  // Newsletter
+  subscribeNewsletter: (email: string) =>
+    request<any>("/newsletter/subscribe", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+  unsubscribeNewsletter: (email: string) =>
+    request<any>("/newsletter/unsubscribe", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+
   // System Status & Settings
   getSystemStatus: () => fetch(`${API_BASE_URL}/banners/active?route=*`).then(handleResponse),
 
