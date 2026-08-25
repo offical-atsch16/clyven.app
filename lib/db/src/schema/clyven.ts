@@ -24,6 +24,7 @@ export const tasks = pgTable("tasks", {
   customFields: jsonb("custom_fields").default([]),
   startDate: date("start_date"),
   dueDate: date("due_date"),
+  notified: boolean("notified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -117,6 +118,9 @@ export const userSettings = pgTable("user_settings", {
   theme: text("theme").default("dark"),
   dailyFocusGoal: integer("daily_focus_goal").default(120),
   notificationsEnabled: boolean("notifications_enabled").default(true),
+  taskEmailsEnabled: boolean("task_emails_enabled").default(true),
+  journalRemindersEnabled: boolean("journal_reminders_enabled").default(true),
+  streakAlertsEnabled: boolean("streak_alerts_enabled").default(true),
   timezone: text("timezone").default("UTC"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

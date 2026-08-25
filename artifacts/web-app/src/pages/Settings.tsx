@@ -15,17 +15,30 @@ export function Settings() {
 
   const [focusGoal, setFocusGoal] = useState(120);
   const [notifications, setNotifications] = useState(true);
+  const [taskEmails, setTaskEmails] = useState(true);
+  const [journalReminders, setJournalReminders] = useState(true);
+  const [streakAlerts, setStreakAlerts] = useState(true);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (settings) {
       setFocusGoal(settings.dailyFocusGoal ?? 120);
       setNotifications(settings.notificationsEnabled ?? true);
+      setTaskEmails(settings.taskEmailsEnabled ?? true);
+      setJournalReminders(settings.journalRemindersEnabled ?? true);
+      setStreakAlerts(settings.streakAlertsEnabled ?? true);
     }
   }, [settings]);
 
   const save = async () => {
-    await saveSettings.mutateAsync({ theme, dailyFocusGoal: focusGoal, notificationsEnabled: notifications });
+    await saveSettings.mutateAsync({
+      theme,
+      dailyFocusGoal: focusGoal,
+      notificationsEnabled: notifications,
+      taskEmailsEnabled: taskEmails,
+      journalRemindersEnabled: journalReminders,
+      streakAlertsEnabled: streakAlerts,
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -75,20 +88,56 @@ export function Settings() {
             </div>
           </motion.div>
 
-          {/* Notifications */}
+          {/* Notifications & Email Preferences */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
-            <div className="flex items-center justify-between">
+            className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.06]">
               <div className="flex items-center gap-2">
                 <Bell className="h-4 w-4 text-white/40" />
                 <div>
-                  <p className="text-sm font-medium text-white/70">Notifications</p>
-                  <p className="text-xs text-white/30">Focus session reminders</p>
+                  <p className="text-sm font-medium text-white/70">Global Notifications</p>
+                  <p className="text-xs text-white/30">Enable or disable all app notifications</p>
                 </div>
               </div>
               <button onClick={() => setNotifications((n) => !n)}
                 className={cn("relative h-6 w-11 rounded-full transition-colors", notifications ? "bg-white/40" : "bg-white/[0.1]")}>
                 <div className={cn("absolute top-1 h-4 w-4 rounded-full bg-white transition-transform", notifications ? "translate-x-6" : "translate-x-1")} />
+              </button>
+            </div>
+
+            {/* Task & Due Date Emails */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-white/70">Task & Due Date Emails</p>
+                <p className="text-xs text-white/30">Receive email reminders when tasks hit their due date</p>
+              </div>
+              <button onClick={() => setTaskEmails((n) => !n)}
+                className={cn("relative h-6 w-11 rounded-full transition-colors", taskEmails ? "bg-white/40" : "bg-white/[0.1]")}>
+                <div className={cn("absolute top-1 h-4 w-4 rounded-full bg-white transition-transform", taskEmails ? "translate-x-6" : "translate-x-1")} />
+              </button>
+            </div>
+
+            {/* Daily Journal Reminders */}
+            <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+              <div>
+                <p className="text-sm font-medium text-white/70">Daily Journal Reminders</p>
+                <p className="text-xs text-white/30">Receive daily nudges to log your journal entries</p>
+              </div>
+              <button onClick={() => setJournalReminders((n) => !n)}
+                className={cn("relative h-6 w-11 rounded-full transition-colors", journalReminders ? "bg-white/40" : "bg-white/[0.1]")}>
+                <div className={cn("absolute top-1 h-4 w-4 rounded-full bg-white transition-transform", journalReminders ? "translate-x-6" : "translate-x-1")} />
+              </button>
+            </div>
+
+            {/* Focus Streak Alerts */}
+            <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+              <div>
+                <p className="text-sm font-medium text-white/70">Focus Streak Alerts</p>
+                <p className="text-xs text-white/30">Receive streak loss warnings and focus duration milestone alerts</p>
+              </div>
+              <button onClick={() => setStreakAlerts((n) => !n)}
+                className={cn("relative h-6 w-11 rounded-full transition-colors", streakAlerts ? "bg-white/40" : "bg-white/[0.1]")}>
+                <div className={cn("absolute top-1 h-4 w-4 rounded-full bg-white transition-transform", streakAlerts ? "translate-x-6" : "translate-x-1")} />
               </button>
             </div>
           </motion.div>

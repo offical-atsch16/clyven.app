@@ -100,6 +100,128 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
   }
 }
 
+export interface SendReminderEmailOptions {
+  toEmail: string;
+  userName?: string;
+  taskTitle: string;
+  taskDueDate: string;
+  dashboardUrl?: string;
+}
+
+export interface SendJournalReminderEmailOptions {
+  toEmail: string;
+  userName?: string;
+  dashboardUrl?: string;
+}
+
+export interface SendStreakWarningEmailOptions {
+  toEmail: string;
+  userName?: string;
+  currentStreak: number;
+  dashboardUrl?: string;
+}
+
+export interface SendMilestoneEmailOptions {
+  toEmail: string;
+  userName?: string;
+  milestoneHours: number;
+  totalFocusMinutes: number;
+  dashboardUrl?: string;
+}
+
+async function sendCourierNotification(
+  toEmail: string,
+  eventIdOrTemplateId: string,
+  dataPayload: Record<string, any>
+): Promise<boolean> {
+  try {
+    const authToken = process.env.COURIER_AUTH_TOKEN || process.env.COURIER_API_KEY;
+    if (!authToken) {
+      console.error(`[COURIER ERROR] Send failed for ${eventIdOrTemplateId}. Reason: COURIER_AUTH_TOKEN / COURIER_API_KEY not set.`);
+      return false;
+    }
+
+    const courier = new Courier({ apiKey: authToken });
+    const courierAny = courier as any;
+
+    const messageObj = {
+      to: { email: toEmail },
+      template: eventIdOrTemplateId,
+      data: dataPayload,
+    };
+
+    if (typeof courierAny.send === "function") {
+      await courierAny.send({ message: messageObj });
+    } else {
+      await courierAny.send.message({ message: messageObj });
+    }
+
+    console.log(`[COURIER SUCCESS] Sent notification ${eventIdOrTemplateId} to ${toEmail}`);
+    return true;
+  } catch (error: any) {
+    console.error(`[COURIER ERROR] Failed to send ${eventIdOrTemplateId} to ${toEmail}:`, error?.message || String(error));
+    return false;
+  }
+}
+
+export async function sendReminderEmail(options: SendReminderEmailOptions): Promise<boolean> {
+  const templateId = process.env.COURIER_REMINDER_TEMPLATE_ID || "CLYVEN_REMINDER_DUE";
+  const dashboardUrl = options.dashboardUrl || process.env.FRONTEND_URL?.split(",")[0] || "https://clyven.app";
+  const userName = options.userName || "Clyven User";
+
+  return sendCourierNotification(options.toEmail, templateId, {
+    taskTitle: options.taskTitle,
+    taskDueDate: options.taskDueDate,
+    dashboardUrl,
+    user_name: userName,
+    task_title: options.taskTitle,
+    task_due_date: options.taskDueDate,
+    dashboard_url: dashboardUrl,
+  });
+}
+
+export async function sendJournalReminderEmail(options: SendJournalReminderEmailOptions): Promise<boolean> {
+  const templateId = process.env.COURIER_JOURNAL_TEMPLATE_ID || "CLYVEN_JOURNAL_REMINDER";
+  const dashboardUrl = options.dashboardUrl || process.env.FRONTEND_URL?.split(",")[0] || "https://clyven.app";
+  const userName = options.userName || "Clyven User";
+
+  return sendCourierNotification(options.toEmail, templateId, {
+    user_name: userName,
+    dashboardUrl,
+    dashboard_url: dashboardUrl,
+  });
+}
+
+export async function sendStreakWarningEmail(options: SendStreakWarningEmailOptions): Promise<boolean> {
+  const templateId = process.env.COURIER_STREAK_TEMPLATE_ID || "CLYVEN_STREAK_WARNING";
+  const dashboardUrl = options.dashboardUrl || process.env.FRONTEND_URL?.split(",")[0] || "https://clyven.app";
+  const userName = options.userName || "Clyven User";
+
+  return sendCourierNotification(options.toEmail, templateId, {
+    user_name: userName,
+    currentStreak: options.currentStreak,
+    current_streak: options.currentStreak,
+    dashboardUrl,
+    dashboard_url: dashboardUrl,
+  });
+}
+
+export async function sendMilestoneEmail(options: SendMilestoneEmailOptions): Promise<boolean> {
+  const templateId = process.env.COURIER_MILESTONE_TEMPLATE_ID || "CLYVEN_MILESTONE_REACHED";
+  const dashboardUrl = options.dashboardUrl || process.env.FRONTEND_URL?.split(",")[0] || "https://clyven.app";
+  const userName = options.userName || "Clyven User";
+
+  return sendCourierNotification(options.toEmail, templateId, {
+    user_name: userName,
+    milestoneHours: options.milestoneHours,
+    milestone_hours: options.milestoneHours,
+    totalFocusMinutes: options.totalFocusMinutes,
+    total_focus_minutes: options.totalFocusMinutes,
+    dashboardUrl,
+    dashboard_url: dashboardUrl,
+  });
+}
+
 export async function sendReplyEmail(options: SendReplyEmailOptions): Promise<boolean> {
   console.log("Incoming Reply Email Request / Options:", options);
   const ticketNumber = options.ticketNumber ? String(options.ticketNumber) : "";
