@@ -2,10 +2,9 @@ import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSp
 import { useRef, useState, useEffect } from "react";
 import { Link } from "wouter";
 import {
-  FileText, Timer, BookOpen, Bookmark, BarChart2,
+  FileText, Timer, BookOpen, Bookmark,
   ArrowRight, ChevronDown, Check, Sparkles, Menu, X, Github, Activity,
-  Play, Pause, Headphones, MessageSquare, Layers, ShieldCheck, Zap,
-  Cpu, Lock, ArrowUpRight, Globe, Sparkle
+  Play, Pause, Headphones, Layers, Lock, ArrowUpRight, Globe, Sparkle, Cpu
 } from "lucide-react";
 import { useUser } from "@clerk/react";
 import { useCookieBanner } from "../hooks/useCookieBanner";
@@ -24,20 +23,20 @@ const HIGHLIGHT_BADGES = [
 const BENTO_FEATURES = [
   {
     id: "notes",
-    title: "Bidirectionales Mind-Mapping",
+    title: "Bidirectional Mind-Mapping",
     subtitle: "SMART NOTES & BACKLINKS",
-    description: "Verknüpfe deine Notizen mit `[[Graph Links]]`. Dein Wissen entwickelt sich als klares, durchsuchbares Netzwerk.",
-    badge: "01 / WISSEN",
+    description: "Connect your notes with `[[Graph Links]]`. Your knowledge evolves as a clear, searchable network.",
+    badge: "01 / KNOWLEDGE",
     colSpan: "lg:col-span-2",
     icon: FileText,
     previewContent: (
       <div className="space-y-3 font-mono text-xs text-white/70">
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-2">
-          <span className="text-cyan-400 font-semibold">[[Projekt Horizon]]</span>
+          <span className="text-cyan-400 font-semibold">[[Project Horizon]]</span>
           <span className="rounded bg-white/5 px-2 py-0.5 text-[10px] text-sky-400">3 Backlinks</span>
         </div>
         <p className="text-white/60 leading-relaxed">
-          - System Fokus: Vernetzung von <span className="text-cyan-300 underline underline-offset-2">[[Focus Sessions]]</span> mit Tagebuch-Summaries.<br />
+          - System focus: Interconnecting <span className="text-cyan-300 underline underline-offset-2">[[Focus Sessions]]</span> with journal summaries.<br />
           - Tags: <span className="text-sky-400">#architecture</span> <span className="text-blue-400">#minimalism</span>
         </p>
       </div>
@@ -47,8 +46,8 @@ const BENTO_FEATURES = [
     id: "focus",
     title: "Deep Work Focus Timer",
     subtitle: "POMODORO & AMBIENCE",
-    description: "Rauschfreie Ambient Soundscapes (Regen, Lofi, White Noise) für lückenlosen Fokus.",
-    badge: "02 / FOKUS",
+    description: "Distraction-free ambient soundscapes (Rain, Lofi, White Noise) for uninterrupted focus.",
+    badge: "02 / FOCUS",
     colSpan: "lg:col-span-1",
     icon: Timer,
     previewContent: (
@@ -62,29 +61,29 @@ const BENTO_FEATURES = [
   },
   {
     id: "journal",
-    title: "Reflektives AI-Journaling",
-    subtitle: "GEFÜHRTE REFLEXION",
-    description: "Verstehe deine Denkmuster durch wöchentliche Mood-Analytics und klare Zusammenfassungen.",
-    badge: "03 / REFLEXION",
+    title: "Reflective AI Journaling",
+    subtitle: "GUIDED REFLECTION",
+    description: "Understand your thinking patterns through weekly mood analytics and clear AI summaries.",
+    badge: "03 / REFLECTION",
     colSpan: "lg:col-span-1",
     icon: BookOpen,
     previewContent: (
       <div className="space-y-2 text-xs">
         <div className="flex items-center gap-2 text-cyan-400">
           <Sparkle className="h-3.5 w-3.5" />
-          <span className="font-semibold">KI-Wochen-Synthese</span>
+          <span className="font-semibold">AI Weekly Synthesis</span>
         </div>
         <p className="text-white/60 text-[11px] leading-relaxed">
-          "Höchste Produktivität in Deep-Work-Phasen am Vormittag. 94% Zielerreichung diese Woche."
+          "Highest productivity during morning deep-work phases. 94% goal completion this week."
         </p>
       </div>
     ),
   },
   {
     id: "tasks",
-    title: "Kanban & Zeiterfassung",
-    subtitle: "AUFGABEN & PROJECTS",
-    description: "Sleek Kanban Boards, Subtasks und Custom Fields direkt in deiner Arbeitsumgebung.",
+    title: "Kanban & Time Tracking",
+    subtitle: "TASKS & PROJECTS",
+    description: "Sleek Kanban boards, subtasks, and custom fields integrated into your workspace.",
     badge: "04 / WORKFLOW",
     colSpan: "lg:col-span-2",
     icon: Layers,
@@ -96,7 +95,7 @@ const BENTO_FEATURES = [
         </div>
         <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-2">
           <span className="text-cyan-400 block mb-1">In Progress</span>
-          <div className="rounded bg-cyan-500/20 p-1.5 font-medium text-cyan-200">Liquid Glass UI</div>
+          <div className="rounded bg-cyan-500/20 p-1.5 font-medium text-cyan-200">UI Pipeline</div>
         </div>
         <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-2">
           <span className="text-emerald-400 block mb-1">Done</span>
@@ -108,30 +107,30 @@ const BENTO_FEATURES = [
 ];
 
 const COMPARISON = [
-  { feature: "Notizen & Bookmarks", free: "10 Limit", plus: "Unbegrenzt" },
-  { feature: "Aufgaben & Kanban Boards", free: "10 To-Dos", plus: "Unbegrenzt + Gantt & Custom Fields" },
-  { feature: "Focus Timer & Audio", free: "Standard Audio", plus: "Alle Hi-Fi Soundscapes" },
-  { feature: "CLYVEN AI Assistent", free: "—", plus: "Inklusive (Gemini 2.5 Pro)" },
-  { feature: "Dateiuploads", free: "—", plus: "100 MB pro Datei" },
+  { feature: "Notes & Bookmarks", free: "10 Limit", plus: "Unlimited" },
+  { feature: "Tasks & Kanban Boards", free: "10 To-Dos", plus: "Unlimited + Gantt & Custom Fields" },
+  { feature: "Focus Timer & Audio", free: "Standard Audio", plus: "All Hi-Fi Soundscapes" },
+  { feature: "CLYVEN AI Assistant", free: "—", plus: "Included (Gemini 2.5 Pro)" },
+  { feature: "File Uploads", free: "—", plus: "100 MB per File" },
   { feature: "Markdown / PDF Export", free: "Standard", plus: "High-Res Export" },
 ];
 
 const FAQS = [
   {
-    q: "Was zeichnet die Minimalist Liquid Glass Architektur von Clyven aus?",
-    a: "Clyven kombiniert Hochleistungs-Markdown, Focus-Timer und KI-Journaling in einer reduzierten, mattschwarzen Benutzeroberfläche ohne störende Animationen oder Ablenkungen."
+    q: "What sets Clyven's minimalist workspace apart?",
+    a: "Clyven combines high-performance Markdown, focus timers, and AI journaling in a clean, dark interface free from unnecessary distractions."
   },
   {
-    q: "Ist der Einstieg dauerhaft kostenlos?",
-    a: "Ja. Der Free-Tarif ist dauerhaft kostenlos und erfordert keine Zahlungsdaten."
+    q: "Is getting started completely free?",
+    a: "Yes. The Free plan is permanently free with no credit card required."
   },
   {
-    q: "Wie sicher sind meine Dokumente?",
-    a: "Deine Daten werden Ende-zu-Ende verschlüsselt in europäischen Rechenzentren verarbeitet und niemals weitergegeben."
+    q: "How secure is my data?",
+    a: "Your data is encrypted end-to-end and stored securely on cloud servers without ever being sold or shared."
   },
   {
-    q: "Wie funktioniert die Freischaltung von CLYVEN PLUS?",
-    a: "Mit CLYVEN PLUS (im System als Business-Plan hinterlegt für nur 5 $ / Monat) hebst du alle Limits auf und erhältst sofort Zugriff auf unbegrenzte AI Insights und Kanban Views."
+    q: "How does CLYVEN PLUS work?",
+    a: "With CLYVEN PLUS (for just $5 / month), you unlock unlimited notes, tasks, AI insights, and advanced Kanban & Gantt views."
   }
 ];
 
@@ -189,7 +188,7 @@ export function Landing() {
   return (
     <div className="min-h-[100dvh] w-full max-w-full overflow-x-hidden bg-[#090A0F] text-[#FAFAFA] font-sans selection:bg-cyan-500/20 selection:text-cyan-200">
 
-      {/* Soft Ambient Static Cyan Background Glow */}
+      {/* Soft Ambient Static Background Glow */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div
           className="absolute -top-[15%] left-1/2 h-[600px] w-[800px] -translate-x-1/2 rounded-full opacity-[0.06] blur-[140px]"
@@ -211,7 +210,7 @@ export function Landing() {
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-bold tracking-[0.2em] text-white">CLYVEN</span>
-                <span className="text-[9px] font-mono tracking-widest text-cyan-400 opacity-80 uppercase">Minimal Liquid Glass</span>
+                <span className="text-[9px] font-mono tracking-widest text-cyan-400 opacity-80 uppercase">Workspace Platform</span>
               </div>
             </div>
           </Link>
@@ -220,7 +219,6 @@ export function Landing() {
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#system" className="hover:text-white transition-colors">System</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <Link href="/pricing"><span className="hover:text-white transition-colors cursor-pointer">Tarife</span></Link>
             <Link href="/support"><span className="hover:text-white transition-colors cursor-pointer">Support</span></Link>
           </nav>
 
@@ -239,7 +237,7 @@ export function Landing() {
               <>
                 <Link href="/sign-in">
                   <button className="px-4 py-2 text-xs font-medium text-white/60 hover:text-white transition-colors cursor-pointer">
-                    Anmelden
+                    Sign In
                   </button>
                 </Link>
                 <Link href="/sign-up">
@@ -248,7 +246,7 @@ export function Landing() {
                     whileTap={{ scale: 0.99 }}
                     className="rounded-xl border border-white/15 bg-white/[0.06] px-5 py-2.5 text-xs font-semibold text-white hover:bg-white/10 transition-all cursor-pointer flex items-center gap-2"
                   >
-                    Kostenlos starten <ArrowUpRight className="h-3.5 w-3.5 text-cyan-400" />
+                    Get Started Free <ArrowUpRight className="h-3.5 w-3.5 text-cyan-400" />
                   </motion.button>
                 </Link>
               </>
@@ -277,7 +275,6 @@ export function Landing() {
                 <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5">Features</a>
                 <a href="#system" onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5">System</a>
                 <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5">Pricing</a>
-                <Link href="/pricing"><span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5 block cursor-pointer">Tarife</span></Link>
                 <Link href="/support"><span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5 block cursor-pointer">Support</span></Link>
               </div>
 
@@ -285,19 +282,19 @@ export function Landing() {
                 {user ? (
                   <Link href="/dashboard">
                     <button className="w-full rounded-xl border border-cyan-500/40 bg-cyan-500/10 py-3 text-xs font-semibold text-cyan-300">
-                      Dashboard öffnen →
+                      Open Dashboard →
                     </button>
                   </Link>
                 ) : (
                   <>
                     <Link href="/sign-up">
                       <button className="w-full rounded-xl bg-white py-3 text-xs font-semibold text-black">
-                        Kostenlos registrieren
+                        Get Started Free
                       </button>
                     </Link>
                     <Link href="/sign-in">
                       <button className="w-full rounded-xl border border-white/10 py-3 text-xs font-medium text-white/80">
-                        Anmelden
+                        Sign In
                       </button>
                     </Link>
                   </>
@@ -313,27 +310,27 @@ export function Landing() {
         <motion.div style={{ y: yHero, opacity: opacityHero }} className="relative z-10 flex flex-col items-center text-center max-w-5xl mx-auto">
 
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 text-xs font-mono text-cyan-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" /> MINIMALIST LIQUID GLASS OPERATING SYSTEM
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" /> DIGITAL WORKSPACE & SECOND BRAIN
           </div>
 
           <h1 className="mb-6 text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-white">
-            Absolute Klarheit. <br />
-            <span className="text-white/60">Fokus ohne Ablenkung.</span>
+            Absolute Clarity. <br />
+            <span className="text-white/60">Focus Without Distractions.</span>
           </h1>
 
           <p className="mb-10 max-w-2xl text-base sm:text-lg text-white/50 leading-relaxed">
-            Markdown-Notizen, geführte KI-Reflexionen und Focus Soundscapes vereint in einer rauschfreien, dunklen Glas-Oberfläche.
+            Markdown notes, guided AI journaling, and ambient focus soundscapes combined in a noise-free dark workspace.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-12">
             <Link href="/sign-up">
               <button className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-8 py-3.5 text-xs sm:text-sm font-semibold text-cyan-200 hover:bg-cyan-500/20 transition-all cursor-pointer">
-                Kostenlos starten <ArrowRight className="h-4 w-4" />
+                Get Started Free <ArrowRight className="h-4 w-4" />
               </button>
             </Link>
             <a href="#features">
               <button className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-8 py-3.5 text-xs sm:text-sm font-medium text-white/70 hover:bg-white/[0.08] hover:text-white transition-all cursor-pointer">
-                System erkunden
+                Explore System
               </button>
             </a>
           </div>
@@ -395,9 +392,9 @@ export function Landing() {
                     </div>
                     <h3 className="text-xl font-bold text-white tracking-tight"># Modular Architecture & Minimal Second Brain</h3>
                     <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 font-mono text-xs text-white/70 leading-relaxed space-y-2">
-                      <p>- Bidirektionale Notiz-Verknüpfungen mit Instant Search.</p>
-                      <p>- Gemini 2.5 Pro KI-Assistent für automatische Zusammenfassungen.</p>
-                      <p>- Nahtloser Markdown & PDF Export.</p>
+                      <p>- Bidirectional note links with instant search.</p>
+                      <p>- Gemini 2.5 Pro AI assistant for automated summaries.</p>
+                      <p>- Seamless Markdown & PDF export.</p>
                     </div>
                   </div>
                 )}
@@ -422,8 +419,8 @@ export function Landing() {
                   <div className="w-full space-y-3">
                     <span className="text-xs font-mono text-cyan-400 block">AI Journaling</span>
                     <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-xs text-white/70 leading-relaxed font-sans">
-                      <p className="text-cyan-300 font-semibold mb-1">KI-Synthese der Woche:</p>
-                      <p>"Anhaltend hohe Konzentrationsphasen in den Morgenstunden. Alle Hauptaufgaben pünktlich abgeschlossen."</p>
+                      <p className="text-cyan-300 font-semibold mb-1">AI Synthesis of the Week:</p>
+                      <p>"Sustained deep concentration periods in morning hours. All core milestones delivered on schedule."</p>
                     </div>
                   </div>
                 )}
@@ -436,7 +433,7 @@ export function Landing() {
                         Backlog: <span className="text-white font-medium block mt-1">Markdown Engine</span>
                       </div>
                       <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/5 p-3 text-xs text-cyan-300">
-                        In Progress: <span className="text-white font-medium block mt-1">Liquid Glass UI</span>
+                        In Progress: <span className="text-white font-medium block mt-1">UI System</span>
                       </div>
                       <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs text-emerald-300">
                         Done: <span className="text-white font-medium block mt-1">Supabase Sync</span>
@@ -454,8 +451,8 @@ export function Landing() {
       <section id="features" className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 relative z-10 scroll-mt-20 max-w-full overflow-x-hidden">
         <div className="mx-auto max-w-7xl">
           <div className="mb-20 text-center">
-            <p className="mb-3 text-xs font-mono uppercase tracking-widest text-cyan-400">System Module</p>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white">Präzision in jedem Element.</h2>
+            <p className="mb-3 text-xs font-mono uppercase tracking-widest text-cyan-400">System Modules</p>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-white">Precision in Every Element.</h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -492,24 +489,24 @@ export function Landing() {
       <section id="pricing" className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 relative z-10 scroll-mt-20 border-t border-white/[0.08] bg-[#0A0B10] max-w-full overflow-x-hidden">
         <div className="mx-auto max-w-6xl">
           <div className="mb-20 text-center">
-            <p className="mb-3 text-xs font-mono uppercase tracking-widest text-cyan-400">Transparente Tarife</p>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white">Einfaches Pricing.</h2>
+            <p className="mb-3 text-xs font-mono uppercase tracking-widest text-cyan-400">Transparent Pricing</p>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-white">Simple Pricing.</h2>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto mb-16">
             <div className="rounded-2xl border border-white/10 bg-[#12141D]/50 p-8 backdrop-blur-md flex flex-col justify-between">
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Free Plan</h3>
-                <div className="text-4xl font-extrabold text-white mb-6">0 €</div>
+                <div className="text-4xl font-extrabold text-white mb-6">$0</div>
                 <ul className="space-y-3 text-xs text-white/60 mb-8">
-                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> Max. 10 Notizen & Bookmarks</li>
-                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> Max. 10 Aufgaben & To-Dos</li>
-                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> Focus Timer & Tagebuch</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> Max. 10 Notes & Bookmarks</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> Max. 10 Tasks & To-Dos</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> Focus Timer & Journal</li>
                 </ul>
               </div>
               <Link href="/sign-up">
                 <button className="w-full rounded-xl border border-white/15 bg-white/[0.04] py-3 text-xs font-semibold text-white hover:bg-white/10 transition-all cursor-pointer">
-                  Kostenlos starten
+                  Get Started Free
                 </button>
               </Link>
             </div>
@@ -518,19 +515,18 @@ export function Landing() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xl font-bold text-white">CLYVEN PLUS</h3>
-                  <span className="text-[10px] font-mono text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded">BUSINESS</span>
                 </div>
-                <div className="text-4xl font-extrabold text-white mb-6">5 $ <span className="text-xs text-white/40 font-normal">/ Monat</span></div>
+                <div className="text-4xl font-extrabold text-white mb-6">$5 <span className="text-xs text-white/40 font-normal">/ month</span></div>
                 <ul className="space-y-3 text-xs text-white/80 mb-8">
-                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> Unbegrenzt Notizen, Bookmarks & Tasks</li>
-                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> CLYVEN AI Assistent (Gemini 2.5 Pro)</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> Unlimited Notes, Bookmarks & Tasks</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> CLYVEN AI Assistant (Gemini 2.5 Pro)</li>
                   <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> Kanban Boards & Gantt Views</li>
                   <li className="flex items-center gap-2"><Check className="h-4 w-4 text-cyan-400 shrink-0" /> 100 MB File Uploads</li>
                 </ul>
               </div>
               <Link href="/pricing">
                 <button className="w-full rounded-xl border border-cyan-500/50 bg-cyan-500/20 py-3 text-xs font-bold text-cyan-200 hover:bg-cyan-500/30 transition-all cursor-pointer">
-                  Jetzt Upgraden →
+                  Upgrade Now →
                 </button>
               </Link>
             </div>
@@ -560,7 +556,7 @@ export function Landing() {
         <div className="mx-auto max-w-3xl">
           <div className="mb-12 text-center">
             <p className="mb-2 text-xs font-mono uppercase tracking-widest text-cyan-400">FAQ</p>
-            <h2 className="text-2xl font-bold text-white">Häufig gestellte Fragen</h2>
+            <h2 className="text-2xl font-bold text-white">Frequently Asked Questions</h2>
           </div>
 
           <div className="space-y-3">
@@ -584,7 +580,7 @@ export function Landing() {
         </div>
       </section>
 
-      {/* Liquid Glass CTA Section */}
+      {/* CTA Section */}
       <section className="px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24 lg:pb-28 pt-8 relative z-10 max-w-full overflow-x-hidden">
         <div className="mx-auto max-w-4xl text-center">
           <div className="relative rounded-2xl border border-cyan-500/30 bg-[#12141D]/60 p-10 sm:p-14 shadow-2xl backdrop-blur-md overflow-hidden">
@@ -592,26 +588,26 @@ export function Landing() {
 
             <div className="relative z-10">
               <span className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-1 text-[11px] font-mono text-cyan-400 mb-6">
-                <Sparkles className="h-3.5 w-3.5" /> LIQUID GLASS WORKSPACE
+                <Sparkles className="h-3.5 w-3.5" /> DISTRACTION-FREE WORKSPACE
               </span>
 
               <h2 className="mb-4 text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Bereit für absoluten Fokus?
+                Ready for Absolute Focus?
               </h2>
 
               <p className="mb-8 text-sm sm:text-base text-white/50 max-w-md mx-auto leading-relaxed">
-                Erstelle deinen kostenlosen Account in wenigen Sekunden. Keine Kreditkarte erforderlich.
+                Create your free account in seconds. No credit card required.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/sign-up">
                   <button className="w-full sm:w-auto rounded-xl border border-cyan-500/50 bg-cyan-500/20 px-8 py-3.5 text-xs sm:text-sm font-bold text-cyan-200 hover:bg-cyan-500/30 transition-all cursor-pointer">
-                    Kostenlos starten
+                    Get Started Free
                   </button>
                 </Link>
                 <Link href="/support">
                   <button className="w-full sm:w-auto rounded-xl border border-white/10 bg-white/[0.04] px-7 py-3.5 text-xs sm:text-sm font-medium text-white/70 hover:bg-white/[0.08] hover:text-white transition-all cursor-pointer">
-                    Support kontaktieren
+                    Contact Support
                   </button>
                 </Link>
               </div>
@@ -629,8 +625,8 @@ export function Landing() {
           </div>
 
           <div className="flex gap-6 text-xs text-white/40 items-center">
-            <Link href="/privacy"><span className="hover:text-white cursor-pointer transition-colors">Datenschutz</span></Link>
-            <Link href="/impressum"><span className="hover:text-white cursor-pointer transition-colors">Impressum</span></Link>
+            <Link href="/privacy"><span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span></Link>
+            <Link href="/impressum"><span className="hover:text-white cursor-pointer transition-colors">Imprint</span></Link>
             <a href="https://github.com/offical-atsch16/clyven.app" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer">
               <Github className="h-3.5 w-3.5" /> GitHub
             </a>

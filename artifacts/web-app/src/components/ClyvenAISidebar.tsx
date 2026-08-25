@@ -24,7 +24,7 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
     {
       id: "welcome",
       role: "assistant",
-      content: "Hallo! Ich bin **CLYVEN AI**, dein persönlicher Notiz- & Produktivitäts-Assistent. Wie kann ich dir heute helfen?",
+      content: "Hello! I am **CLYVEN AI**, your personal notes & productivity assistant. How can I assist you today?",
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -77,7 +77,7 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
         {
           id: String(Date.now() + 1),
           role: "assistant",
-          content: `Entschuldigung, es gab ein Problem bei der Verarbeitung: ${err.message || "Unbekannter Fehler"}`,
+          content: `Sorry, there was an issue processing your request: ${err.message || "Unknown error"}`,
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -139,15 +139,15 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-yellow-400/20 bg-yellow-400/10 text-yellow-400 shadow-xl shadow-yellow-500/10">
                   <Lock className="h-6 w-6" />
                 </div>
-                <h4 className="text-base font-bold text-white mb-2">CLYVEN AI Freischalten</h4>
+                <h4 className="text-base font-bold text-white mb-2">Unlock CLYVEN AI</h4>
                 <p className="text-xs text-white/50 leading-relaxed mb-6">
-                  Nutze CLYVEN AI mit dem Plus-Plan für intelligente Notiz-Zusammenfassungen, automatische Aufgabengenerierung und unbegrenzten KI Chat.
+                  Access CLYVEN AI with the Plus plan for intelligent note summaries, automatic task extraction, and unlimited AI assistant chat.
                 </p>
                 <button
                   onClick={openUpgrade}
                   className="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-sky-400 py-3 text-xs font-semibold text-white shadow-lg shadow-indigo-500/25 hover:opacity-90 transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
-                  <Zap className="h-4 w-4" /> Auf PLUS upgraden
+                  <Zap className="h-4 w-4" /> Upgrade to PLUS
                 </button>
               </div>
             ) : (
@@ -157,7 +157,7 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
                   <div className="border-b border-white/[0.06] bg-white/[0.02] px-4 py-2 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-white/70">
                       <FileText className="h-3.5 w-3.5 text-indigo-400" />
-                      <span className="truncate max-w-[190px]">Aktuelle Notiz verfügbar</span>
+                      <span className="truncate max-w-[190px]">Active note available</span>
                     </div>
                     <label className="flex items-center gap-1.5 cursor-pointer text-[11px] font-medium text-indigo-300">
                       <input
@@ -166,7 +166,7 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
                         onChange={(e) => setIncludeNoteContext(e.target.checked)}
                         className="rounded border-white/20 bg-white/5 accent-indigo-500"
                       />
-                      Kontext mitsenden
+                      Include context
                     </label>
                   </div>
                 )}
@@ -205,7 +205,7 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
                   {loading && (
                     <div className="flex items-center gap-2 text-xs text-white/40 italic">
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-400" />
-                      <span>CLYVEN AI denkt nach...</span>
+                      <span>CLYVEN AI is thinking...</span>
                     </div>
                   )}
 
@@ -219,7 +219,7 @@ export function ClyvenAISidebar({ isOpen, onClose, activeNoteContent }: ClyvenAI
                       type="text"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      placeholder="Frage CLYVEN AI etwas..."
+                      placeholder="Ask CLYVEN AI something..."
                       disabled={loading}
                       className="w-full rounded-xl border border-zinc-800 bg-zinc-900/50 py-2.5 pl-3.5 pr-10 text-xs text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-cyan-500/50 transition-all disabled:opacity-50"
                     />
