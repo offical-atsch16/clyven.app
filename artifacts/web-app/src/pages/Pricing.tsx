@@ -43,7 +43,7 @@ export function Pricing() {
       <nav className="sticky top-0 z-40 border-b border-white/[0.05] bg-[#080808]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <button onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors">
+            className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors cursor-pointer">
             <ArrowLeft className="h-4 w-4" /> Back
           </button>
           <div className="flex items-center gap-2.5">
@@ -72,15 +72,15 @@ export function Pricing() {
               <Zap className="h-3 w-3" /> CLYVEN PLUS
             </div>
             <h1 className="mb-4 text-5xl font-bold tracking-tight sm:text-6xl">
-              Einfaches, faires<br />
+              Simple, Fair<br />
               <span className="bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">Pricing</span>
             </h1>
             <p className="text-lg text-white/40">
-              Kostenlos starten. Upgraden wenn du bereit bist.
+              Start for free. Upgrade when you are ready.
             </p>
           </motion.div>
 
-          {/* Pricing Cards (2 Options: Free & Business branded as CLYVEN PLUS) */}
+          {/* Pricing Cards (2 Options: Free & CLYVEN PLUS) */}
           <div className="grid gap-8 md:grid-cols-2 mb-16 max-w-4xl mx-auto">
             {/* Free Card */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
@@ -88,51 +88,50 @@ export function Pricing() {
               <div>
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-white">Free</h3>
-                  <p className="mt-1 text-sm text-white/40">Perfekt für den Einstieg</p>
+                  <p className="mt-1 text-sm text-white/40">Perfect to get started</p>
                 </div>
                 <div className="mb-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">0 €</span>
-                  <span className="text-sm text-white/40">/ dauerhaft</span>
+                  <span className="text-4xl font-bold text-white">$0</span>
+                  <span className="text-sm text-white/40">/ forever</span>
                 </div>
                 <ul className="space-y-3 mb-8 text-sm text-white/60">
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Max. 10 Notizen</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Max. 10 Notes</li>
                   <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Max. 10 Bookmarks</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Max. 10 Aufgaben</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Focus Timer & Tagebuch</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Max. 10 Tasks</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Focus Timer & Journal</li>
                   <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Community Support</li>
                 </ul>
               </div>
               <button
                 onClick={() => navigate("/dashboard")}
                 className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] py-3 text-sm font-semibold text-white/80 hover:bg-white/[0.08] hover:text-white transition-all cursor-pointer">
-                Kostenlos nutzen
+                Use Free
               </button>
             </motion.div>
 
-            {/* Business Card branded as CLYVEN PLUS */}
+            {/* CLYVEN PLUS Card */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
               className="relative rounded-3xl border border-yellow-400/30 bg-gradient-to-b from-yellow-400/[0.08] to-white/[0.02] p-8 flex flex-col justify-between shadow-2xl shadow-yellow-500/10">
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full border border-yellow-400 bg-yellow-400 px-4 py-1 text-xs font-bold text-black uppercase tracking-wider shadow-md">
-                Empfohlen
+                Recommended
               </div>
               <div>
                 <div className="mb-6">
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-bold text-white">CLYVEN PLUS</h3>
-                    <span className="rounded-full bg-yellow-400/20 px-2 py-0.5 text-[10px] font-bold text-yellow-300 border border-yellow-400/30">Business</span>
                   </div>
-                  <p className="mt-1 text-sm text-yellow-200/60">Unbegrenzte Produktivität & alle Profi-Tools</p>
+                  <p className="mt-1 text-sm text-yellow-200/60">Unlimited productivity & all pro tools</p>
                 </div>
                 <div className="mb-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">5 $</span>
-                  <span className="text-sm text-white/40">/ Monat</span>
+                  <span className="text-4xl font-bold text-white">$5</span>
+                  <span className="text-sm text-white/40">/ month</span>
                 </div>
                 <ul className="space-y-3 mb-8 text-sm text-white/90">
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Unbegrenzt Notizen, Bookmarks & Tasks</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Kanban Board & Gantt Diagramm</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Unteraufgaben (Subtasks) & Custom Fields</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Zeiterfassung (Timer & Log)</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Dateiuploads bis zu 100 MB per File</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Unlimited Notes, Bookmarks & Tasks</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Kanban Board & Gantt Chart</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Subtasks & Custom Fields</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Time Tracking (Timer & Log)</li>
+                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> File Uploads up to 100 MB per file</li>
                   <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Markdown / PDF Export</li>
                   <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Priority Support</li>
                 </ul>
@@ -140,12 +139,12 @@ export function Pricing() {
               <button
                 onClick={handleCheckout}
                 className="w-full rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 py-3.5 text-sm font-bold text-black shadow-lg shadow-yellow-500/20 hover:from-yellow-300 hover:to-yellow-400 transition-all cursor-pointer">
-                Jetzt Upgraden →
+                Upgrade Now →
               </button>
             </motion.div>
           </div>
 
-          {/* Plans + Checkout — powered by Clerk Billing. */}
+          {/* Plans + Checkout — powered by Clerk Billing */}
           <motion.div
             id="plans"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
@@ -193,15 +192,15 @@ export function Pricing() {
                 <Building2 className="h-6 w-6" />
               </div>
               <div>
-                <h4 className="font-bold text-white text-base">Erweiterte Team & Enterprise B2B Angebote</h4>
+                <h4 className="font-bold text-white text-base">Extended Team & Enterprise B2B Offers</h4>
                 <p className="text-xs text-white/50 mt-0.5">
-                  Du benötigst erweiterte Team-Features? Kontaktiere uns unter <a href="mailto:billig@clyven.de" className="text-yellow-400 underline hover:text-yellow-300">billig@clyven.de</a> für individuelle B2B-Angebote.
+                  Need custom team solutions? Contact us at <a href="mailto:billig@clyven.de" className="text-yellow-400 underline hover:text-yellow-300">billig@clyven.de</a> for enterprise offers.
                 </p>
               </div>
             </div>
             <a href="mailto:billig@clyven.de"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-2.5 text-xs font-bold text-yellow-300 hover:bg-yellow-400/20 transition-all shrink-0">
-              <Mail className="h-3.5 w-3.5" /> B2B Anfragen
+              <Mail className="h-3.5 w-3.5" /> B2B Inquiries
             </a>
           </motion.div>
 

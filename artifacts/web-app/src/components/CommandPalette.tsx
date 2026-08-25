@@ -5,7 +5,7 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
   Plus, Timer, BookOpen, Bookmark, BarChart2, FileText,
-  Sun, Moon, Search, LayoutDashboard, Trophy, Link2, Sparkles
+  Sun, Moon, Search, LayoutDashboard, Trophy
 } from "lucide-react";
 import { useAppStore } from "../stores/useAppStore";
 import { api } from "../lib/api";
@@ -73,7 +73,7 @@ export function CommandPalette() {
                   <Command.Input
                     value={query}
                     onValueChange={setQuery}
-                    placeholder="Suche nach Notizen, Befehlen oder Views (Cmd + K)..."
+                    placeholder="Search notes, commands, or views (Cmd + K)..."
                     className="flex-1 bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-500 font-medium"
                   />
                   <kbd className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-zinc-400 font-mono">ESC</kbd>
@@ -81,17 +81,17 @@ export function CommandPalette() {
 
                 <Command.List className="max-h-80 overflow-y-auto p-2">
                   <Command.Empty className="py-8 text-center text-sm text-white/30">
-                    Keine Ergebnisse für "{query}"
+                    No results for "{query}"
                   </Command.Empty>
 
                   {filteredNotes.length > 0 && (
-                    <CmdGroup heading="Notizen & Knowledge Base">
+                    <CmdGroup heading="Notes & Knowledge Base">
                       {filteredNotes.slice(0, 5).map((note: any) => (
                         <CmdItem
                           key={note.id}
                           icon={<FileText className="h-4 w-4 text-sky-400" />}
-                          label={note.title || "Unbenannte Notiz"}
-                          sublabel={note.content ? note.content.slice(0, 40) + "..." : "Leere Notiz"}
+                          label={note.title || "Untitled Note"}
+                          sublabel={note.content ? note.content.slice(0, 40) + "..." : "Empty Note"}
                           onSelect={() => go(`/notes?id=${note.id}`)}
                         />
                       ))}
@@ -100,7 +100,7 @@ export function CommandPalette() {
 
                   <CmdGroup heading="Navigation">
                     <CmdItem icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" onSelect={() => go("/dashboard")} />
-                    <CmdItem icon={<FileText className="h-4 w-4" />} label="Notizen & Second Brain" onSelect={() => go("/notes")} />
+                    <CmdItem icon={<FileText className="h-4 w-4" />} label="Notes & Second Brain" onSelect={() => go("/notes")} />
                     <CmdItem icon={<Bookmark className="h-4 w-4" />} label="Bookmarks Vault" onSelect={() => go("/bookmarks")} />
                     <CmdItem icon={<Timer className="h-4 w-4" />} label="Focus Timer & Ambience" onSelect={() => go("/focus")} />
                     <CmdItem icon={<BookOpen className="h-4 w-4" />} label="Daily Journal & AI Insights" onSelect={() => go("/journal")} />
@@ -108,16 +108,16 @@ export function CommandPalette() {
                     <CmdItem icon={<Trophy className="h-4 w-4" />} label="Achievements" onSelect={() => go("/achievements")} />
                   </CmdGroup>
 
-                  <CmdGroup heading="Aktionen">
-                    <CmdItem icon={<Plus className="h-4 w-4" />} label="Neue Notiz erstellen" onSelect={() => go("/notes?new=1")} />
-                    <CmdItem icon={<Bookmark className="h-4 w-4" />} label="Neues Bookmark speichern" onSelect={() => go("/bookmarks?new=1")} />
-                    <CmdItem icon={<Timer className="h-4 w-4" />} label="Focus Session starten" onSelect={() => go("/focus?start=1")} />
+                  <CmdGroup heading="Actions">
+                    <CmdItem icon={<Plus className="h-4 w-4" />} label="Create New Note" onSelect={() => go("/notes?new=1")} />
+                    <CmdItem icon={<Bookmark className="h-4 w-4" />} label="Save New Bookmark" onSelect={() => go("/bookmarks?new=1")} />
+                    <CmdItem icon={<Timer className="h-4 w-4" />} label="Start Focus Session" onSelect={() => go("/focus?start=1")} />
                   </CmdGroup>
 
                   <CmdGroup heading="Appearance">
                     <CmdItem
                       icon={theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                      label={theme === "dark" ? "Light Mode aktivieren" : "Dark Mode aktivieren"}
+                      label={theme === "dark" ? "Activate Light Mode" : "Activate Dark Mode"}
                       onSelect={() => run(() => setTheme(theme === "dark" ? "light" : "dark"))}
                     />
                   </CmdGroup>
