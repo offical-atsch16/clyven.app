@@ -26,54 +26,55 @@ export function Impressum() {
 
       <main className="mx-auto max-w-3xl px-6 pt-32 pb-24">
         <div className="mb-10">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">Impressum</h1>
+          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">Imprint</h1>
           <p className="text-xs text-white/40 uppercase tracking-wider">Legal Notice & Disclosure</p>
         </div>
 
         <div className="space-y-10 text-sm text-white/60 leading-relaxed">
           
-          {/* Angaben gemäß § 5 DDG */}
+          {/* Information according to § 5 DDG */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Angaben gemäß § 5 DDG</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Information pursuant to § 5 DDG</h2>
             <div className="bg-white/[0.02] rounded-2xl p-6 border border-white/[0.06] text-white/70 space-y-1.5 shadow-xl">
               <p className="font-semibold text-white text-base">Arien Tschemeris</p>
-              <p className="text-white/50 text-xs uppercase tracking-wider">Softwareentwicklung</p>
+              <p className="text-white/50 text-xs uppercase tracking-wider">Software Development</p>
               <p className="pt-2">Ludwig-Herr-Strasse 9</p>
               <p>70806 Kornwestheim</p>
-              <p>Deutschland</p>
+              <p>Germany</p>
             </div>
           </section>
 
-          {/* Kontakt */}
+          {/* Contact */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Kontakt</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Contact</h2>
             <div className="bg-white/[0.02] rounded-2xl p-6 border border-white/[0.06] text-white/70 space-y-2 shadow-xl">
               <p className="flex justify-between items-center py-1 border-b border-white/[0.04]">
-                <span className="text-white/40">Telefon:</span>
+                <span className="text-white/40">Phone:</span>
                 <span className="font-mono text-white/80">+49 1575 2610011</span>
               </p>
               <p className="flex justify-between items-center py-1">
-                <span className="text-white/40">E-Mail:</span>
+                <span className="text-white/40">Email:</span>
                 <a href="mailto:a.tschemeris@atomicmail.io" className="text-white hover:underline transition-colors">a.tschemeris@atomicmail.io</a>
               </p>
             </div>
           </section>
 
-          {/* Verantwortlich für den Inhalt */}
+          {/* Responsible for Content */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Responsible for Content pursuant to § 18 Abs. 2 MStV</h2>
             <div className="bg-white/[0.02] rounded-2xl p-6 border border-white/[0.06] text-white/70 space-y-1.5 shadow-xl">
               <p className="font-semibold text-white text-base">Arien Tschemeris</p>
               <p>Ludwig-Herr-Strasse 9</p>
               <p>70806 Kornwestheim</p>
+              <p>Germany</p>
             </div>
           </section>
 
-          {/* Streitschlichtung */}
+          {/* EU Dispute Resolution */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">EU-Streitschlichtung</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">EU Dispute Resolution</h2>
             <p className="text-white/50 leading-relaxed mb-4">
-              Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:{' '}
+              The European Commission provides a platform for online dispute resolution (ODR):{' '}
               <a 
                 href="https://ec.europa.eu/consumers/odr" 
                 target="_blank" 
@@ -84,30 +85,30 @@ export function Impressum() {
               </a>.
             </p>
             <p className="text-white/40 text-xs">
-              Unsere E-Mail-Adresse finden Sie oben im Impressum.
+              Our email address can be found in the imprint above.
             </p>
           </section>
 
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Verbraucher­streit­beilegung</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Consumer Dispute Settlement</h2>
             <p className="text-white/50">
-              Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+              We are neither willing nor obligated to participate in dispute resolution proceedings before a consumer arbitration board.
             </p>
           </section>
 
-          {/* Haftung für Inhalte */}
+          {/* Liability for Contents */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Haftung für Inhalte</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Liability for Contents</h2>
             <p className="text-white/50">
-              Als Diensteanbieter sind wir gemäß § 7 Abs.1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen. Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt. Eine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden von entsprechenden Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.
+              As a service provider, we are responsible for our own content on these pages in accordance with general statutory laws pursuant to § 7 Abs.1 DDG. According to §§ 8 to 10 DDG, however, we are not obligated to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. Obligations to remove or block the use of information under general statutory laws remain unaffected. However, liability in this regard is only possible from the moment of knowledge of a specific infringement. Upon notification of such infringements, we will remove this content immediately.
             </p>
           </section>
 
-          {/* Haftung für Links */}
+          {/* Liability for Links */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Haftung für Links</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">Liability for Links</h2>
             <p className="text-white/50">
-              Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich. Die verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist jedoch ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.
+              Our service contains links to external third-party websites over whose content we have no influence. Therefore, we cannot assume any liability for these external contents. The respective provider or operator of the pages is always responsible for the content of the linked pages. The linked pages were checked for possible legal violations at the time of linking. Illegal content was not recognizable at the time of linking. Continuous monitoring of the content of linked pages is not reasonable without concrete evidence of an infringement. Upon notification of violations, we will remove such links immediately.
             </p>
           </section>
         </div>
@@ -117,8 +118,9 @@ export function Impressum() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <p className="text-xs text-white/20">© 2026 CLYVEN</p>
           <div className="flex gap-6 text-xs text-white/30 items-center">
-            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Privacy</span></Link>
-            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Legal Notice</span></Link>
+            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Privacy Policy</span></Link>
+            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Imprint</span></Link>
+            <Link href="/terms"><span className="hover:text-white/50 cursor-pointer transition-colors">Terms of Use</span></Link>
             <a href="https://github.com/offical-atsch16/clyven.app" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors flex items-center gap-1 cursor-pointer">
               <Github className="h-3.5 w-3.5" /> GitHub
             </a>

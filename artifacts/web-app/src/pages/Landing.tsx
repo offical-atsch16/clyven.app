@@ -217,8 +217,7 @@ export function Landing() {
 
           <nav className="hidden md:flex items-center gap-8 text-xs font-medium tracking-wide text-white/60">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#system" className="hover:text-white transition-colors">System</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <Link href="/pricing"><span className="hover:text-white transition-colors cursor-pointer">Pricing</span></Link>
             <Link href="/support"><span className="hover:text-white transition-colors cursor-pointer">Support</span></Link>
           </nav>
 
@@ -273,8 +272,7 @@ export function Landing() {
             >
               <div className="flex flex-col gap-3 text-sm text-white/70">
                 <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5">Features</a>
-                <a href="#system" onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5">System</a>
-                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5">Pricing</a>
+                <Link href="/pricing"><span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5 block cursor-pointer">Pricing</span></Link>
                 <Link href="/support"><span onClick={() => setMobileMenuOpen(false)} className="hover:text-white py-1.5 block cursor-pointer">Support</span></Link>
               </div>
 
@@ -627,6 +625,7 @@ export function Landing() {
           <div className="flex gap-6 text-xs text-white/40 items-center">
             <Link href="/privacy"><span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span></Link>
             <Link href="/impressum"><span className="hover:text-white cursor-pointer transition-colors">Imprint</span></Link>
+            <Link href="/terms"><span className="hover:text-white cursor-pointer transition-colors">Terms of Use</span></Link>
             <a href="https://github.com/offical-atsch16/clyven.app" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer">
               <Github className="h-3.5 w-3.5" /> GitHub
             </a>

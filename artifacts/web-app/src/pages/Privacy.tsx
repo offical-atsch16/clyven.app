@@ -26,122 +26,118 @@ export function Privacy() {
 
       <main className="mx-auto max-w-3xl px-6 pt-32 pb-24">
         <div className="mb-10">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">Datenschutzerklärung</h1>
-          <p className="text-xs text-white/40 uppercase tracking-wider">Gemäß Datenschutz-Grundverordnung (DSGVO)</p>
-          <p className="mt-3 text-xs text-white/35">Stand: 19. Juli 2026</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">Privacy Policy</h1>
+          <p className="text-xs text-white/40 uppercase tracking-wider">Pursuant to General Data Protection Regulation (GDPR)</p>
+          <p className="mt-3 text-xs text-white/35">Effective Date: July 19, 2026</p>
         </div>
 
         <div className="space-y-10 text-sm text-white/60 leading-relaxed">
           
-          {/* 1. Verantwortlicher */}
+          {/* 1. Controller */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">1. Verantwortlicher für die Datenverarbeitung</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">1. Data Controller</h2>
             <p className="mb-4">
-              Verantwortlich für die Erhebung, Verarbeitung und Nutzung Ihrer personenbezogenen Daten im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
+              The data controller responsible for the collection, processing, and use of your personal data under the General Data Protection Regulation (GDPR) is:
             </p>
             <div className="bg-white/[0.02] rounded-2xl p-6 border border-white/[0.06] text-white/70 space-y-1.5 shadow-xl">
               <p className="font-semibold text-white text-base">CLYVEN Project Owner</p>
               <p className="text-white/50 text-xs uppercase tracking-wider pb-2">Arien Tschemeris</p>
               <p>Ludwig-Herr-Strasse 9</p>
-              <p>70806 Kornwestheim, Deutschland</p>
+              <p>70806 Kornwestheim, Germany</p>
               <p className="pt-3 flex justify-between items-center text-xs border-t border-white/[0.04]">
-                <span className="text-white/40">E-Mail:</span>
+                <span className="text-white/40">Email:</span>
                 <a href="mailto:a.tschemeris@atomicmail.io" className="text-white hover:underline transition-colors">a.tschemeris@atomicmail.io</a>
               </p>
             </div>
           </section>
 
-          {/* 2. Allgemeine Datenverarbeitung */}
+          {/* 2. Provision of Website & Server Logfiles */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">2. Bereitstellung der Website und Server-Logfiles</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">2. Website Provision and Server Log Files</h2>
             <p className="mb-4">
-              Bei der bloß informatorischen Nutzung unserer Website erheben wir nur die personenbezogenen Daten, die Ihr Browser automatisch an unseren Server übermittelt. Dies umfasst:
+              When using our website for informational purposes only, we collect only the personal data that your browser automatically transmits to our server. This includes:
             </p>
             <ul className="list-disc pl-5 space-y-2 mb-4 text-white/50">
-              <li>IP-Adresse des anfragenden Endgeräts</li>
-              <li>Datum und Uhrzeit des Abrufs</li>
-              <li>Name und URL der abgerufenen Datei</li>
-              <li>Website, von der aus der Zugriff erfolgt (Referrer-URL)</li>
-              <li>Verwendeter Browser und ggf. das Betriebssystem Ihres Rechners</li>
+              <li>IP address of the requesting device</li>
+              <li>Date and time of the request</li>
+              <li>Name and URL of the retrieved file</li>
+              <li>Website from which access is made (Referrer URL)</li>
+              <li>Browser used and, if applicable, the operating system of your computer</li>
             </ul>
             <p>
-              Die Verarbeitung dieser Daten ist technisch erforderlich, um Ihnen unsere Website anzuzeigen sowie die Stabilität und Sicherheit zu gewährleisten. Rechtsgrundlage ist <strong>Art. 6 Abs. 1 lit. f DSGVO</strong> (berechtigtes Interesse).
+              Processing this data is technically necessary to display our website properly and guarantee stability and security. Legal basis: <strong>Art. 6(1)(f) GDPR</strong> (Legitimate Interest).
             </p>
           </section>
 
-          {/* 3. Registrierung & Authentifizierung (Clerk) */}
+          {/* 3. Authentication (Clerk) */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">3. Registrierung und Benutzer-Authentifizierung (Clerk)</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">3. User Registration and Authentication (Clerk)</h2>
             <p className="mb-4">
-              Um die Funktionen von CLYVEN (Notizen, Journal, Focus Timer) nutzen zu können, ist die Erstellung eines Benutzerkontos erforderlich. Für die Registrierung, den Login sowie die Absicherung der Benutzerkonten nutzen wir den Authentifizierungsdienst <strong>Clerk</strong> (Clerk Inc., 3010 North St, Aliso Viejo, CA 92656, USA).
+              To utilize CLYVEN’s core features (Notes, Journal, Focus Timer, Tasks), account creation is required. We rely on the authentication provider <strong>Clerk</strong> (Clerk Inc., 3010 North St, Aliso Viejo, CA 92656, USA) for user sign-up, login, and session security.
             </p>
             <p className="mb-4">
-              Wenn Sie ein Konto erstellen oder sich anmelden, werden folgende Daten an Clerk übermittelt und dort verarbeitet:
+              When creating an account or logging in, the following data is processed by Clerk:
             </p>
             <ul className="list-disc pl-5 space-y-2 mb-4 text-white/50">
-              <li>Ihre E-Mail-Adresse</li>
-              <li>Zugehörige Anmeldedaten (Passwörter werden verschlüsselt übertragen)</li>
-              <li>Zeitpunkt der Registrierung und des letzten Logins</li>
-              <li>IP-Adresse und Geräte-Informationen zur Sicherheitsüberwachung</li>
+              <li>Your email address</li>
+              <li>Credentials (passwords are transmitted in encrypted form)</li>
+              <li>Registration timestamp and last login activity</li>
+              <li>IP address and device information for security auditing</li>
             </ul>
             <p className="mb-4">
-              Die Nutzung von Clerk dient der Vertragserfüllung und Bereitstellung unserer Kerndienste gemäß <strong>Art. 6 Abs. 1 lit. b DSGVO</strong> sowie unserem berechtigten Interesse an einer sicheren und zuverlässigen Authentifizierung nach <strong>Art. 6 Abs. 1 lit. f DSGVO</strong>.
+              The legal basis for processing is contract performance pursuant to <strong>Art. 6(1)(b) GDPR</strong> as well as our legitimate interest in secure authentication under <strong>Art. 6(1)(f) GDPR</strong>.
             </p>
             <p>
-              Da Daten an Server in den USA übertragen werden können, basiert diese Verarbeitung auf den Standardvertragsklauseln (Standard Contractual Clauses - SCC) der EU-Kommission sowie, falls zutreffend, dem EU-US Data Privacy Framework.
+              Data transfers to US servers comply with European Commission Standard Contractual Clauses (SCCs) and the EU-U.S. Data Privacy Framework where applicable.
             </p>
           </section>
 
-          {/* 4. Datenverarbeitung der Kernfunktionen (Supabase) */}
+          {/* 4. Core Features Storage (Supabase) */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">4. Speicherung von Anwendungsdaten (Supabase)</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">4. Application Data Storage (Supabase)</h2>
             <p className="mb-4">
-              Die Kernfunktionen von CLYVEN basieren auf der Speicherung und Verwaltung Ihrer persönlichen Einträge. Zur sicheren Speicherung dieser Daten nutzen wir die Backend-Plattform <strong>Supabase</strong> (Supabase Inc., 970 Summer St, Stamford, CT 06905, USA).
+              CLYVEN’s core features rely on storing and managing your workspace entries. We utilize the cloud database provider <strong>Supabase</strong> (Supabase Inc., 970 Summer St, Stamford, CT 06905, USA).
             </p>
-            <p className="mb-3">Hierbei werden folgende von Ihnen erstellten Inhalte in unserer Datenbank verarbeitet:</p>
+            <p className="mb-3">The following user-generated content is processed in our cloud database:</p>
             <ul className="list-disc pl-5 space-y-3 mb-4 text-white/50">
               <li>
-                <strong className="text-white">Notizen:</strong> Alle Texte, Formatierungen und Metadaten (z. B. Erstellungsdatum), die Sie im Notizbereich anlegen.
+                <strong className="text-white">Notes & Mind-Maps:</strong> Text contents, formatting, backlink references, and metadata.
               </li>
               <li>
-                <strong className="text-white">Journal-Einträge:</strong> Ihre persönlichen Tagebucheinträge, Reflexionen und zugehörigen Zeitstempel.
+                <strong className="text-white">Journal Entries:</strong> Personal journal entries, mood ratings, and timestamps.
               </li>
               <li>
-                <strong className="text-white">Focus Timer:</strong> Daten zu Ihren Fokussitzungen, wie Dauer, Pausenzeiten, Konfigurationsdaten und Statistiken zu Ihren geschafften Intervallen.
+                <strong className="text-white">Focus Sessions & Tasks:</strong> Duration, interval logs, task titles, subtasks, and Kanban board statuses.
               </li>
             </ul>
             <p className="mb-4">
-              Diese Daten sind direkt mit Ihrer eindeutigen Benutzer-ID (verknüpft über Clerk) verbunden, sodass nur Sie Zugriff darauf haben.
+              All stored entries are strictly tied to your unique user ID (authenticated via Clerk), ensuring isolated Row Level Security access.
             </p>
             <p className="mb-4">
-              Die Rechtsgrundlage für diese Datenverarbeitung ist <strong>Art. 6 Abs. 1 lit. b DSGVO</strong> (Erfüllung des Nutzungsvertrags zur Bereitstellung der App-Funktionen). Die Speicherung erfolgt auf sicheren Cloud-Servern. Supabase gewährleistet durch strenge vertragliche Regelungen (Standardvertragsklauseln der EU) ein angemessenes Datenschutzniveau.
+              The legal basis for this processing is <strong>Art. 6(1)(b) GDPR</strong> (performance of contract to provide application functionality).
             </p>
           </section>
 
-          {/* 5. Cookies & Cookie Board */}
+          {/* 5. Cookies */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">5. Cookies und unser Cookie-Board</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">5. Cookies and Cookie Banner</h2>
             <p className="mb-4">
-              Unsere Website verwendet Cookies. Cookies sind kleine Textdateien, die auf Ihrem Endgerät gespeichert werden. Wir setzen ein sogenanntes <strong>Cookie-Board</strong> (Einwilligungs-Banner) ein, über das Sie beim ersten Aufruf der Seite Ihre Präferenzen festlegen können.
+              Our application uses cookies to ensure session stability and authentication state.
             </p>
-            <p className="mb-3 font-semibold text-white">Wir unterteilen Cookies in folgende Kategorien:</p>
             <ul className="list-disc pl-5 space-y-3 mb-4 text-white/50">
               <li>
-                <strong>Notwendige Cookies:</strong> Diese Cookies sind zwingend erforderlich, damit die App funktioniert. Dazu gehören die Session-Tokens von Clerk, die feststellen, ob Sie eingeloggt sind, um unbefugten Zugriff auf Ihre Notizen und Journals zu verhindern. Rechtsgrundlage ist das berechtigte Interesse nach <strong>Art. 6 Abs. 1 lit. f DSGVO</strong> i.V.m. § 25 Abs. 2 TDDDG.
+                <strong>Strictly Necessary Cookies:</strong> Essential session cookies (Clerk tokens) to keep you logged in and protect your workspace data. Legal basis: <strong>Art. 6(1)(f) GDPR</strong>.
               </li>
               <li>
-                <strong>Funktionale / Analyse-Cookies:</strong> Sofern wir zusätzliche Funktionen oder pseudonyme Statistiken erfassen, erfolgt dies ausschließlich nach Ihrer expliziten Zustimmung über das Cookie-Board. Rechtsgrundlage hierfür ist Ihre Einwilligung gemäß <strong>Art. 6 Abs. 1 lit. a DSGVO</strong> i.V.m. § 25 Abs. 1 TDDDG.
+                <strong>Analytics / Functional Cookies:</strong> Optional performance tracking active only upon your explicit consent via the Cookie Manager. Legal basis: <strong>Art. 6(1)(a) GDPR</strong>.
               </li>
             </ul>
-            <p className="mb-6">
-              Sie können Ihre Einwilligung jederzeit widerrufen oder die Cookie-Einstellungen über Ihren Browser anpassen und bereits gesetzte Cookies löschen.
-            </p>
 
-            {/* QoL Button: Cookie settings trigger */}
+            {/* Cookie settings trigger */}
             <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="text-xs text-white/40 text-center sm:text-left">
-                <p className="font-semibold text-white/60 mb-0.5">Cookie-Präferenzen verwalten</p>
-                <p>Sie können Ihre Cookie-Auswahl jederzeit anpassen.</p>
+                <p className="font-semibold text-white/60 mb-0.5">Manage Cookie Preferences</p>
+                <p>You can review or update your cookie consent choices at any time.</p>
               </div>
               <button
                 onClick={() => {
@@ -151,49 +147,49 @@ export function Privacy() {
                 }}
                 className="shrink-0 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] px-4 py-2 text-xs font-semibold text-white transition-all cursor-pointer border border-white/[0.05]"
               >
-                Präferenzen öffnen
+                Open Cookie Settings
               </button>
             </div>
           </section>
 
-          {/* 6. Datensicherheit */}
+          {/* 6. Data Security */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">6. Datensicherheit</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">6. Data Security</h2>
             <p className="text-white/50">
-              Um die Sicherheit Ihrer Daten bei der Übertragung zu schützen, verwenden wir dem aktuellen Stand der Technik entsprechende Verschlüsselungsverfahren (z. B. SSL/TLS). Die Datenbanken von Supabase und die Kommunikationswege von Clerk sind nach modernen Industriestandards gesichert und vor unbefugten Zugriffen geschützt. Dennoch ist keine elektronische Übertragung über das Internet zu 100% sicher.
+              We employ state-of-the-art TLS/SSL encryption for data in transit and robust database access control policies for data at rest.
             </p>
           </section>
 
-          {/* 7. Speicherdauer */}
+          {/* 7. Data Retention */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">7. Speicherdauer</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">7. Data Retention</h2>
             <p className="text-white/50">
-              Wir speichern Ihre personenbezogenen Daten (Notizen, Journals, Timer-Statistiken) nur so lange, wie es für die Erfüllung des Nutzungsverhältnisses erforderlich ist oder bis Sie die Löschung Ihres Kontos veranlassen. Nach der Kündigung oder dem Löschantrag werden Ihre Kontodaten bei Clerk sowie die Anwendungsdaten bei Supabase unwiderruflich gelöscht, sofern dem keine gesetzlichen Aufbewahrungspflichten entgegenstehen.
+              Your data is retained for as long as your account remains active. Upon account deletion, all personal records in Clerk and Supabase are permanently purged unless statutory retention obligations apply.
             </p>
           </section>
 
-          {/* 8. Ihre Rechte */}
+          {/* 8. Your Statutory Rights */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">8. Ihre gesetzlichen Rechte</h2>
-            <p className="mb-4">Als betroffene Person haben Sie laut DSGVO folgende Rechte:</p>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">8. Your Statutory Rights under GDPR</h2>
+            <p className="mb-4">As a data subject, you have the following rights under GDPR:</p>
             <ul className="list-disc pl-5 space-y-2 mb-4 text-white/50">
-              <li><strong>Art. 15 DSGVO (Auskunftsrecht):</strong> Sie können Auskunft über Ihre von uns verarbeiteten Daten verlangen.</li>
-              <li><strong>Art. 16 DSGVO (Berichtigung):</strong> Sie können die sofortige Berichtigung unrichtiger Daten verlangen.</li>
-              <li><strong>Art. 17 DSGVO (Löschung):</strong> Sie können die Löschung Ihrer bei uns gespeicherten Daten fordern.</li>
-              <li><strong>Art. 18 DSGVO (Einschränkung):</strong> Sie können die Einschränkung der Verarbeitung verlangen.</li>
-              <li><strong>Art. 20 DSGVO (Datenübertragbarkeit):</strong> Sie haben das Recht, Ihre Daten in einem strukturierten Format zu erhalten.</li>
-              <li><strong>Art. 21 DSGVO (Widerspruchsrecht):</strong> Sie können einer Verarbeitung widersprechen, die auf Basis unseres berechtigten Interesses erfolgt.</li>
+              <li><strong>Art. 15 GDPR (Right of Access):</strong> Obtain confirmation of personal data processed.</li>
+              <li><strong>Art. 16 GDPR (Right to Rectification):</strong> Request correction of inaccurate personal data.</li>
+              <li><strong>Art. 17 GDPR (Right to Erasure):</strong> Request deletion of your personal data.</li>
+              <li><strong>Art. 18 GDPR (Right to Restriction):</strong> Request restriction of processing.</li>
+              <li><strong>Art. 20 GDPR (Right to Data Portability):</strong> Receive your data in a structured, machine-readable format.</li>
+              <li><strong>Art. 21 GDPR (Right to Object):</strong> Object to processing based on legitimate interest.</li>
             </ul>
             <p>
-              Möchten Sie von Ihren Rechten Gebrauch machen oder Ihre Einwilligung widerrufen, genügt eine formlose Nachricht per E-Mail an die unten stehende Kontaktadresse.
+              To exercise your rights, please contact us via email at the address listed below.
             </p>
           </section>
 
-          {/* 9. Kontakt */}
+          {/* 9. Contact */}
           <section className="border-t border-white/[0.05] pt-8">
-            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">9. Fragen und Kontakt</h2>
+            <h2 className="mb-4 text-xl font-semibold text-white tracking-tight">9. Contact Information</h2>
             <p className="text-white/50">
-              Bei jeglichen Fragen zum Datenschutz bezüglich CLYVEN, Supabase, Clerk oder dem Cookie-Board können Sie sich jederzeit direkt per E-Mail an uns wenden:{' '}
+              For any privacy inquiries regarding CLYVEN, contact us at:{' '}
               <a href="mailto:a.tschemeris@atomicmail.io" className="text-white hover:underline transition-colors font-medium">a.tschemeris@atomicmail.io</a>.
             </p>
           </section>
@@ -205,8 +201,9 @@ export function Privacy() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <p className="text-xs text-white/20">© 2026 CLYVEN</p>
           <div className="flex gap-6 text-xs text-white/30 items-center">
-            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Privacy</span></Link>
-            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Legal Notice</span></Link>
+            <Link href="/privacy"><span className="hover:text-white/50 cursor-pointer transition-colors">Privacy Policy</span></Link>
+            <Link href="/impressum"><span className="hover:text-white/50 cursor-pointer transition-colors">Imprint</span></Link>
+            <Link href="/terms"><span className="hover:text-white/50 cursor-pointer transition-colors">Terms of Use</span></Link>
             <a href="https://github.com/offical-atsch16/clyven.app" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors flex items-center gap-1 cursor-pointer">
               <Github className="h-3.5 w-3.5" /> GitHub
             </a>

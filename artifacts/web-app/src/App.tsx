@@ -21,6 +21,7 @@ import { Settings } from "./pages/Settings";
 import { Pricing } from "./pages/Pricing";
 import { Privacy } from "./pages/Privacy";
 import { Impressum } from "./pages/Impressum";
+import { Terms } from "./pages/Terms";
 import { useCookieBanner } from "./hooks/useCookieBanner";
 import { Support } from "./pages/Support";
 import { AdminLogin } from "./pages/AdminLogin";
@@ -275,7 +276,10 @@ function AppRoutes() {
           </Route>
           <Route path="/pricing" component={Pricing} />
           <Route path="/privacy" component={Privacy} />
+          <Route path="/datenschutz" component={Privacy} />
           <Route path="/impressum" component={Impressum} />
+          <Route path="/imprint" component={Impressum} />
+          <Route path="/terms" component={Terms} />
           <Route path="/support" component={Support} />
           <Route path="/admin">
             <Redirect to="/admin/dashboard" />
