@@ -67,87 +67,16 @@ export function Pricing() {
       <div className="px-6 pb-24 pt-16">
         <div className="mx-auto max-w-5xl">
           {/* Header */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-16 text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-yellow-400/20 bg-yellow-400/5 px-4 py-1.5 text-xs text-yellow-400/70">
-              <Zap className="h-3 w-3" /> CLYVEN PLUS
-            </div>
-            <h1 className="mb-4 text-5xl font-bold tracking-tight sm:text-6xl">
-              Simple, Fair<br />
-              <span className="bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">Pricing</span>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12 text-center">
+            <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl text-white">
+              Simple, Fair Pricing
             </h1>
-            <p className="text-lg text-white/40">
-              Start for free. Upgrade when you are ready.
-            </p>
           </motion.div>
-
-          {/* Pricing Cards (2 Options: Free & CLYVEN PLUS) */}
-          <div className="grid gap-8 md:grid-cols-2 mb-16 max-w-4xl mx-auto">
-            {/* Free Card */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="rounded-3xl border border-white/[0.08] bg-white/[0.02] p-8 flex flex-col justify-between">
-              <div>
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold text-white">Free</h3>
-                  <p className="mt-1 text-sm text-white/40">Perfect to get started</p>
-                </div>
-                <div className="mb-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">$0</span>
-                  <span className="text-sm text-white/40">/ forever</span>
-                </div>
-                <ul className="space-y-3 mb-8 text-sm text-white/60">
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Max. 10 Notes</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Max. 10 Bookmarks</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Max. 10 Tasks</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Focus Timer & Journal</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-white/40 shrink-0" /> Community Support</li>
-                </ul>
-              </div>
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="w-full rounded-xl border border-white/[0.1] bg-white/[0.04] py-3 text-sm font-semibold text-white/80 hover:bg-white/[0.08] hover:text-white transition-all cursor-pointer">
-                Use Free
-              </button>
-            </motion.div>
-
-            {/* CLYVEN PLUS Card */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-              className="relative rounded-3xl border border-yellow-400/30 bg-gradient-to-b from-yellow-400/[0.08] to-white/[0.02] p-8 flex flex-col justify-between shadow-2xl shadow-yellow-500/10">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full border border-yellow-400 bg-yellow-400 px-4 py-1 text-xs font-bold text-black uppercase tracking-wider shadow-md">
-                Recommended
-              </div>
-              <div>
-                <div className="mb-6">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-white">CLYVEN PLUS</h3>
-                  </div>
-                  <p className="mt-1 text-sm text-yellow-200/60">Unlimited productivity & all pro tools</p>
-                </div>
-                <div className="mb-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">$5</span>
-                  <span className="text-sm text-white/40">/ month</span>
-                </div>
-                <ul className="space-y-3 mb-8 text-sm text-white/90">
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Unlimited Notes, Bookmarks & Tasks</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Kanban Board & Gantt Chart</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Subtasks & Custom Fields</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Time Tracking (Timer & Log)</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> File Uploads up to 100 MB per file</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Markdown / PDF Export</li>
-                  <li className="flex items-center gap-2.5"><Check className="h-4 w-4 text-yellow-400 shrink-0" /> Priority Support</li>
-                </ul>
-              </div>
-              <button
-                onClick={handleCheckout}
-                className="w-full rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 py-3.5 text-sm font-bold text-black shadow-lg shadow-yellow-500/20 hover:from-yellow-300 hover:to-yellow-400 transition-all cursor-pointer">
-                Upgrade Now →
-              </button>
-            </motion.div>
-          </div>
 
           {/* Plans + Checkout — powered by Clerk Billing */}
           <motion.div
             id="plans"
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="relative mb-16 scroll-mt-24"
           >
             <PricingTable
