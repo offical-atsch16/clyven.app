@@ -145,12 +145,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 }
 
 function HomeRedirect() {
-  return (
-    <>
-      <Show when="signed-in"><Redirect to="/dashboard" /></Show>
-      <Show when="signed-out"><Landing /></Show>
-    </>
-  );
+  return <Landing />;
 }
 
 function ClerkQueryClientCacheInvalidator() {
