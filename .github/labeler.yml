@@ -1,0 +1,24 @@
+# Configuration for actions/labeler
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'artifacts/web-app/**/*'
+          - 'artifacts/mockup-sandbox/**/*'
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'artifacts/api-server/**/*'
+          - 'lib/db/**/*'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.md'
+          - 'DEPLOYMENT.md'
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
