@@ -69,7 +69,7 @@ export function Pricing() {
           {/* Header */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12 text-center">
             <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl text-white">
-              Simple, Fair Pricing
+              Powerful tools, Simple Pricing
             </h1>
           </motion.div>
 
