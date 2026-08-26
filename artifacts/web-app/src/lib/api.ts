@@ -167,10 +167,11 @@ export const api = {
     delete headers["Content-Type"];
     return fetch(`${API_BASE_URL}/admin/me`, { headers, credentials: "include" }).then(handleResponse);
   },
-  getAdminTickets: () => {
+  getAdminTickets: (filter?: string) => {
     const headers = api.getAdminAuthHeaders();
     delete headers["Content-Type"];
-    return fetch(`${API_BASE_URL}/admin/tickets`, { headers, credentials: "include" }).then(handleResponse);
+    const query = filter ? `?filter=${encodeURIComponent(filter)}` : "";
+    return fetch(`${API_BASE_URL}/admin/tickets${query}`, { headers, credentials: "include" }).then(handleResponse);
   },
   getAdminTicket: (id: string) => {
     const headers = api.getAdminAuthHeaders();
@@ -183,17 +184,11 @@ export const api = {
     credentials: "include",
     body: JSON.stringify({ status })
   }).then(handleResponse),
-  adminReply: (id: string, message: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/messages`, {
-    method: "POST",
+  assignAdminTicketToStaff: (id: string, staffId: string | null) => fetch(`${API_BASE_URL}/admin/tickets/${id}/assign`, {
+    method: "PATCH",
     headers: api.getAdminAuthHeaders(),
     credentials: "include",
-    body: JSON.stringify({ message })
-  }).then(handleResponse),
-  adminCreateTicket: (data: any) => fetch(`${API_BASE_URL}/admin/tickets`, {
-    method: "POST",
-    headers: api.getAdminAuthHeaders(),
-    credentials: "include",
-    body: JSON.stringify(data)
+    body: JSON.stringify({ staffId })
   }).then(handleResponse),
   assignAdminTicket: (id: string, clerkUserId: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/assign`, {
     method: "PATCH",
@@ -201,11 +196,60 @@ export const api = {
     credentials: "include",
     body: JSON.stringify({ clerkUserId })
   }).then(handleResponse),
+  bulkUpdateTickets: (ticketIds: string[], action: "status" | "priority" | "assign", value: any) => fetch(`${API_BASE_URL}/admin/tickets/bulk`, {
+    method: "PATCH",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ ticketIds, action, value })
+  }).then(handleResponse),
+  adminReply: (id: string, message: string, isInternal?: boolean) => fetch(`${API_BASE_URL}/admin/tickets/${id}/messages`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ message, isInternal })
+  }).then(handleResponse),
+  adminCreateTicket: (data: any) => fetch(`${API_BASE_URL}/admin/tickets`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data)
+  }).then(handleResponse),
   deleteAdminTicket: (id: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}`, {
     method: "DELETE",
     headers: api.getAdminAuthHeaders(),
     credentials: "include",
   }).then(handleResponse),
+
+  // Staff Management
+  getSupportStaff: () => fetch(`${API_BASE_URL}/admin/staff`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  createSupportStaff: (data: { email: string; fullName: string; role?: "admin" | "agent" }) => fetch(`${API_BASE_URL}/admin/staff`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data),
+  }).then(handleResponse),
+  updateSupportStaff: (id: string, data: { role?: "admin" | "agent"; isActive?: boolean; fullName?: string }) => fetch(`${API_BASE_URL}/admin/staff/${id}`, {
+    method: "PATCH",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data),
+  }).then(handleResponse),
+
+  // Audit Logs & Analytics
+  getSupportAuditLogs: (params?: { staffId?: string; action?: string }) => {
+    const headers = api.getAdminAuthHeaders();
+    delete headers["Content-Type"];
+    const query = new URLSearchParams(params as any).toString();
+    return fetch(`${API_BASE_URL}/admin/audit-logs${query ? `?${query}` : ""}`, { headers, credentials: "include" }).then(handleResponse);
+  },
+  getSupportAnalytics: () => {
+    const headers = api.getAdminAuthHeaders();
+    delete headers["Content-Type"];
+    return fetch(`${API_BASE_URL}/admin/analytics`, { headers, credentials: "include" }).then(handleResponse);
+  },
 
   // Admin Banners
   getAdminBanners: () => fetch(`${API_BASE_URL}/admin/banners`, {
