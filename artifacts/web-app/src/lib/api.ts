@@ -17,11 +17,13 @@ async function handleResponse(res: Response) {
 
 async function getClerkToken(): Promise<string | null> {
   try {
-    if (typeof window !== "undefined" && (window as any).Clerk?.session) {
-      return await (window as any).Clerk.session.getToken();
+    const clerk = typeof window !== "undefined" ? (window as any).Clerk : null;
+    if (clerk && clerk.session && typeof clerk.session.getToken === "function") {
+      const token = await clerk.session.getToken().catch(() => null);
+      return token || null;
     }
   } catch (err) {
-    console.error("Error fetching Clerk session token:", err);
+    // Ignore Clerk session errors when unauthenticated or offline
   }
   return null;
 }
