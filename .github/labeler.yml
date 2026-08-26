@@ -1,0 +1,67 @@
+# Frontend & UI
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/**/*'
+          - 'components/**/*'
+          - 'pages/**/*'
+          - 'styles/**/*'
+          - 'public/**/*'
+
+# Supabase / Backend & Datenmodell
+supabase:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'supabase/**/*'
+          - 'lib/supabase/**/*'
+          - 'db/**/*'
+          - '**/*supabase*'
+
+# Authentifizierung (z.B. Clerk / Middleware)
+auth:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'middleware.ts'
+          - 'middleware.js'
+          - 'app/api/auth/**/*'
+          - 'lib/auth/**/*'
+
+# TypeScript & Types
+typescript:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.ts'
+          - '**/*.tsx'
+          - 'types/**/*'
+          - 'tsconfig.json'
+
+# Styling (Tailwind / CSS)
+styles:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.css'
+          - 'tailwind.config.*'
+          - 'postcss.config.*'
+
+# CI/CD & GitHub Actions
+ci/cd:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
+
+# Abhängigkeiten & Configs
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'package-lock.json'
+          - 'pnpm-lock.yaml'
+          - 'yarn.lock'
+          - 'bun.lockb'
+
+# Dokumentation
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.md'
+          - 'docs/**/*'
