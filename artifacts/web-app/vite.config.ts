@@ -24,6 +24,24 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/@clerk")) {
+            return "clerk-vendor";
+          }
+          if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) {
+            return "charts-vendor";
+          }
+          if (id.includes("node_modules/lucide-react") || id.includes("node_modules/framer-motion")) {
+            return "ui-vendor";
+          }
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom") || id.includes("node_modules/wouter") || id.includes("node_modules/@tanstack")) {
+            return "react-vendor";
+          }
+        },
+      },
+    },
   },
   server: {
     port,

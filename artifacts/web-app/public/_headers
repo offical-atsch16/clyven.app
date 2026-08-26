@@ -1,0 +1,18 @@
+# Cloudflare Pages Headers Configuration
+# Static hashed build assets in /assets/* are immutable for 1 year
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Static media and audio assets in /sounds/*
+/sounds/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML documents and SPA routing must revalidate
+/*
+  Cache-Control: public, max-age=0, must-revalidate
