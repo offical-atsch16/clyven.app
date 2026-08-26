@@ -57,11 +57,13 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+import { readOnlyGuard } from "./middlewares/readOnly.js";
+
 app.use(clerkMiddleware({
   publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
 }));
 
-app.use("/api", router);
+app.use("/api", readOnlyGuard, router);
 
 app.use((err: any, req: any, res: any, next: any) => {
   console.error("=== DETAILED ROUTE ERROR ===");

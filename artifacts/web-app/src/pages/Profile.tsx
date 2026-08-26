@@ -85,10 +85,8 @@ export function Profile() {
             <PlanBadge tier={planTier} size="sm" showFree />
           </div>
           <p className="text-xs text-white/40 mb-4">
-            {planTier === "business"
-              ? "Du nutzt den CLYVEN Business Plan. Zugriff auf alle Premium & Business Task-Features."
-              : planTier === "plus"
-              ? "Du nutzt CLYVEN Plus. Upgrade auf Business für Kanban, Gantt, Subtasks und Zeiterfassung."
+            {isPremium
+              ? "Du nutzt CLYVEN PLUS. Unbegrenzter Zugriff auf alle Notizen, Bookmarks, Aufgaben sowie Kanban, Gantt, Subtasks und Zeiterfassung."
               : "Du nutzt den kostenlosen Free-Plan mit reduzierten Limits (max 10 Notizen, Bookmarks, Tasks)."}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -96,7 +94,7 @@ export function Profile() {
               className="flex items-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-2 text-xs font-semibold text-white/70 hover:bg-white/[0.08] hover:text-white transition-all cursor-pointer">
               <CreditCard className="h-3.5 w-3.5" /> Abo verwalten
             </button>
-            {planTier !== "business" && (
+            {!isPremium && (
               <button onClick={openUpgrade}
                 className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-2 text-xs font-semibold text-amber-400 hover:bg-amber-500/20 transition-all cursor-pointer">
                 <Crown className="h-3.5 w-3.5" /> Plan upgraden

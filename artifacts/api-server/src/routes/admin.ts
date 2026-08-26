@@ -2,8 +2,9 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { clerkClient } from "@clerk/express";
 import { supabase } from "../lib/supabase.js";
-import { sendEmail } from "../lib/email.js";
+import { sendEmail, sendReplyEmail } from "../lib/email.js";
 import type { Request, Response, NextFunction } from "express";
 
 const router = Router();
@@ -15,16 +16,23 @@ const COOKIE_NAME = "admin_session";
 
 interface AdminRequest extends Request {
   adminId?: string;
+  email?: string;
+  name?: string;
 }
 
 function requireAdmin(req: AdminRequest, res: Response, next: NextFunction) {
-  const token = req.cookies?.[COOKIE_NAME];
+  const authHeader = req.headers.authorization;
+  const headerToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+  const token = req.cookies?.[COOKIE_NAME] || headerToken;
+
   if (!token) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as unknown as { adminId: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as unknown as { adminId: string; email?: string; name?: string };
     req.adminId = decoded.adminId;
+    req.email = decoded.email;
+    req.name = decoded.name;
     next();
   } catch {
     return res.status(401).json({ error: "Invalid session" });
@@ -82,21 +90,23 @@ router.post("/login", async (req, res) => {
     }
 
     if (!adminRows || !adminRows.length) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid credentials", message: "E-Mail oder Passwort falsch." });
     }
     const admin = adminRows[0];
     const valid = await bcrypt.compare(password, admin.password_hash);
     if (!valid) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid credentials", message: "E-Mail oder Passwort falsch." });
     }
-    const token = jwt.sign({ adminId: admin.id, email: admin.email }, JWT_SECRET, { expiresIn: "24h" });
+    const name = admin.name || admin.email.split("@")[0];
+    const token = jwt.sign({ adminId: admin.id, email: admin.email, name }, JWT_SECRET, { expiresIn: "24h" });
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
+      path: "/",
       maxAge: 24 * 60 * 60 * 1000,
     });
-    res.json({ success: true, admin: { id: admin.id, email: admin.email } });
+    res.status(200).json({ success: true, token, admin: { id: admin.id, email: admin.email, name } });
   } catch (e: any) {
     res.status(500).json({ error: "Login failed", detail: e.message });
   }
@@ -104,13 +114,29 @@ router.post("/login", async (req, res) => {
 
 // Admin logout
 router.post("/logout", (_req, res) => {
-  res.clearCookie(COOKIE_NAME);
+  res.clearCookie(COOKIE_NAME, { path: "/" });
   res.json({ success: true });
 });
 
 // Check session
-router.get("/me", requireAdmin, (req: AdminRequest, res) => {
-  res.json({ adminId: req.adminId });
+router.get("/me", requireAdmin, async (req: AdminRequest, res) => {
+  try {
+    if (req.email && req.name) {
+      return res.json({ adminId: req.adminId, email: req.email, name: req.name });
+    }
+    const { data } = await supabase
+      .from("admin_users")
+      .select("email, name")
+      .eq("id", req.adminId!)
+      .single();
+
+    const email = data?.email || req.email || "";
+    const name = data?.name || req.name || (email ? email.split("@")[0] : "");
+
+    res.json({ adminId: req.adminId, email, name });
+  } catch {
+    res.json({ adminId: req.adminId, email: req.email || "", name: req.name || (req.email ? req.email.split("@")[0] : "") });
+  }
 });
 
 // List all tickets
@@ -168,7 +194,7 @@ router.get("/tickets/:id", requireAdmin, async (req, res) => {
 router.patch("/tickets/:id/status", requireAdmin, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
-  if (!["OPEN", "IN_PROGRESS", "CLOSED"].includes(status)) {
+  if (!["OPEN", "IN_PROGRESS", "WAITING", "CLOSED"].includes(status)) {
     return res.status(400).json({ error: "Invalid status" });
   }
   try {
@@ -197,64 +223,91 @@ router.post("/tickets/:id/messages", requireAdmin, async (req: AdminRequest, res
     return res.status(400).json({ error: "Message is required" });
   }
   try {
-    const { data: adminRows, error: adminErr } = await supabase
+    const { data: adminRows } = await supabase
       .from("admin_users")
-      .select("email")
+      .select("id, email, name")
       .eq("id", req.adminId!);
 
-    if (adminErr) {
-      throw adminErr;
+    let agentId = req.adminId || "";
+    let agentEmail = req.email || "";
+    let agentName = req.name || "";
+
+    if (adminRows && adminRows.length > 0) {
+      const adminUser = adminRows[0];
+      agentId = adminUser.id || agentId;
+      agentEmail = adminUser.email || agentEmail;
+      agentName = adminUser.name || agentName || agentEmail.split("@")[0];
     }
 
-    if (!adminRows || !adminRows.length) {
-      return res.status(404).json({ error: "Admin not found" });
+    // Try finding profile in Supabase profiles table for detailed full_name
+    if (agentEmail) {
+      const { data: profileRows } = await supabase
+        .from("profiles")
+        .select("full_name, email, role")
+        .eq("email", agentEmail);
+      if (profileRows && profileRows.length > 0 && profileRows[0].full_name) {
+        agentName = profileRows[0].full_name;
+      }
+    }
+
+    if (!agentName) {
+      agentName = "Arien Tschemeris";
     }
 
     const { data: msgRow, error: msgErr } = await supabase
       .from("ticket_messages")
       .insert({
         ticket_id: id,
-        sender_type: "ADMIN",
-        sender_name: adminRows[0].email,
+        sender_type: "agent",
+        agent_id: agentId,
+        agent_name: agentName,
+        agent_email: agentEmail,
+        sender_name: agentName,
         message: message
       })
       .select()
       .single();
 
     if (msgErr || !msgRow) {
-      throw new Error(`Failed to insert message: ${msgErr?.message}`);
+      // Fallback insert if agent_id / agent_name columns are not yet migrated
+      const { data: fallbackMsgRow, error: fallbackErr } = await supabase
+        .from("ticket_messages")
+        .insert({
+          ticket_id: id,
+          sender_type: "ADMIN",
+          sender_name: agentName,
+          message: message
+        })
+        .select()
+        .single();
+      if (fallbackErr || !fallbackMsgRow) {
+        throw new Error(`Failed to insert message: ${msgErr?.message || fallbackErr?.message}`);
+      }
     }
 
+    // Update ticket status to 'answered' and set updated_at
     await supabase
       .from("tickets")
-      .update({ updated_at: new Date().toISOString() })
+      .update({ status: "answered", updated_at: new Date().toISOString() })
       .eq("id", id);
 
-    // Send email notification to customer (non-blocking)
+    // Fetch ticket details to send Courier reply email
     const { data: ticketRows } = await supabase.from("tickets").select("*").eq("id", id);
     if (ticketRows && ticketRows.length > 0) {
       const ticket = ticketRows[0];
-      const escapedMsg = (message || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      await sendEmail({
-        to: ticket.email,
-        subject: `[CLYVEN Support] Neue Antwort zu Ticket #${ticket.ticket_number}`,
-        ticketNumber: ticket.ticket_number,
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
-            <div style="text-align: center; margin-bottom: 20px;">
-              <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
-              <p style="color: #666; margin: 4px 0 0;">Neue Antwort vom Support zu Ihrem Ticket #${ticket.ticket_number}</p>
-            </div>
-            <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
-              <p style="margin: 0 0 10px; color: #aaa;"><strong>Antwort vom Support-Team:</strong></p>
-              <div style="color: #ddd; font-size: 14px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;">${escapedMsg}</div>
-            </div>
-          </div>
-        `
+      await sendReplyEmail({
+        toEmail: ticket.email || ticket.user_email,
+        userName: ticket.name || ticket.user_name || "Kunde",
+        ticketNumber: ticket.ticket_number || ticket.number,
+        ticketSubject: ticket.subject,
+        ticketDetails: ticket.message || ticket.initial_description || "",
+        replyMessage: message,
+        agentName: agentName,
+        agentEmail: agentEmail,
       });
     }
 
-    res.json(snakeToCamel(msgRow));
+    res.json(snakeToCamel(msgRow || {}));
   } catch (e: any) {
     res.status(500).json({ error: "Failed to send message", detail: e.message });
   }
@@ -262,48 +315,548 @@ router.post("/tickets/:id/messages", requireAdmin, async (req: AdminRequest, res
 
 // Admin create ticket manually
 router.post("/tickets", requireAdmin, async (req, res) => {
-  const { name, email, subject, message } = req.body;
-  if (!name || !email || !subject || !message) {
-    return res.status(400).json({ error: "All fields are required" });
+  const { name, email, subject, message, priority, category } = req.body;
+  if (!email || !subject || !message) {
+    return res.status(400).json({ error: "E-Mail, Betreff und Nachricht sind erforderlich." });
   }
-  try {
-    const ticketNumber = await getNextTicketNumber();
-    const passcode = crypto.randomInt(100000, 1000000).toString();
+  const customerName = name || email.split("@")[0];
 
-    const { data: ticket, error: ticketErr } = await supabase
+  try {
+    let ticketNumber = "TICKET-000001";
+    try {
+      ticketNumber = await getNextTicketNumber();
+    } catch (codeErr) {
+      console.error("[ADMIN TICKET CODE GENERATION ERROR]", codeErr);
+    }
+
+    let passcode = "100000";
+    try {
+      passcode = crypto.randomInt(100000, 1000000).toString();
+    } catch (passcodeErr) {
+      console.error("[ADMIN PASSCODE GENERATION ERROR]", passcodeErr);
+    }
+
+    const insertData: Record<string, any> = {
+      ticket_number: ticketNumber,
+      name: customerName,
+      email,
+      subject,
+      message,
+      passcode,
+      status: "OPEN",
+      priority: priority || "MEDIUM",
+      category: category || "Allgemein",
+      created_by_admin: true
+    };
+
+    let ticket: any = null;
+    let ticketErr: any = null;
+
+    // Try primary insertion with all metadata fields
+    const resInsert = await supabase
       .from("tickets")
-      .insert({
+      .insert(insertData)
+      .select()
+      .single();
+
+    ticket = resInsert.data;
+    ticketErr = resInsert.error;
+
+    // Fallback: If insertion failed (e.g., due to missing database columns priority/category/created_by_admin), retry with core fields
+    if (ticketErr || !ticket) {
+      console.warn("Primary ticket insertion failed, attempting fallback insertion with core fields:", ticketErr?.message);
+      const fallbackInsertData = {
         ticket_number: ticketNumber,
-        name,
+        name: customerName,
         email,
         subject,
         message,
         passcode,
         status: "OPEN"
-      })
-      .select()
-      .single();
+      };
 
-    if (ticketErr || !ticket) {
-      throw new Error(`Failed to create ticket: ${ticketErr?.message}`);
+      const fallbackRes = await supabase
+        .from("tickets")
+        .insert(fallbackInsertData)
+        .select()
+        .single();
+
+      ticket = fallbackRes.data;
+      ticketErr = fallbackRes.error;
     }
 
-    const { error: msgErr } = await supabase
-      .from("ticket_messages")
-      .insert({
-        ticket_id: ticket.id,
-        sender_type: "CUSTOMER",
-        sender_name: name,
-        message: message
-      });
+    if (ticketErr || !ticket) {
+      console.error("ADMIN CREATE TICKET DATABASE ERROR:", ticketErr);
+      throw new Error(`Failed to create ticket in database: ${ticketErr?.message || "Unknown error"}`);
+    }
 
-    if (msgErr) {
-      throw new Error(`Failed to create initial message: ${msgErr.message}`);
+    // Insert message into ticket_messages
+    try {
+      const { error: msgErr } = await supabase
+        .from("ticket_messages")
+        .insert({
+          ticket_id: ticket.id,
+          sender_type: "ADMIN",
+          sender_name: "Support Team",
+          message: message
+        });
+
+      if (msgErr) {
+        console.error("Error inserting ticket message:", msgErr);
+      }
+    } catch (msgErrEx) {
+      console.error("Exception when inserting ticket message:", msgErrEx);
+    }
+
+    // Trigger non-blocking email notification to customer
+    try {
+      sendEmail({
+        userName: customerName,
+        ticketEmail: email,
+        ticketNumber,
+        ticketSubject: subject,
+        ticketDetails: message,
+        ticketPasscode: passcode,
+        to: email,
+        subject: `[CLYVEN Support] Neues Ticket #${ticketNumber}: ${subject}`,
+        message,
+      }).catch((err) => console.error("[EMAIL ERROR] Versand fehlgeschlagen für admin erstelltes Ticket:", err));
+    } catch (emailTryErr) {
+      console.error("[EMAIL ERROR] Mailversand Exception abgefangen:", emailTryErr);
     }
 
     res.json(snakeToCamel(ticket));
   } catch (e: any) {
-    res.status(500).json({ error: "Failed to create ticket", detail: e.message });
+    console.error("ADMIN CREATE TICKET ERROR:", e);
+    res.status(500).json({ error: "Failed to create ticket", detail: e.message || String(e) });
+  }
+});
+
+// Delete ticket
+router.delete("/tickets/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await supabase.from("ticket_messages").delete().eq("ticket_id", id);
+    const { error } = await supabase.from("tickets").delete().eq("id", id);
+    if (error) {
+      throw error;
+    }
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to delete ticket", detail: e.message });
+  }
+});
+
+/* ==================== SYSTEM SETTINGS / READ-ONLY MODE ==================== */
+
+// Get system settings status
+router.get("/settings", requireAdmin, async (_req, res) => {
+  try {
+    const { data: rows, error } = await supabase.from("system_settings").select("*");
+    if (error) throw error;
+    res.json(rows || []);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch settings", detail: e.message });
+  }
+});
+
+// Update or set a system setting (e.g., read_only_mode)
+router.post("/settings", requireAdmin, async (req, res) => {
+  const { key, value, description } = req.body;
+  if (!key) {
+    return res.status(400).json({ error: "Setting key is required" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("system_settings")
+      .upsert({
+        key,
+        value: typeof value === "object" ? value : { enabled: Boolean(value) },
+        description: description || null,
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to update setting", detail: e.message });
+  }
+});
+
+/* ==================== USER AUDIT & IMPERSONATION ==================== */
+
+// Search users via Clerk Backend API
+async function searchUsersHandler(req: Request, res: Response) {
+  const searchParam = ((req.query.search || req.query.q || "") as string).trim();
+  try {
+    let clerkUsers: any[] = [];
+    try {
+      const usersResponse = await clerkClient.users.getUserList({
+        query: searchParam || undefined,
+        limit: 10,
+      });
+      clerkUsers = Array.isArray(usersResponse) ? usersResponse : usersResponse.data || [];
+    } catch (clerkErr: any) {
+      console.warn("Clerk getUserList failed or unconfigured, falling back to Supabase profiles:", clerkErr?.message);
+    }
+
+    if (clerkUsers.length > 0) {
+      const mapped = clerkUsers.map((u: any) => {
+        const primaryEmail =
+          u.emailAddresses?.find((e: any) => e.id === u.primaryEmailAddressId)?.emailAddress ||
+          u.emailAddresses?.[0]?.emailAddress ||
+          "";
+        const name = [u.firstName, u.lastName].filter(Boolean).join(" ") || primaryEmail.split("@")[0] || u.id;
+
+        return {
+          id: u.id,
+          userId: u.id,
+          email: primaryEmail,
+          name,
+          firstName: u.firstName || null,
+          lastName: u.lastName || null,
+          banned: Boolean(u.banned),
+          createdAt: u.createdAt,
+          updatedAt: u.updatedAt,
+          lastSignInAt: u.lastSignInAt || null,
+          publicMetadata: u.publicMetadata || {},
+          plan: u.publicMetadata?.plan || "free",
+        };
+      });
+      return res.json(mapped);
+    }
+
+    // Fallback search in Supabase profiles if Clerk returned no results or was unconfigured
+    const { data: profiles, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .or(`email.ilike.%${searchParam}%,id.ilike.%${searchParam}%,user_id.ilike.%${searchParam}%`)
+      .limit(10);
+
+    if (error) throw error;
+    res.json((profiles || []).map((p: any) => ({
+      ...snakeToCamel(p),
+      banned: false,
+      createdAt: p.created_at ? new Date(p.created_at).getTime() : null,
+    })));
+  } catch (e: any) {
+    res.status(500).json({ error: "Search failed", detail: e.message });
+  }
+}
+
+router.get("/users", requireAdmin, searchUsersHandler);
+router.get("/users/search", requireAdmin, searchUsersHandler);
+
+// User audit details
+router.get("/users/:id/audit", requireAdmin, async (req, res) => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  try {
+    let clerkUser: any = null;
+    try {
+      clerkUser = await clerkClient.users.getUser(id);
+    } catch {
+      // ignore if user not found in Clerk directly or unconfigured
+    }
+
+    // Profile info
+    const { data: profileRows } = await supabase
+      .from("profiles")
+      .select("*")
+      .or(`id.eq.${id},user_id.eq.${id}`)
+      .limit(1);
+
+    const primaryEmail =
+      clerkUser?.emailAddresses?.find((e: any) => e.id === clerkUser.primaryEmailAddressId)?.emailAddress ||
+      clerkUser?.emailAddresses?.[0]?.emailAddress ||
+      profileRows?.[0]?.email ||
+      id;
+
+    const isEmailVerified = clerkUser?.emailAddresses?.some((e: any) => e.verification?.status === "verified") ?? true;
+
+    const profile = profileRows?.[0] || {
+      id,
+      userId: id,
+      email: primaryEmail,
+      fullName: clerkUser ? [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") : null,
+      plan: clerkUser?.publicMetadata?.plan || "free",
+    };
+
+    // Aggregation counts from Supabase
+    const { count: noteCount } = await supabase.from("notes").select("id", { count: "exact", head: true }).eq("user_id", id);
+    const { count: journalCount } = await supabase.from("journal_entries").select("id", { count: "exact", head: true }).eq("user_id", id);
+    const { count: taskCount } = await supabase.from("tasks").select("id", { count: "exact", head: true }).eq("user_id", id);
+    const { count: bookmarkCount } = await supabase.from("bookmarks").select("id", { count: "exact", head: true }).eq("user_id", id);
+
+    // Tickets linked via clerk_user_id, email, or name
+    const { data: tickets } = await supabase
+      .from("tickets")
+      .select("*")
+      .or(`clerk_user_id.eq.${id},email.eq.${primaryEmail},name.eq.${id}`)
+      .order("created_at", { ascending: false });
+
+    res.json({
+      profile: {
+        ...snakeToCamel(profile),
+        clerkId: clerkUser?.id || id,
+        email: primaryEmail,
+        emailVerified: isEmailVerified,
+        banned: Boolean(clerkUser?.banned),
+        createdAt: clerkUser?.createdAt || profile.created_at,
+        publicMetadata: clerkUser?.publicMetadata || {},
+        plan: clerkUser?.publicMetadata?.plan || profile.plan || "free",
+      },
+      stats: {
+        notes: noteCount || 0,
+        journals: journalCount || 0,
+        tasks: taskCount || 0,
+        bookmarks: bookmarkCount || 0,
+      },
+      tickets: (tickets || []).map(snakeToCamel),
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: "Audit failed", detail: e.message });
+  }
+});
+
+// Assign ticket to Clerk User ID
+router.patch("/tickets/:id/assign", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { clerkUserId } = req.body;
+  if (!clerkUserId) {
+    return res.status(400).json({ error: "clerkUserId is required" });
+  }
+  try {
+    const { data: updatedTicket, error } = await supabase
+      .from("tickets")
+      .update({
+        clerk_user_id: clerkUserId,
+        is_verified_user: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error || !updatedTicket) {
+      throw new Error(`Failed to assign ticket: ${error?.message}`);
+    }
+
+    res.json(snakeToCamel(updatedTicket));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to assign ticket", detail: e.message });
+  }
+});
+
+// Impersonation token generation via native Clerk Impersonation API
+router.post("/users/:id/impersonate", requireAdmin, async (req: AdminRequest, res: Response) => {
+  const targetUserId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  try {
+    let token: string | null = null;
+    let clerkTokenObj: any = null;
+
+    // Try Clerk native Impersonation APIs
+    const adminActorId = Array.isArray(req.adminId) ? req.adminId[0] : (req.adminId || "admin");
+    try {
+      if (typeof (clerkClient as any).sessions?.createImpersonationToken === "function") {
+        clerkTokenObj = await (clerkClient as any).sessions.createImpersonationToken({
+          userId: targetUserId,
+          actor: { sub: adminActorId },
+        });
+        token = clerkTokenObj?.token || clerkTokenObj?.jwt || clerkTokenObj?.id || null;
+      } else if (clerkClient.actorTokens && typeof clerkClient.actorTokens.create === "function") {
+        clerkTokenObj = await clerkClient.actorTokens.create({
+          userId: targetUserId,
+          actor: { sub: adminActorId },
+        });
+        token = clerkTokenObj?.token || clerkTokenObj?.jwt || clerkTokenObj?.id || null;
+      } else if (clerkClient.signInTokens && typeof clerkClient.signInTokens.createSignInToken === "function") {
+        clerkTokenObj = await clerkClient.signInTokens.createSignInToken({ userId: targetUserId, expiresInSeconds: 3600 });
+        token = clerkTokenObj?.token || clerkTokenObj?.url || clerkTokenObj?.id || null;
+      }
+    } catch (clerkErr: any) {
+      console.warn("Clerk impersonation API call failed, falling back to local JWT token:", clerkErr?.message);
+    }
+
+    // Fallback if Clerk impersonation was not available or failed
+    if (!token) {
+      token = jwt.sign(
+        { impersonatedUserId: targetUserId, adminId: req.adminId, role: "impersonation" },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+    }
+
+    res.json({
+      success: true,
+      token,
+      impersonatedUserId: targetUserId,
+      raw: clerkTokenObj || undefined,
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: "Impersonation failed", detail: e.message });
+  }
+});
+
+/* ==================== FEATURE FLAGS ==================== */
+
+// List feature flags
+router.get("/feature-flags", requireAdmin, async (_req, res) => {
+  try {
+    const { data: rows, error } = await supabase.from("feature_flags").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    res.json((rows || []).map(snakeToCamel));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch feature flags", detail: e.message });
+  }
+});
+
+// Create feature flag
+router.post("/feature-flags", requireAdmin, async (req, res) => {
+  const { flagKey, description, isEnabledGlobally, allowedUserIds } = req.body;
+  if (!flagKey) {
+    return res.status(400).json({ error: "flagKey is required" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("feature_flags")
+      .insert({
+        flag_key: flagKey,
+        description: description || null,
+        is_enabled_globally: isEnabledGlobally || false,
+        allowed_user_ids: Array.isArray(allowedUserIds) ? allowedUserIds : [],
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(snakeToCamel(data));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to create feature flag", detail: e.message });
+  }
+});
+
+// Update feature flag
+router.patch("/feature-flags/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { flagKey, description, isEnabledGlobally, allowedUserIds } = req.body;
+
+  const updates: Record<string, any> = { updated_at: new Date().toISOString() };
+  if (flagKey !== undefined) updates.flag_key = flagKey;
+  if (description !== undefined) updates.description = description;
+  if (isEnabledGlobally !== undefined) updates.is_enabled_globally = isEnabledGlobally;
+  if (allowedUserIds !== undefined) updates.allowed_user_ids = Array.isArray(allowedUserIds) ? allowedUserIds : [];
+
+  try {
+    const { data, error } = await supabase
+      .from("feature_flags")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(snakeToCamel(data));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to update feature flag", detail: e.message });
+  }
+});
+
+// Delete feature flag
+router.delete("/feature-flags/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { error } = await supabase.from("feature_flags").delete().eq("id", id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to delete feature flag", detail: e.message });
+  }
+});
+
+/* ==================== SYSTEM BANNERS ==================== */
+
+// List all system banners
+router.get("/banners", requireAdmin, async (_req, res) => {
+  try {
+    const { data: rows, error } = await supabase
+      .from("system_banners")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    res.json((rows || []).map(snakeToCamel));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to fetch banners", detail: e.message });
+  }
+});
+
+// Create system banner
+router.post("/banners", requireAdmin, async (req, res) => {
+  const { title, message, type, isActive, targetRoute } = req.body;
+  if (!title || !message) {
+    return res.status(400).json({ error: "Title and message are required" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("system_banners")
+      .insert({
+        title,
+        message,
+        type: type || "info",
+        is_active: isActive !== undefined ? isActive : true,
+        target_route: targetRoute || "*",
+      })
+      .select()
+      .single();
+
+    if (error || !data) throw error;
+    res.json(snakeToCamel(data));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to create banner", detail: e.message });
+  }
+});
+
+// Update system banner
+router.patch("/banners/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { title, message, type, isActive, targetRoute } = req.body;
+
+  const updates: Record<string, any> = { updated_at: new Date().toISOString() };
+  if (title !== undefined) updates.title = title;
+  if (message !== undefined) updates.message = message;
+  if (type !== undefined) updates.type = type;
+  if (isActive !== undefined) updates.is_active = isActive;
+  if (targetRoute !== undefined) updates.target_route = targetRoute;
+
+  try {
+    const { data, error } = await supabase
+      .from("system_banners")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error || !data) throw error;
+    res.json(snakeToCamel(data));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to update banner", detail: e.message });
+  }
+});
+
+// Delete system banner
+router.delete("/banners/:id", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { error } = await supabase.from("system_banners").delete().eq("id", id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to delete banner", detail: e.message });
   }
 });
 

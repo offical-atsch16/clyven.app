@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User, FileText, Loader2, ShieldAlert } from "lucide-react";
+import { MessageSquare, Search, Send, Ticket, CheckCircle, ArrowLeft, Mail, User, FileText, Loader2, ShieldAlert, KeyRound, ShieldCheck } from "lucide-react";
+import { useUser } from "@clerk/react";
 import { API_BASE_URL } from "../lib/api";
 import { cn } from "../lib/utils";
 import { Link } from "wouter";
@@ -80,6 +81,7 @@ export function Support() {
 }
 
 function CreateTicket() {
+  const { user, isLoaded } = useUser();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -88,15 +90,30 @@ function CreateTicket() {
   const [result, setResult] = useState<{ ticketNumber: string } | null>(null);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (user) {
+      const userPrimaryEmail = user.emailAddresses?.find((e) => e.id === user.primaryEmailAddressId)?.emailAddress || user.emailAddresses?.[0]?.emailAddress || "";
+      const userFullName = user.fullName || user.firstName || userPrimaryEmail.split("@")[0] || "";
+      if (userPrimaryEmail) setEmail(userPrimaryEmail);
+      if (userFullName) setName(userFullName);
+    }
+  }, [user]);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
+      const payload: Record<string, any> = { name, email, subject, message };
+      if (user) {
+        payload.clerkUserId = user.id;
+        payload.isVerifiedUser = true;
+      }
+
       const data = await safeFetch(`${API_BASE_URL}/tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, subject, message }),
+        body: JSON.stringify(payload),
       });
       setResult({ ticketNumber: data.ticketNumber });
       setName(""); setEmail(""); setSubject(""); setMessage("");
@@ -121,7 +138,7 @@ function CreateTicket() {
           </div>
         </div>
 
-        <p className="mb-6 text-xs text-white/30">Sie können den Status Ihres Tickets jederzeit unter "Ticket ansehen" mit Ihrer E-Mail-Adresse und dieser Ticketnummer abrufen.</p>
+        <p className="mb-6 text-xs text-white/30">Sie können den Status Ihres Tickets jederzeit unter "Ticket ansehen" mit Ihrer Ticketnummer und dem 6-stelligen Passcode (PIN aus der Bestätigungs-E-Mail) abrufen.</p>
 
         <button onClick={() => setResult(null)}
           className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white hover:border-white/20 hover:bg-white/[0.06] transition-all cursor-pointer">
@@ -134,6 +151,17 @@ function CreateTicket() {
   return (
     <form onSubmit={submit} className="space-y-4">
       {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">{error}</p>}
+
+      {user && (
+        <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-3.5 text-xs text-green-300 flex items-center gap-2.5">
+          <ShieldCheck className="h-4 w-4 shrink-0 text-green-400" />
+          <div>
+            <strong className="font-semibold block">Angemeldeter Nutzer</strong>
+            <span className="opacity-80">Ihre E-Mail und Nutzer-ID ({user.id}) werden automatisch mit diesem Support-Ticket verknüpft.</span>
+          </div>
+        </div>
+      )}
+
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
           <User className="h-3 w-3" /> Name
@@ -172,6 +200,7 @@ function CreateTicket() {
 
 function ViewTicket() {
   const [ticketNumber, setTicketNumber] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [email, setEmail] = useState("");
   const [ticket, setTicket] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -183,10 +212,15 @@ function ViewTicket() {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
-      const data = await safeFetch(`${API_BASE_URL}/tickets/${encodeURIComponent(ticketNumber.trim())}`, {
-        headers: {
-          "X-Ticket-Email": email.trim().toLowerCase()
-        }
+      const headers: Record<string, string> = {
+        "X-Ticket-Passcode": passcode.trim()
+      };
+      if (email.trim()) {
+        headers["X-Ticket-Email"] = email.trim().toLowerCase();
+      }
+      const queryEmail = email.trim() ? `?email=${encodeURIComponent(email.trim().toLowerCase())}` : "";
+      const data = await safeFetch(`${API_BASE_URL}/tickets/${encodeURIComponent(ticketNumber.trim())}${queryEmail}`, {
+        headers
       });
       setTicket(data.ticket);
       setMessages(data.messages || []);
@@ -205,8 +239,16 @@ function ViewTicket() {
     try {
       const data = await safeFetch(`${API_BASE_URL}/tickets/${encodeURIComponent(ticketNumber.trim())}/messages`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), senderName: ticket.name, message: reply }),
+        headers: {
+          "Content-Type": "application/json",
+          "X-Ticket-Passcode": passcode.trim()
+        },
+        body: JSON.stringify({
+          passcode: passcode.trim(),
+          email: email.trim().toLowerCase() || ticket.email,
+          senderName: ticket.name,
+          message: reply
+        }),
       });
       setMessages((m) => [...m, data]);
       setReply("");
@@ -297,9 +339,16 @@ function ViewTicket() {
       </div>
       <div>
         <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
-          <Mail className="h-3 w-3" /> E-Mail-Adresse
+          <KeyRound className="h-3 w-3" /> 6-stelliger Passcode / PIN
         </label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="name@beispiel.de"
+        <input value={passcode} onChange={(e) => setPasscode(e.target.value)} required placeholder="123456" maxLength={6}
+          className="w-full font-mono tracking-wider rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/15 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
+      </div>
+      <div>
+        <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-white/40">
+          <Mail className="h-3 w-3" /> E-Mail-Adresse <span className="text-white/20">(Optional)</span>
+        </label>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@beispiel.de"
           className="w-full rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/15 focus:border-white/15 focus:bg-white/[0.05] transition-all" />
       </div>
       <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading}

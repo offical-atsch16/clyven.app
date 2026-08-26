@@ -2,31 +2,28 @@ import { getAuth } from "@clerk/express";
 import type { Request, Response, NextFunction } from "express";
 import { supabase } from "./supabase.js";
 
-export type PlanTier = "free" | "plus" | "business";
+export type PlanType = "free" | "business";
+export type PlanTier = PlanType;
 
 export interface AuthenticatedRequest extends Request {
   userId: string;
-  planTier: PlanTier;
+  planTier: PlanType;
   isPremium: boolean;
 }
 
-export async function checkBackendUserPlan(auth: any): Promise<PlanTier> {
+export async function checkBackendUserPlan(auth: any): Promise<PlanType> {
   if (!auth) return "free";
 
   try {
     const has = auth.has;
     if (typeof has === "function") {
       try {
-        if (has({ plan: "clyven_business" }) || has({ plan: "business" }) || has({ feature: "business_access" })) {
-          return "business";
-        }
         if (
-          has({ plan: "clyven_plus" }) ||
-          has({ plan: "plus" }) ||
-          has({ plan: "premium" }) ||
+          has({ plan: "clyven_business" }) ||
+          has({ plan: "business" }) ||
           has({ feature: "premium_access" })
         ) {
-          return "plus";
+          return "business";
         }
       } catch {
         // Ignore has function error
@@ -48,30 +45,26 @@ export async function checkBackendUserPlan(auth: any): Promise<PlanTier> {
     if (
       planStr === "business" ||
       planStr === "clyven_business" ||
-      planStr === "pro_business" ||
       meta.clyven_business === true ||
       meta.business === true ||
-      claims.clyven_business === true ||
-      claims.business === true
+      claims.clyven_business === true
     ) {
       return "business";
     }
 
-    if (
-      planStr === "plus" ||
-      planStr === "clyven_plus" ||
-      planStr === "premium" ||
-      meta.clyven_plus === true ||
-      meta.premium === true ||
-      meta.plus === true ||
-      claims.clyven_plus === true ||
-      claims.premium === true
-    ) {
-      return "plus";
-    }
-
-    // Check Supabase subscriptions table if auth userId exists
+    // Check Supabase profiles and subscriptions table if auth userId exists
     if (auth.userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("plan")
+        .eq("id", auth.userId)
+        .maybeSingle();
+
+      if (profile?.plan) {
+        const p = String(profile.plan).toLowerCase();
+        if (p.includes("business")) return "business";
+      }
+
       const { data, error } = await supabase
         .from("subscriptions")
         .select("plan, status")
@@ -83,7 +76,6 @@ export async function checkBackendUserPlan(auth: any): Promise<PlanTier> {
       if (!error && data && data.length > 0) {
         const subPlan = String(data[0].plan || "").toLowerCase();
         if (subPlan.includes("business")) return "business";
-        if (subPlan.includes("plus") || subPlan.includes("premium")) return "plus";
       }
     }
   } catch (err) {

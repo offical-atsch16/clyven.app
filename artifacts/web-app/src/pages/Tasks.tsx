@@ -52,7 +52,7 @@ function formatDuration(seconds: number) {
 
 export function Tasks() {
   const qc = useQueryClient();
-  const { isPremium, isBusiness, planTier, openUpgrade } = usePremium();
+  const { isPremium, planTier, openUpgrade } = usePremium();
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ["tasks"],
@@ -130,17 +130,17 @@ export function Tasks() {
 
   const atLimit = !isPremium && tasks.length >= FREE_LIMITS.tasks;
 
-  const triggerBusinessUpgrade = (reasonMessage: string) => {
+  const triggerUpgrade = (reasonMessage: string) => {
     setUpgradeReason(reasonMessage);
     setUpgradeOpen(true);
   };
 
   const handleSwitchView = (targetView: "list" | "kanban" | "gantt") => {
-    if (targetView !== "list" && !isBusiness) {
-      triggerBusinessUpgrade(
+    if (targetView !== "list" && !isPremium) {
+      triggerUpgrade(
         targetView === "kanban"
-          ? "Das Kanban-Board ist exklusiv im Business-Tarif verfügbar."
-          : "Das Gantt-Diagramm ist exklusiv im Business-Tarif verfügbar."
+          ? "Das Kanban-Board ist exklusiv im CLYVEN PLUS Tarif verfügbar."
+          : "Das Gantt-Diagramm ist exklusiv im CLYVEN PLUS Tarif verfügbar."
       );
       return;
     }
@@ -149,7 +149,7 @@ export function Tasks() {
 
   const handleOpenCreate = () => {
     if (atLimit) {
-      triggerBusinessUpgrade(`Du hast das Free-Limit von ${FREE_LIMITS.tasks} Aufgaben erreicht.`);
+      triggerUpgrade(`Du hast das Free-Limit von ${FREE_LIMITS.tasks} Aufgaben erreicht.`);
       return;
     }
     setEditingTask(null);
@@ -195,11 +195,11 @@ export function Tasks() {
       status,
       priority,
       tags,
-      subtasks: isBusiness ? subtasks : [],
-      timeSpent: isBusiness ? timeSpent : 0,
-      customFields: isBusiness ? customFields : [],
-      startDate: isBusiness ? startDate : null,
-      dueDate: isBusiness ? dueDate : null,
+      subtasks: isPremium ? subtasks : [],
+      timeSpent: isPremium ? timeSpent : 0,
+      customFields: isPremium ? customFields : [],
+      startDate: isPremium ? startDate : null,
+      dueDate: isPremium ? dueDate : null,
     };
 
     if (editingTask) {
@@ -215,8 +215,8 @@ export function Tasks() {
 
   // Subtask handlers
   const handleAddSubtask = () => {
-    if (!isBusiness) {
-      triggerBusinessUpgrade("Unteraufgaben (Subtasks) sind ein exklusives Business-Feature.");
+    if (!isPremium) {
+      triggerUpgrade("Unteraufgaben (Subtasks) sind ein exklusives CLYVEN PLUS Feature.");
       return;
     }
     if (!newSubtaskTitle.trim()) return;
@@ -228,8 +228,8 @@ export function Tasks() {
   };
 
   const handleToggleSubtask = (id: string) => {
-    if (!isBusiness) {
-      triggerBusinessUpgrade("Unteraufgaben (Subtasks) sind ein exklusives Business-Feature.");
+    if (!isPremium) {
+      triggerUpgrade("Unteraufgaben (Subtasks) sind ein exklusives CLYVEN PLUS Feature.");
       return;
     }
     setSubtasks(
@@ -243,8 +243,8 @@ export function Tasks() {
 
   // Time tracking handlers
   const handleAddManualTime = () => {
-    if (!isBusiness) {
-      triggerBusinessUpgrade("Zeiterfassung ist ein exklusives Business-Feature.");
+    if (!isPremium) {
+      triggerUpgrade("Zeiterfassung ist ein exklusives CLYVEN PLUS Feature.");
       return;
     }
     const mins = parseInt(manualMinutes, 10);
@@ -256,8 +256,8 @@ export function Tasks() {
 
   // Custom Fields handlers
   const handleAddCustomField = () => {
-    if (!isBusiness) {
-      triggerBusinessUpgrade("Benutzerdefinierte Felder sind ein exklusives Business-Feature.");
+    if (!isPremium) {
+      triggerUpgrade("Benutzerdefinierte Felder sind ein exklusives CLYVEN PLUS Feature.");
       return;
     }
     if (!newFieldName.trim()) return;
@@ -327,8 +327,7 @@ export function Tasks() {
       {upgradeOpen && (
         <UpgradeModal
           onClose={() => setUpgradeOpen(false)}
-          reason={upgradeReason || `Upgrade deinen Tarif für unbegrenzte Aufgaben und erweiterte Features.`}
-          targetTier="business"
+          reason={upgradeReason || `Upgrade deinen Tarif auf CLYVEN PLUS für unbegrenzte Aufgaben und erweiterte Features.`}
         />
       )}
 
@@ -408,7 +407,7 @@ export function Tasks() {
               )}
             >
               <LayoutGrid className="h-3.5 w-3.5" /> Kanban-Board
-              {!isBusiness && <Lock className="h-3 w-3 text-amber-400 shrink-0" />}
+              {!isPremium && <Lock className="h-3 w-3 text-amber-400 shrink-0" />}
             </button>
 
             <button
@@ -419,7 +418,7 @@ export function Tasks() {
               )}
             >
               <BarChart2 className="h-3.5 w-3.5" /> Gantt-Diagramm
-              {!isBusiness && <Lock className="h-3 w-3 text-amber-400 shrink-0" />}
+              {!isPremium && <Lock className="h-3 w-3 text-amber-400 shrink-0" />}
             </button>
           </div>
 
@@ -574,7 +573,7 @@ export function Tasks() {
             })}
           </div>
         ) : view === "kanban" ? (
-          /* ================= KANBAN BOARD (BUSINESS ONLY) ================= */
+          /* ================= KANBAN BOARD (CLYVEN PLUS ONLY) ================= */
           <div className="grid h-full min-w-[768px] grid-cols-3 gap-6">
             {COLUMNS.map((col) => {
               const columnTasks = filteredTasks.filter((t: any) => t.status === col.id);
@@ -666,7 +665,7 @@ export function Tasks() {
             })}
           </div>
         ) : (
-          /* ================= GANTT DIAGRAMM (BUSINESS ONLY) ================= */
+          /* ================= GANTT DIAGRAMM (CLYVEN PLUS ONLY) ================= */
           <div className="rounded-2xl border border-white/[0.08] bg-[#0c0c0c] p-6 shadow-xl">
             <div className="mb-6 flex items-center justify-between border-b border-white/[0.06] pb-4">
               <div>
@@ -829,13 +828,13 @@ export function Tasks() {
                 )}
               </div>
 
-              {/* ================= BUSINESS EXCLUSIVE FEATURES ================= */}
+              {/* ================= CLYVEN PLUS FEATURES ================= */}
               <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] p-4 space-y-4">
                 <div className="flex items-center justify-between border-b border-amber-500/10 pb-2">
                   <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-                    <Crown className="h-3.5 w-3.5" /> Business Features
+                    <Crown className="h-3.5 w-3.5" /> Plus Features
                   </span>
-                  {!isBusiness && <PlanBadge tier="business" size="sm" />}
+                  {!isPremium && <PlanBadge tier="business" size="sm" />}
                 </div>
 
                 {/* 1. Unteraufgaben (Subtasks) */}
@@ -847,8 +846,8 @@ export function Tasks() {
                     <input
                       value={newSubtaskTitle}
                       onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                      placeholder={isBusiness ? "Neue Unteraufgabe eingeben..." : "Nur im Business-Tarif verfügbar"}
-                      disabled={!isBusiness}
+                      placeholder={isPremium ? "Neue Unteraufgabe eingeben..." : "Nur im CLYVEN PLUS Tarif verfügbar"}
+                      disabled={!isPremium}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
@@ -902,8 +901,8 @@ export function Tasks() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (!isBusiness) {
-                          triggerBusinessUpgrade("Zeiterfassung ist ein exklusives Business-Feature.");
+                        if (!isPremium) {
+                          triggerUpgrade("Zeiterfassung ist ein exklusives CLYVEN PLUS Feature.");
                           return;
                         }
                         setIsTimerRunning(!isTimerRunning);
@@ -923,7 +922,7 @@ export function Tasks() {
                         onChange={(e) => setManualMinutes(e.target.value)}
                         placeholder="Min. manuell"
                         type="number"
-                        disabled={!isBusiness}
+                        disabled={!isPremium}
                         className="w-24 rounded-xl border border-white/[0.08] bg-white/[0.03] px-2 py-2 text-xs text-white outline-none disabled:opacity-50"
                       />
                       <button
@@ -949,13 +948,13 @@ export function Tasks() {
                         value={newFieldName}
                         onChange={(e) => setNewFieldName(e.target.value)}
                         placeholder="Feldname (z. B. Budget)"
-                        disabled={!isBusiness}
+                        disabled={!isPremium}
                         className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white outline-none disabled:opacity-50"
                       />
                       <select
                         value={newFieldType}
                         onChange={(e: any) => setNewFieldType(e.target.value)}
-                        disabled={!isBusiness}
+                        disabled={!isPremium}
                         className="rounded-xl border border-white/[0.08] bg-[#0c0c0c] px-2 py-2 text-xs text-white outline-none cursor-pointer disabled:opacity-50"
                       >
                         <option value="text">Text</option>
@@ -970,7 +969,7 @@ export function Tasks() {
                         value={newFieldOptions}
                         onChange={(e) => setNewFieldOptions(e.target.value)}
                         placeholder="Optionen komma-getrennt (z. B. Offen, In Arbeit, Fertig)"
-                        disabled={!isBusiness}
+                        disabled={!isPremium}
                         className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white outline-none disabled:opacity-50"
                       />
                     )}
@@ -1024,7 +1023,7 @@ export function Tasks() {
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      disabled={!isBusiness}
+                      disabled={!isPremium}
                       className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white outline-none disabled:opacity-50"
                     />
                   </div>
@@ -1034,7 +1033,7 @@ export function Tasks() {
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      disabled={!isBusiness}
+                      disabled={!isPremium}
                       className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white outline-none disabled:opacity-50"
                     />
                   </div>

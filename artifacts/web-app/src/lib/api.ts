@@ -45,6 +45,14 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  // AI Endpoints
+  getNotesAIAssistant: (data: { action: "fix_spelling" | "summarize" | "todo_list"; text: string }) =>
+    request<{ success: boolean; result: string; action: string }>("/ai/notes-assistant", { method: "POST", body: JSON.stringify(data) }),
+  getJournalAISummary: (entries: any[]) =>
+    request<{ success: boolean; summary: string }>("/ai/journal-summary", { method: "POST", body: JSON.stringify({ entries }) }),
+  aiChat: (data: { message: string; messages?: any[]; noteContext?: string }) =>
+    request<{ success: boolean; message: { role: string; content: string; timestamp: string } }>("/ai/chat", { method: "POST", body: JSON.stringify(data) }),
+
   // Notes
   getNotes: () => request<any[]>("/notes"),
   createNote: (data: any) => request<any>("/notes", { method: "POST", body: JSON.stringify(data) }),
@@ -53,8 +61,11 @@ export const api = {
 
   // Note Attachments
   getNoteAttachments: (noteId: string) => request<any[]>(`/notes/${noteId}/attachments`),
+  getPresignedAttachmentUrl: (noteId: string, data: { fileName: string; fileSize: number; fileType?: string }) =>
+    request<{ uploadUrl: string; fileUrl: string; key?: string; attachment?: any }>(`/notes/${noteId}/attachments/presigned-url`, { method: "POST", body: JSON.stringify(data) }),
   createNoteAttachment: (noteId: string, data: any) => request<any>(`/notes/${noteId}/attachments`, { method: "POST", body: JSON.stringify(data) }),
   deleteNoteAttachment: (noteId: string, attachmentId: string) => request<any>(`/notes/${noteId}/attachments/${attachmentId}`, { method: "DELETE" }),
+  deleteAttachment: (attachmentId: string) => request<any>(`/attachments/${attachmentId}`, { method: "DELETE" }),
 
   // Bookmarks
   getBookmarks: () => request<any[]>("/bookmarks"),
@@ -77,6 +88,12 @@ export const api = {
   updateTask: (id: string, data: any) => request<any>(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteTask: (id: string) => request<any>(`/tasks/${id}`, { method: "DELETE" }),
 
+  // System Status & Settings
+  getSystemStatus: () => fetch(`${API_BASE_URL}/banners/active?route=*`).then(handleResponse),
+
+  // System Banners
+  getActiveBanner: (route: string) => fetch(`${API_BASE_URL}/banners/active?route=${encodeURIComponent(route)}`).then(handleResponse),
+
   // User
   getMe: () => request<any>("/user/me"),
   syncPlan: () => request<any>("/user/sync-plan", { method: "POST" }),
@@ -86,16 +103,169 @@ export const api = {
 
   // Tickets (public)
   createTicket: (data: any) => fetch(`${API_BASE_URL}/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(handleResponse),
-  getTicket: (number: string, email: string) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}?email=${encodeURIComponent(email)}`, { headers: { "X-Ticket-Email": email } }).then(handleResponse),
-  addTicketMessage: (number: string, data: any) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(handleResponse),
+  getTicket: (number: string, emailOrPasscode: string, passcode?: string) => {
+    const pc = passcode || emailOrPasscode;
+    const em = passcode ? emailOrPasscode : "";
+    return fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}?email=${encodeURIComponent(em)}&passcode=${encodeURIComponent(pc)}`, {
+      headers: {
+        "X-Ticket-Email": em,
+        "X-Ticket-Passcode": pc
+      }
+    }).then(handleResponse);
+  },
+  addTicketMessage: (number: string, data: any) => fetch(`${API_BASE_URL}/tickets/${encodeURIComponent(number)}/messages`, { method: "POST", headers: { "Content-Type": "application/json", "X-Ticket-Passcode": data.passcode || "" }, body: JSON.stringify(data) }).then(handleResponse),
 
-  // Admin (cookie-based auth)
-  adminLogin: (data: any) => fetch(`${API_BASE_URL}/admin/login`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) }).then(handleResponse),
-  adminLogout: () => fetch(`${API_BASE_URL}/admin/logout`, { method: "POST", credentials: "include" }).then(handleResponse),
-  adminMe: () => fetch(`${API_BASE_URL}/admin/me`, { credentials: "include" }).then(handleResponse),
-  getAdminTickets: () => fetch(`${API_BASE_URL}/admin/tickets`, { credentials: "include" }).then(handleResponse),
-  getAdminTicket: (id: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}`, { credentials: "include" }).then(handleResponse),
-  updateTicketStatus: (id: string, status: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ status }) }).then(handleResponse),
-  adminReply: (id: string, message: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ message }) }).then(handleResponse),
-  adminCreateTicket: (data: any) => fetch(`${API_BASE_URL}/admin/tickets`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) }).then(handleResponse),
+  // Admin (cookie and token auth)
+  adminLogin: async (data: any) => {
+    const res = await fetch(`${API_BASE_URL}/admin/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(data),
+    });
+    const result = await handleResponse(res);
+    if (result.token && typeof window !== "undefined") {
+      sessionStorage.setItem("admin_token", result.token);
+    }
+    return result;
+  },
+  adminLogout: async () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("admin_token");
+    }
+    return fetch(`${API_BASE_URL}/admin/logout`, {
+      method: "POST",
+      credentials: "include",
+    }).then(handleResponse);
+  },
+  getAdminAuthHeaders: (): Record<string, string> => {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (typeof window !== "undefined") {
+      const token = sessionStorage.getItem("admin_token");
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+    return headers;
+  },
+  adminMe: () => {
+    const headers = api.getAdminAuthHeaders();
+    delete headers["Content-Type"];
+    return fetch(`${API_BASE_URL}/admin/me`, { headers, credentials: "include" }).then(handleResponse);
+  },
+  getAdminTickets: () => {
+    const headers = api.getAdminAuthHeaders();
+    delete headers["Content-Type"];
+    return fetch(`${API_BASE_URL}/admin/tickets`, { headers, credentials: "include" }).then(handleResponse);
+  },
+  getAdminTicket: (id: string) => {
+    const headers = api.getAdminAuthHeaders();
+    delete headers["Content-Type"];
+    return fetch(`${API_BASE_URL}/admin/tickets/${id}`, { headers, credentials: "include" }).then(handleResponse);
+  },
+  updateTicketStatus: (id: string, status: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/status`, {
+    method: "PATCH",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ status })
+  }).then(handleResponse),
+  adminReply: (id: string, message: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/messages`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ message })
+  }).then(handleResponse),
+  adminCreateTicket: (data: any) => fetch(`${API_BASE_URL}/admin/tickets`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data)
+  }).then(handleResponse),
+  assignAdminTicket: (id: string, clerkUserId: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}/assign`, {
+    method: "PATCH",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ clerkUserId })
+  }).then(handleResponse),
+  deleteAdminTicket: (id: string) => fetch(`${API_BASE_URL}/admin/tickets/${id}`, {
+    method: "DELETE",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+
+  // Admin Banners
+  getAdminBanners: () => fetch(`${API_BASE_URL}/admin/banners`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  createAdminBanner: (data: any) => fetch(`${API_BASE_URL}/admin/banners`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data),
+  }).then(handleResponse),
+  updateAdminBanner: (id: string, data: any) => fetch(`${API_BASE_URL}/admin/banners/${id}`, {
+    method: "PATCH",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data),
+  }).then(handleResponse),
+  deleteAdminBanner: (id: string) => fetch(`${API_BASE_URL}/admin/banners/${id}`, {
+    method: "DELETE",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+
+  // Admin System Settings
+  getAdminSettings: () => fetch(`${API_BASE_URL}/admin/settings`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  updateAdminSetting: (key: string, value: any, description?: string) => fetch(`${API_BASE_URL}/admin/settings`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ key, value, description }),
+  }).then(handleResponse),
+
+  // Feature Flags
+  getFeatureFlags: () => request<{ flags: Record<string, boolean> }>("/feature-flags"),
+
+  // Admin Feature Flags
+  getAdminFeatureFlags: () => fetch(`${API_BASE_URL}/admin/feature-flags`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  createAdminFeatureFlag: (data: any) => fetch(`${API_BASE_URL}/admin/feature-flags`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data),
+  }).then(handleResponse),
+  updateAdminFeatureFlag: (id: string, data: any) => fetch(`${API_BASE_URL}/admin/feature-flags/${id}`, {
+    method: "PATCH",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify(data),
+  }).then(handleResponse),
+  deleteAdminFeatureFlag: (id: string) => fetch(`${API_BASE_URL}/admin/feature-flags/${id}`, {
+    method: "DELETE",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+
+  // User Audit & Impersonation
+  searchAdminUsers: (query: string) => fetch(`${API_BASE_URL}/admin/users?search=${encodeURIComponent(query)}`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  getAdminUserAudit: (id: string) => fetch(`${API_BASE_URL}/admin/users/${id}/audit`, {
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
+  impersonateAdminUser: (id: string) => fetch(`${API_BASE_URL}/admin/users/${id}/impersonate`, {
+    method: "POST",
+    headers: api.getAdminAuthHeaders(),
+    credentials: "include",
+  }).then(handleResponse),
 };

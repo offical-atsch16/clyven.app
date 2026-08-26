@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { supabase } from "../lib/supabase.js";
 import { logger } from "../lib/logger.js";
-import { sendEmail } from "../lib/email.js";
+import { sendEmail, sendReplyEmail } from "../lib/email.js";
 
 const router = Router();
 
@@ -31,7 +31,9 @@ function escapeHTML(str: string): string {
 
 // Helper to check if a valid admin session exists
 function isAdmin(req: any): boolean {
-  const token = req.cookies?.[COOKIE_NAME];
+  const authHeader = req.headers.authorization;
+  const headerToken = authHeader && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+  const token = req.cookies?.[COOKIE_NAME] || headerToken;
   if (!token) return false;
   try {
     jwt.verify(token, JWT_SECRET);
@@ -66,29 +68,50 @@ async function getNextTicketNumber(): Promise<string> {
   return "TICKET-000001";
 }
 
-// Create a new ticket (public, no auth)
+// Create a new ticket (public or authenticated user)
 router.post("/", async (req, res, next) => {
   try {
-    const { name, email, subject, message } = req.body;
+    const { name, email, subject, message, clerkUserId, isVerifiedUser } = req.body;
     if (!name || !email || !subject || !message) {
       return res.status(400).json({ error: "All fields are required" });
     }
     const ticketNumber = await getNextTicketNumber();
     const passcode = crypto.randomInt(100000, 1000000).toString();
 
-    const { data: ticket, error: ticketErr } = await supabase
+    const insertPayload: Record<string, any> = {
+      ticket_number: ticketNumber,
+      name,
+      email,
+      subject,
+      message,
+      passcode,
+      status: "OPEN",
+    };
+
+    if (clerkUserId) {
+      insertPayload.clerk_user_id = clerkUserId;
+      insertPayload.is_verified_user = isVerifiedUser ?? true;
+    }
+
+    let { data: ticket, error: ticketErr } = await supabase
       .from("tickets")
-      .insert({
-        ticket_number: ticketNumber,
-        name,
-        email,
-        subject,
-        message,
-        passcode,
-        status: "OPEN"
-      })
+      .insert(insertPayload)
       .select()
       .single();
+
+    if (ticketErr && clerkUserId) {
+      // Fallback if clerk_user_id column is missing in DB
+      console.warn("Primary ticket creation with clerk_user_id failed, retrying without extended columns:", ticketErr.message);
+      delete insertPayload.clerk_user_id;
+      delete insertPayload.is_verified_user;
+      const fallbackRes = await supabase
+        .from("tickets")
+        .insert(insertPayload)
+        .select()
+        .single();
+      ticket = fallbackRes.data;
+      ticketErr = fallbackRes.error;
+    }
 
     if (ticketErr || !ticket) {
       throw new Error(`Failed to create ticket in database: ${ticketErr?.message}`);
@@ -108,43 +131,16 @@ router.post("/", async (req, res, next) => {
     }
 
     // Send confirmation email (non-blocking, graceful error handling)
-    const escapedName = escapeHTML(name);
-    const escapedSubject = escapeHTML(subject);
-    const escapedMessage = escapeHTML(message);
-
     const emailSent = await sendEmail({
+      userName: name,
+      ticketEmail: email,
+      ticketNumber,
+      ticketSubject: subject,
+      ticketDetails: message,
+      ticketPasscode: passcode,
       to: email,
       subject: `[CLYVEN Support] Ticket Erstellt: ${ticketNumber}`,
-      ticketNumber,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
-          <div style="text-align: center; margin-bottom: 24px;">
-            <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
-            <p style="color: #666; margin: 4px 0 0;">Ihr Support-Ticket wurde erfolgreich erstellt</p>
-          </div>
-
-          <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 24px;">
-            <p style="margin: 0 0 10px; color: #aaa;">Hallo <strong>${escapedName}</strong>,</p>
-            <p style="margin: 0 0 20px; color: #aaa; line-height: 1.5;">Vielen Dank für Ihre Anfrage. Unser Support-Team wird sich so schnell wie möglich bei Ihnen melden.</p>
-
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-              <tr>
-                <td style="padding: 12px; background-color: #1a1a1a; border-radius: 8px; border: 1px solid #222; text-align: center;">
-                  <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 4px;">Ticketnummer</span>
-                  <strong style="font-size: 20px; color: #ffffff; font-family: monospace;">${ticketNumber}</strong>
-                </td>
-              </tr>
-            </table>
-
-            <div style="border-top: 1px solid #222; padding-top: 15px;">
-              <span style="font-size: 11px; color: #666; text-transform: uppercase; display: block; margin-bottom: 8px;">Zusammenfassung Ihres Anliegens</span>
-              <div style="color: #888; font-size: 13px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;"><strong>Betreff:</strong> ${escapedSubject}\n\n${escapedMessage}</div>
-            </div>
-          </div>
-
-          <p style="font-size: 11px; color: #444; text-align: center; margin: 0;">Diese E-Mail wurde automatisch von Clyven.app generiert.</p>
-        </div>
-      `,
+      message: message,
     });
 
     res.json({ ...snakeToCamel(ticket), emailSent });
@@ -154,15 +150,15 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// Get ticket by number + email (or Master Code / Admin Session)
+// Get ticket by number or ID + passcode (or Master Code / Admin Session)
 router.get("/:ticketNumber", async (req, res) => {
   const { ticketNumber } = req.params;
 
   const providedEmail = (req.headers["x-ticket-email"] as string || req.query.email as string || "").trim().toLowerCase();
-  const passcode = req.headers["x-ticket-passcode"] as string || req.query.passcode as string;
+  const passcode = ((req.headers["x-ticket-passcode"] as string) || (req.query.passcode as string) || "").trim();
 
   try {
-    const { data: ticketRows, error: ticketErr } = await supabase
+    let { data: ticketRows, error: ticketErr } = await supabase
       .from("tickets")
       .select("*")
       .eq("ticket_number", ticketNumber);
@@ -172,7 +168,16 @@ router.get("/:ticketNumber", async (req, res) => {
     }
 
     if (!ticketRows || !ticketRows.length) {
-      return res.status(404).json({ error: "Ticket not found, make sure you typed in everything right" });
+      // Fallback query by ID or email
+      const { data: idRows } = await supabase
+        .from("tickets")
+        .select("*")
+        .or(`id.eq.${ticketNumber},email.eq.${ticketNumber}`);
+      ticketRows = idRows || [];
+    }
+
+    if (!ticketRows || !ticketRows.length) {
+      return res.status(404).json({ error: "Ticket nicht gefunden. Bitte überprüfen Sie Ihre Angaben." });
     }
 
     const ticket = ticketRows[0];
@@ -180,15 +185,14 @@ router.get("/:ticketNumber", async (req, res) => {
     // Authorization checks:
     // 1. Is valid admin session?
     // 2. Is provided passcode the Master-Code '161011'?
-    // 3. Does provided email match ticket email?
-    // 4. (Legacy) Does passcode match ticket passcode?
+    // 3. Is valid passcode provided AND ticket identifier matches?
     const hasAdminSession = isAdmin(req);
     const isMasterCode = passcode === "161011";
-    const isMatchingEmail = providedEmail && providedEmail === (ticket.email || "").trim().toLowerCase();
-    const isLegacyPasscode = passcode && String(passcode) === String(ticket.passcode);
+    const isMatchingPasscode = passcode && String(passcode) === String(ticket.passcode);
+    const isMatchingEmail = !providedEmail || providedEmail === (ticket.email || "").trim().toLowerCase();
 
-    if (!hasAdminSession && !isMasterCode && !isMatchingEmail && !isLegacyPasscode) {
-      return res.status(403).json({ error: "E-Mail-Adresse und Ticket-Nummer stimmen nicht überein." });
+    if (!hasAdminSession && !isMasterCode && !(isMatchingPasscode && isMatchingEmail)) {
+      return res.status(403).json({ error: "Passcode oder Ticket-Nummer / E-Mail ist ungültig." });
     }
 
     const { data: msgRows, error: msgErr } = await supabase
@@ -210,17 +214,20 @@ router.get("/:ticketNumber", async (req, res) => {
   }
 });
 
-// Add message to a ticket (verified by email or Master-Code / Admin Session)
+// Add message to a ticket (verified by passcode / Master-Code / Admin Session)
 router.post("/:ticketNumber/messages", async (req, res) => {
   const { ticketNumber } = req.params;
-  const { email, passcode, senderName, message } = req.body;
+  const { email, passcode: bodyPasscode, senderName, message } = req.body;
+
+  const headerPasscode = req.headers["x-ticket-passcode"] as string;
+  const passcode = (bodyPasscode || headerPasscode || "").trim();
 
   if (!senderName || !message) {
     return res.status(400).json({ error: "SenderName and message are required" });
   }
 
   try {
-    const { data: ticketRows, error: ticketErr } = await supabase
+    let { data: ticketRows, error: ticketErr } = await supabase
       .from("tickets")
       .select("*")
       .eq("ticket_number", ticketNumber);
@@ -230,7 +237,15 @@ router.post("/:ticketNumber/messages", async (req, res) => {
     }
 
     if (!ticketRows || !ticketRows.length) {
-      return res.status(404).json({ error: "Ticket not found, make sure you typed in everything right" });
+      const { data: idRows } = await supabase
+        .from("tickets")
+        .select("*")
+        .or(`id.eq.${ticketNumber},email.eq.${ticketNumber}`);
+      ticketRows = idRows || [];
+    }
+
+    if (!ticketRows || !ticketRows.length) {
+      return res.status(404).json({ error: "Ticket nicht gefunden. Bitte überprüfen Sie Ihre Angaben." });
     }
 
     const ticket = ticketRows[0];
@@ -238,19 +253,21 @@ router.post("/:ticketNumber/messages", async (req, res) => {
     // Authorization checks
     const hasAdminSession = isAdmin(req);
     const isMasterCode = passcode === "161011";
-    const providedEmail = (email || "").trim().toLowerCase();
-    const isMatchingEmail = providedEmail && providedEmail === (ticket.email || "").trim().toLowerCase();
-    const isLegacyPasscode = passcode && String(passcode) === String(ticket.passcode);
+    const providedEmail = (email || req.headers["x-ticket-email"] as string || "").trim().toLowerCase();
+    const isMatchingPasscode = passcode && String(passcode) === String(ticket.passcode);
+    const isMatchingEmail = !providedEmail || providedEmail === (ticket.email || "").trim().toLowerCase();
 
-    if (!hasAdminSession && !isMasterCode && !isMatchingEmail && !isLegacyPasscode) {
-      return res.status(403).json({ error: "E-Mail-Adresse und Ticket-Nummer stimmen nicht überein." });
+    if (!hasAdminSession && !isMasterCode && !(isMatchingPasscode && isMatchingEmail)) {
+      return res.status(403).json({ error: "Passcode oder Ticket-Nummer / E-Mail ist ungültig." });
     }
+
+    const senderType = hasAdminSession ? "ADMIN" : "CUSTOMER";
 
     const { data: insertedMsg, error: msgErr } = await supabase
       .from("ticket_messages")
       .insert({
         ticket_id: ticket.id,
-        sender_type: "CUSTOMER",
+        sender_type: senderType,
         sender_name: senderName,
         message: message
       })
@@ -269,26 +286,29 @@ router.post("/:ticketNumber/messages", async (req, res) => {
     }
 
     // Send email notification on reply (non-blocking)
-    const escapedSender = escapeHTML(senderName);
-    const escapedMsg = escapeHTML(message);
-
-    await sendEmail({
-      to: ticket.email,
-      subject: `[CLYVEN Support] Neue Antwort zu Ticket #${ticketNumber}`,
-      ticketNumber,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0c0c0c; color: #ffffff; border-radius: 12px; border: 1px solid #222;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="color: #ffffff; letter-spacing: 2px; margin: 0;">CLYVEN SUPPORT</h2>
-            <p style="color: #666; margin: 4px 0 0;">Neue Antwort zu Ihrem Ticket #${ticketNumber}</p>
-          </div>
-          <div style="background-color: #111111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
-            <p style="margin: 0 0 10px; color: #aaa;"><strong>${escapedSender}:</strong></p>
-            <div style="color: #ddd; font-size: 14px; line-height: 1.5; background-color: #080808; padding: 12px; border-radius: 6px; border: 1px solid #222; white-space: pre-wrap;">${escapedMsg}</div>
-          </div>
-        </div>
-      `
-    });
+    if (senderType === "ADMIN") {
+      await sendReplyEmail({
+        toEmail: ticket.email,
+        userName: ticket.name,
+        ticketNumber: ticket.ticket_number || ticketNumber,
+        ticketSubject: ticket.subject,
+        ticketDetails: ticket.message,
+        replyMessage: message,
+        agentName: senderName,
+        agentEmail: providedEmail || ticket.email,
+      });
+    } else {
+      await sendEmail({
+        userName: ticket.name || senderName,
+        ticketEmail: ticket.email,
+        ticketNumber: ticket.ticket_number || ticketNumber,
+        ticketSubject: ticket.subject,
+        ticketDetails: message,
+        to: ticket.email,
+        subject: `[CLYVEN Support] Neue Antwort zu Ticket #${ticket.ticket_number || ticketNumber}`,
+        message: message,
+      });
+    }
 
     res.json(snakeToCamel(insertedMsg));
   } catch (e: any) {

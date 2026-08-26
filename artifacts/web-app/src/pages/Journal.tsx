@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, ChevronLeft, ChevronRight, Save, Smile, Calendar, CreditCard as Edit3 } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, Save, Calendar, Sparkles, CreditCard as Edit3, Crown } from "lucide-react";
 import { api } from "../lib/api";
 import { cn, getTodayISO } from "../lib/utils";
+import { usePremium } from "../hooks/usePremium";
+import { UpgradeModal } from "../components/UpgradeModal";
 
 const MOODS = [
   { key: "amazing", emoji: "🔥", label: "Amazing" },
@@ -51,15 +53,20 @@ function getMonthDays(year: number, month: number) {
 
 export function Journal() {
   const qc = useQueryClient();
+  const { isPremium } = usePremium();
   const [date, setDate] = useState(getTodayISO());
   const [view, setView] = useState<"entry" | "calendar">("entry");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [loadingAi, setLoadingAi] = useState(false);
+
   const [calendarMonth, setCalendarMonth] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
   });
 
   const { data: entry, isLoading } = useQuery({ queryKey: ["journal", date], queryFn: () => api.getJournalEntry(date), retry: 1 });
-  const { data: allEntries = [], isLoading: calendarLoading } = useQuery({ queryKey: ["journal"], queryFn: api.getJournal, retry: 1 });
+  const { data: allEntries = [] } = useQuery({ queryKey: ["journal"], queryFn: api.getJournal, retry: 1 });
   const saveEntry = useMutation({ mutationFn: api.saveJournalEntry, onSuccess: () => qc.invalidateQueries({ queryKey: ["journal"] }) });
 
   const [form, setForm] = useState({ mood: "", wentWell: "", learned: "", grateful: "", tomorrowGoals: "", freeText: "" });
@@ -91,11 +98,37 @@ export function Journal() {
     return () => clearTimeout(t);
   }, [form]);
 
+  const handleGenerateAiSummary = async () => {
+    if (!isPremium) {
+      setUpgradeOpen(true);
+      return;
+    }
+
+    try {
+      setLoadingAi(true);
+      const res = await api.getJournalAISummary(allEntries as any[]);
+      setAiSummary(res.summary);
+    } catch (e: any) {
+      if (e.message?.includes("PREMIUM_REQUIRED")) {
+        setUpgradeOpen(true);
+      }
+    } finally {
+      setLoadingAi(false);
+    }
+  };
+
   const isToday = date === getTodayISO();
   const isFuture = date > getTodayISO();
 
   return (
     <div className="min-h-full p-4 sm:p-6 lg:p-8">
+      {upgradeOpen && (
+        <UpgradeModal
+          onClose={() => setUpgradeOpen(false)}
+          reason="Schalte CLYVEN AI mit CLYVEN PLUS frei, um wöchentliche Journal-Zusammenfassungen und Mood-Analysen zu nutzen."
+        />
+      )}
+
       <div className={cn("mx-auto", view === "calendar" ? "max-w-3xl" : "max-w-2xl")}>
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
@@ -104,6 +137,16 @@ export function Journal() {
             <p className="mt-1 text-sm text-white/40">Reflect daily and grow.</p>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleGenerateAiSummary}
+              disabled={loadingAi}
+              className="flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-300 hover:bg-indigo-500/20 transition-all cursor-pointer"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-sky-400" />
+              {loadingAi ? "Analysiere..." : "KI Insights"}
+              {!isPremium && <Crown className="h-3 w-3 text-amber-400 ml-1" />}
+            </button>
+
             {view === "entry" && (
               <>
                 <button onClick={() => setDate((d) => addDays(d, -1))}
@@ -125,6 +168,21 @@ export function Journal() {
             </button>
           </div>
         </div>
+
+        {/* AI Summary Display */}
+        {aiSummary && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 rounded-2xl border border-indigo-500/30 bg-indigo-950/20 p-5 backdrop-blur-md">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 text-indigo-300 text-xs font-semibold uppercase tracking-wider">
+                <Sparkles className="h-4 w-4 text-sky-400" /> Clyven AI Journal Analysis
+              </div>
+              <button onClick={() => setAiSummary(null)} className="text-white/30 hover:text-white text-xs">Schließen</button>
+            </div>
+            <div className="text-xs sm:text-sm text-white/80 whitespace-pre-wrap leading-relaxed">
+              {aiSummary}
+            </div>
+          </motion.div>
+        )}
 
         {/* Calendar View */}
         {view === "calendar" && (

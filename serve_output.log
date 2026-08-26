@@ -1,6 +1,0 @@
-
-> @workspace/web-app@0.0.0 serve /app/artifacts/web-app
-> vite preview --config vite.config.ts --host 0.0.0.0
-
-  ➜  Local:   http://localhost:5173/
-  ➜  Network: http://192.168.0.2:5173/
