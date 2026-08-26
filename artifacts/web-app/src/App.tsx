@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, lazy, Suspense } from "react";
 import {
   ClerkProvider, SignIn, SignUp, Show, useClerk,
 } from "@clerk/react";
@@ -8,40 +8,50 @@ import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/reac
 import { Layout } from "./components/Layout";
 import { CommandPalette } from "./components/CommandPalette";
 import { useAppStore } from "./stores/useAppStore";
-import { Landing } from "./pages/Landing";
-import { Dashboard } from "./pages/Dashboard";
-import { Notes } from "./pages/Notes";
-import { Bookmarks } from "./pages/Bookmarks";
-import { Focus } from "./pages/Focus";
-import { Journal } from "./pages/Journal";
-import { Analytics } from "./pages/Analytics";
-import { Achievements } from "./pages/Achievements";
-import { Profile } from "./pages/Profile";
-import { Settings } from "./pages/Settings";
-import { Pricing } from "./pages/Pricing";
-import { Privacy } from "./pages/Privacy";
-import { Impressum } from "./pages/Impressum";
-import { Terms } from "./pages/Terms";
 import { useCookieBanner } from "./hooks/useCookieBanner";
-import { Support } from "./pages/Support";
-import { AdminLogin } from "./pages/AdminLogin";
-import { AdminDashboard } from "./pages/AdminDashboard";
-import { AdminTicketDetail } from "./pages/AdminTicketDetail";
-import { AdminNewTicket } from "./pages/AdminNewTicket";
-import { Tasks } from "./pages/Tasks";
-import { Unsubscribe } from "./pages/Unsubscribe";
+
+const Landing = lazy(() => import("./pages/Landing").then((m) => ({ default: m.Landing })));
+const Dashboard = lazy(() => import("./pages/Dashboard").then((m) => ({ default: m.Dashboard })));
+const Notes = lazy(() => import("./pages/Notes").then((m) => ({ default: m.Notes })));
+const Bookmarks = lazy(() => import("./pages/Bookmarks").then((m) => ({ default: m.Bookmarks })));
+const Focus = lazy(() => import("./pages/Focus").then((m) => ({ default: m.Focus })));
+const Journal = lazy(() => import("./pages/Journal").then((m) => ({ default: m.Journal })));
+const Analytics = lazy(() => import("./pages/Analytics").then((m) => ({ default: m.Analytics })));
+const Achievements = lazy(() => import("./pages/Achievements").then((m) => ({ default: m.Achievements })));
+const Profile = lazy(() => import("./pages/Profile").then((m) => ({ default: m.Profile })));
+const Settings = lazy(() => import("./pages/Settings").then((m) => ({ default: m.Settings })));
+const Pricing = lazy(() => import("./pages/Pricing").then((m) => ({ default: m.Pricing })));
+const Privacy = lazy(() => import("./pages/Privacy").then((m) => ({ default: m.Privacy })));
+const Impressum = lazy(() => import("./pages/Impressum").then((m) => ({ default: m.Impressum })));
+const Terms = lazy(() => import("./pages/Terms").then((m) => ({ default: m.Terms })));
+const Support = lazy(() => import("./pages/Support").then((m) => ({ default: m.Support })));
+const AdminLogin = lazy(() => import("./pages/AdminLogin").then((m) => ({ default: m.AdminLogin })));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard").then((m) => ({ default: m.AdminDashboard })));
+const AdminTicketDetail = lazy(() => import("./pages/AdminTicketDetail").then((m) => ({ default: m.AdminTicketDetail })));
+const AdminNewTicket = lazy(() => import("./pages/AdminNewTicket").then((m) => ({ default: m.AdminNewTicket })));
+const Tasks = lazy(() => import("./pages/Tasks").then((m) => ({ default: m.Tasks })));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe").then((m) => ({ default: m.Unsubscribe })));
+
+function PageSkeleton() {
+  return (
+    <div className="min-h-screen w-full bg-[#080808] flex items-center justify-center p-6">
+      <div className="flex flex-col items-center gap-4 text-white/40">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-400 border-t-transparent" />
+        <span className="text-xs font-mono tracking-widest uppercase text-white/30">Loading CLYVEN...</span>
+      </div>
+    </div>
+  );
+}
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30000 } } });
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "";
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_d29ya2luZy13aXRoLWNsZXJrJDAw";
+const basePath = import.meta.env.BASE_URL ? import.meta.env.BASE_URL.replace(/\/$/, "") : "";
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
     ? path.slice(basePath.length) || "/" : path;
 }
-
-if (!clerkPubKey) throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY");
 
 const clerkAppearance = {
   theme: dark,
@@ -115,7 +125,9 @@ function SignInPage() {
   return (
     <AuthBg>
       <ClyvenBrand subtitle="Sign in to continue" />
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} forceRedirectUrl={`${basePath}/dashboard`} />
+      <div className="min-h-[500px] w-[420px] max-w-full flex items-center justify-center">
+        <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} forceRedirectUrl={`${basePath}/dashboard`} />
+      </div>
       <p className="mt-8 text-xs text-white/15 tracking-widest">© 2026 CLYVEN</p>
     </AuthBg>
   );
@@ -125,7 +137,9 @@ function SignUpPage() {
   return (
     <AuthBg>
       <ClyvenBrand subtitle="Create your account" />
-      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} forceRedirectUrl={`${basePath}/dashboard`} />
+      <div className="min-h-[500px] w-[420px] max-w-full flex items-center justify-center">
+        <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} forceRedirectUrl={`${basePath}/dashboard`} />
+      </div>
       <p className="mt-8 text-xs text-white/15 tracking-widest">© 2026 CLYVEN</p>
     </AuthBg>
   );
@@ -236,59 +250,61 @@ function AppRoutes() {
         <ThemeInitializer />
         <ClerkQueryClientCacheInvalidator />
         <CommandPalette />
-        <Switch>
-          <Route path="/" component={HomeRedirect} />
-          <Route path="/sign-in/*?" component={SignInPage} />
-          <Route path="/sign-up/*?" component={SignUpPage} />
-          <Route path="/dashboard">
-            <ProtectedLayout><Dashboard /></ProtectedLayout>
-          </Route>
-          <Route path="/notes">
-            <ProtectedLayout><Notes /></ProtectedLayout>
-          </Route>
-          <Route path="/tasks">
-            <ProtectedLayout><Tasks /></ProtectedLayout>
-          </Route>
-          <Route path="/bookmarks">
-            <ProtectedLayout><Bookmarks /></ProtectedLayout>
-          </Route>
-          <Route path="/focus">
-            <ProtectedLayout><Focus /></ProtectedLayout>
-          </Route>
-          <Route path="/journal">
-            <ProtectedLayout><Journal /></ProtectedLayout>
-          </Route>
-          <Route path="/analytics">
-            <ProtectedLayout><Analytics /></ProtectedLayout>
-          </Route>
-          <Route path="/achievements">
-            <ProtectedLayout><Achievements /></ProtectedLayout>
-          </Route>
-          <Route path="/profile">
-            <ProtectedLayout><Profile /></ProtectedLayout>
-          </Route>
-          <Route path="/settings">
-            <ProtectedLayout><Settings /></ProtectedLayout>
-          </Route>
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/privacy" component={Privacy} />
-          <Route path="/datenschutz" component={Privacy} />
-          <Route path="/impressum" component={Impressum} />
-          <Route path="/imprint" component={Impressum} />
-          <Route path="/terms" component={Terms} />
-          <Route path="/support" component={Support} />
-          <Route path="/unsubscribe" component={Unsubscribe} />
-          <Route path="/admin">
-            <Redirect to="/admin/dashboard" />
-          </Route>
-          <Route path="/admin/login" component={AdminLogin} />
-          <Route path="/admin/dashboard" component={AdminDashboard} />
-          <Route path="/admin/tickets/:id" component={AdminTicketDetail} />
-          <Route path="/admin/tickets/new" component={AdminNewTicket} />
-          <Route>
-            <Redirect to="/" />
-          </Route>
-        </Switch>
+        <Suspense fallback={<PageSkeleton />}>
+          <Switch>
+            <Route path="/" component={HomeRedirect} />
+            <Route path="/sign-in/*?" component={SignInPage} />
+            <Route path="/sign-up/*?" component={SignUpPage} />
+            <Route path="/dashboard">
+              <ProtectedLayout><Dashboard /></ProtectedLayout>
+            </Route>
+            <Route path="/notes">
+              <ProtectedLayout><Notes /></ProtectedLayout>
+            </Route>
+            <Route path="/tasks">
+              <ProtectedLayout><Tasks /></ProtectedLayout>
+            </Route>
+            <Route path="/bookmarks">
+              <ProtectedLayout><Bookmarks /></ProtectedLayout>
+            </Route>
+            <Route path="/focus">
+              <ProtectedLayout><Focus /></ProtectedLayout>
+            </Route>
+            <Route path="/journal">
+              <ProtectedLayout><Journal /></ProtectedLayout>
+            </Route>
+            <Route path="/analytics">
+              <ProtectedLayout><Analytics /></ProtectedLayout>
+            </Route>
+            <Route path="/achievements">
+              <ProtectedLayout><Achievements /></ProtectedLayout>
+            </Route>
+            <Route path="/profile">
+              <ProtectedLayout><Profile /></ProtectedLayout>
+            </Route>
+            <Route path="/settings">
+              <ProtectedLayout><Settings /></ProtectedLayout>
+            </Route>
+            <Route path="/pricing" component={Pricing} />
+            <Route path="/privacy" component={Privacy} />
+            <Route path="/datenschutz" component={Privacy} />
+            <Route path="/impressum" component={Impressum} />
+            <Route path="/imprint" component={Impressum} />
+            <Route path="/terms" component={Terms} />
+            <Route path="/support" component={Support} />
+            <Route path="/unsubscribe" component={Unsubscribe} />
+            <Route path="/admin">
+              <Redirect to="/admin/dashboard" />
+            </Route>
+            <Route path="/admin/login" component={AdminLogin} />
+            <Route path="/admin/dashboard" component={AdminDashboard} />
+            <Route path="/admin/tickets/:id" component={AdminTicketDetail} />
+            <Route path="/admin/tickets/new" component={AdminNewTicket} />
+            <Route>
+              <Redirect to="/" />
+            </Route>
+          </Switch>
+        </Suspense>
       </QueryClientProvider>
     </ClerkProvider>
   );
