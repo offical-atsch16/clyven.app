@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useClerk } from "@clerk/react";
-import { Sun, Moon, Bell, Timer, LogOut, Save, Check, Shield } from "lucide-react";
+import { Sun, Moon, Bell, Timer, LogOut, Save, Check, Shield, GitBranch, ExternalLink } from "lucide-react";
 import { api } from "../lib/api";
 import { useAppStore } from "../stores/useAppStore";
 import { cn } from "../lib/utils";
@@ -11,7 +11,18 @@ export function Settings() {
   const { signOut } = useClerk();
   const { theme, setTheme } = useAppStore();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: api.getSettings, retry: 1 });
+  const { data: githubStatus } = useQuery({ queryKey: ["github-status"], queryFn: api.getGithubStatus });
   const saveSettings = useMutation({ mutationFn: api.saveSettings });
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const isConnectedGithub = searchParams.get("connected") === "github" || searchParams.get("setup") === "github" || githubStatus?.isConnected;
+
+  const handleConnectGithub = () => {
+    // Redirect target configuration for Cloudflare Pages setup flow
+    // Setup redirect URL: https://clyven.pages.dev/dashboard/settings?setup=github
+    const githubAuthUrl = "https://github.com/apps/clyven/installations/new?setup_action=install";
+    window.location.href = githubAuthUrl;
+  };
 
   const [focusGoal, setFocusGoal] = useState(120);
   const [notifications, setNotifications] = useState(true);
@@ -57,6 +68,36 @@ export function Settings() {
         </div>
 
         <div className="space-y-4">
+          {/* GitHub Integration */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.05] border border-white/10 text-white">
+                  <GitBranch className="h-5 w-5 text-cyan-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-white">GitHub Integration</p>
+                    {isConnectedGithub && (
+                      <span className="rounded-md bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-mono font-semibold text-emerald-400">
+                        Connected
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-white/40">Connect GitHub App to sync assigned issues and repository build statuses.</p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleConnectGithub}
+                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-4 py-2 text-xs font-mono font-semibold text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer shrink-0"
+              >
+                {isConnectedGithub ? "Reconnect GitHub" : "Connect GitHub"} <ExternalLink className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </motion.div>
+
           {/* Theme */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
@@ -141,27 +182,6 @@ export function Settings() {
               <button onClick={() => setStreakAlerts((n) => !n)}
                 className={cn("relative h-6 w-11 rounded-full transition-colors", streakAlerts ? "bg-white/40" : "bg-white/[0.1]")}>
                 <div className={cn("absolute top-1 h-4 w-4 rounded-full bg-white transition-transform", streakAlerts ? "translate-x-6" : "translate-x-1")} />
-              </button>
-            </div>
-          </motion.div>
-
-          {/* Cookies & Privacy */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-            className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-white/40" />
-                <div>
-                  <p className="text-sm font-medium text-white/70">Cookie Settings</p>
-                  <p className="text-xs text-white/30">Manage your privacy and cookie preferences</p>
-                </div>
-              </div>
-              <button onClick={() => {
-                if ((window as any).silktideConsentManager) {
-                  (window as any).silktideConsentManager.preferences();
-                }
-              }} className="rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.05] px-3 py-1.5 text-xs font-semibold text-white transition-all cursor-pointer">
-                Manage
               </button>
             </div>
           </motion.div>
