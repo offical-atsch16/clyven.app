@@ -20,7 +20,7 @@ export function Settings() {
   const handleConnectGithub = () => {
     // Redirect target configuration for Cloudflare Pages setup flow
     // Setup redirect URL: https://clyven.pages.dev/dashboard/settings?setup=github
-    const githubAuthUrl = "https://github.com/apps/clyven/installations/new?setup_action=install";
+    const githubAuthUrl = "https://github.com/apps/clyven-inc/installations/new?setup_action=install";
     window.location.href = githubAuthUrl;
   };
 
