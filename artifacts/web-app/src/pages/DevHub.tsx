@@ -154,12 +154,12 @@ export function DevHub() {
               <p className="text-sm font-semibold text-zinc-200 mb-1">GitHub App Not Connected</p>
               <p className="text-xs text-zinc-400">Connect your GitHub account in Settings to import assigned issues and sync PR status.</p>
             </div>
-            <button
-              onClick={() => setLocation("/settings")}
+            <a
+              href="https://github.com/apps/clyven-inc/installations/new?setup_action=install"
               className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs font-mono text-white hover:bg-white/10 transition-all cursor-pointer shrink-0"
             >
               Connect GitHub <ExternalLink className="h-3.5 w-3.5" />
-            </button>
+            </a>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
