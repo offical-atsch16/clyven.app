@@ -162,6 +162,25 @@ export const supportAuditLogs = pgTable("support_audit_logs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const userGithubIntegrations = pgTable("user_github_integrations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull().unique(),
+  installationId: text("installation_id"),
+  accessToken: text("access_token"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const codeSnippets = pgTable("code_snippets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  language: text("language").notNull().default("javascript"),
+  codeContent: text("code_content").notNull(),
+  tags: text("tags").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertNoteSchema = createInsertSchema(notes).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertAttachmentSchema = createInsertSchema(attachments).omit({ id: true, createdAt: true });
@@ -172,6 +191,8 @@ export const insertUserPreferencesSchema = createInsertSchema(userPreferences).o
 export const insertNewsletterSubscriberSchema = createInsertSchema(newsletterSubscribers).omit({ id: true, subscribedAt: true, unsubscribedAt: true });
 export const insertSupportStaffSchema = createInsertSchema(supportStaff).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertSupportAuditLogSchema = createInsertSchema(supportAuditLogs).omit({ id: true, createdAt: true });
+export const insertUserGithubIntegrationSchema = createInsertSchema(userGithubIntegrations).omit({ id: true, updatedAt: true });
+export const insertCodeSnippetSchema = createInsertSchema(codeSnippets).omit({ id: true, createdAt: true, updatedAt: true });
 
 export type Task = typeof tasks.$inferSelect;
 export type Note = typeof notes.$inferSelect;
@@ -184,6 +205,8 @@ export type UserPreferences = typeof userPreferences.$inferSelect;
 export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
 export type SupportStaff = typeof supportStaff.$inferSelect;
 export type SupportAuditLog = typeof supportAuditLogs.$inferSelect;
+export type UserGithubIntegration = typeof userGithubIntegrations.$inferSelect;
+export type CodeSnippet = typeof codeSnippets.$inferSelect;
 
 export const profiles = pgTable("profiles", {
   id: text("id").primaryKey(),

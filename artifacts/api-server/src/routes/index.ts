@@ -15,6 +15,8 @@ import flagsRouter from "./flags.js";
 import aiRouter from "./ai.js";
 import cronRouter from "./cron.js";
 import newsletterRouter from "./newsletter.js";
+import githubRouter from "./github.js";
+import snippetsRouter from "./snippets.js";
 
 const router: IRouter = Router();
 
@@ -34,5 +36,7 @@ router.use("/webhooks", webhooksRouter);
 router.use("/ai", aiRouter);
 router.use("/cron", cronRouter);
 router.use("/newsletter", newsletterRouter);
+router.use(githubRouter);
+router.use(snippetsRouter);
 
 export default router;

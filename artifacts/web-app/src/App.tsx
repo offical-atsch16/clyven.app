@@ -22,7 +22,6 @@ import { Pricing } from "./pages/Pricing";
 import { Privacy } from "./pages/Privacy";
 import { Impressum } from "./pages/Impressum";
 import { Terms } from "./pages/Terms";
-import { useCookieBanner } from "./hooks/useCookieBanner";
 import { Support } from "./pages/Support";
 import { AdminLogin } from "./pages/AdminLogin";
 import { AdminDashboard } from "./pages/AdminDashboard";
@@ -30,6 +29,7 @@ import { AdminTicketDetail } from "./pages/AdminTicketDetail";
 import { AdminNewTicket } from "./pages/AdminNewTicket";
 import { Tasks } from "./pages/Tasks";
 import { Unsubscribe } from "./pages/Unsubscribe";
+import { DevHub } from "./pages/DevHub";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30000 } } });
 
@@ -174,7 +174,6 @@ function ThemeInitializer() {
 
 function AppRoutes() {
   const [, setLocation] = useLocation();
-  useCookieBanner();
 
   useEffect(() => {
     const handleShortcuts = (e: KeyboardEvent) => {
@@ -248,6 +247,12 @@ function AppRoutes() {
           </Route>
           <Route path="/tasks">
             <ProtectedLayout><Tasks /></ProtectedLayout>
+          </Route>
+          <Route path="/dashboard/dev">
+            <ProtectedLayout><DevHub /></ProtectedLayout>
+          </Route>
+          <Route path="/dev">
+            <ProtectedLayout><DevHub /></ProtectedLayout>
           </Route>
           <Route path="/bookmarks">
             <ProtectedLayout><Bookmarks /></ProtectedLayout>

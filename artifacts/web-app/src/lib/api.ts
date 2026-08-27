@@ -90,6 +90,19 @@ export const api = {
   updateTask: (id: string, data: any) => request<any>(`/tasks/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteTask: (id: string) => request<any>(`/tasks/${id}`, { method: "DELETE" }),
 
+  // GitHub & Dev Hub
+  getGithubIssues: () => request<{ isConnected: boolean; installationId: string | null; issues: any[] }>("/github/issues"),
+  getGithubBuildStatus: () => request<{ isConnected: boolean; repo: string; status: "success" | "failure" | "in_progress" | "unknown"; lastBuildAt: string }>("/github/build-status"),
+  getGithubStatus: () => request<{ isConnected: boolean; installationId: string | null; updatedAt: string | null }>("/github/status"),
+
+  // Code Snippet Vault
+  getSnippets: () => request<any[]>("/snippets"),
+  createSnippet: (data: { title: string; language: string; codeContent: string; tags?: string[] }) =>
+    request<any>("/snippets", { method: "POST", body: JSON.stringify(data) }),
+  updateSnippet: (id: string, data: { title?: string; language?: string; codeContent?: string; tags?: string[] }) =>
+    request<any>(`/snippets/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteSnippet: (id: string) => request<any>(`/snippets/${id}`, { method: "DELETE" }),
+
   // Newsletter
   subscribeNewsletter: (email: string) =>
     request<any>("/newsletter/subscribe", {

@@ -7,7 +7,6 @@ import {
   Play, Pause, Headphones, Layers, Lock, ArrowUpRight, Globe, Sparkle, Cpu, Mail, Send
 } from "lucide-react";
 import { useUser } from "@clerk/react";
-import { useCookieBanner } from "../hooks/useCookieBanner";
 import { api } from "../lib/api";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -160,8 +159,6 @@ export function Landing() {
   const cardY = useMotionValue(0);
   const rotateX = useSpring(useTransform(cardY, [-200, 200], [4, -4]), { stiffness: 120, damping: 20 });
   const rotateY = useSpring(useTransform(cardX, [-200, 200], [-4, 4]), { stiffness: 120, damping: 20 });
-
-  useCookieBanner();
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
