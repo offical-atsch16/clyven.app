@@ -8,8 +8,12 @@ const router = Router();
 // 1. OAuth Callback Route
 // Production callback URL: https://clyven.pages.dev/api/auth/github/callback
 router.get("/auth/github/callback", async (req, res) => {
-  const code = req.query.code as string | undefined;
-  const installationId = (req.query.installation_id || req.query.installationId) as string | undefined;
+  const rawCode = req.query.code;
+  const code = typeof rawCode === "string" ? rawCode : Array.isArray(rawCode) && typeof rawCode[0] === "string" ? rawCode[0] : undefined;
+
+  const rawInstId = req.query.installation_id || req.query.installationId;
+  const installationId = typeof rawInstId === "string" ? rawInstId : Array.isArray(rawInstId) && typeof rawInstId[0] === "string" ? rawInstId[0] : undefined;
+
   const auth = getAuth(req);
 
   try {
@@ -18,7 +22,7 @@ router.get("/auth/github/callback", async (req, res) => {
         user_id: auth.userId,
         updated_at: new Date().toISOString(),
       };
-      if (installationId) updateData.installation_id = String(installationId);
+      if (installationId) updateData.installation_id = installationId;
       if (code) updateData.access_token = `gho_mock_${code.slice(0, 16)}`;
 
       const { data: existing } = await supabase
@@ -78,7 +82,7 @@ router.get("/github/issues", requireAuth, async (req, res) => {
             },
           });
           if (ghRes.ok) {
-            const rawIssues = await ghRes.json();
+            const rawIssues = (await ghRes.json()) as any[];
             issues = rawIssues.map((item: any) => ({
               id: String(item.id),
               number: item.number,
