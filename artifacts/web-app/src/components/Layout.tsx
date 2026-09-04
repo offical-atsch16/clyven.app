@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, FileText, Bookmark, Timer, BookOpen, ChartBar as BarChart2, Trophy, User, Settings, ChevronLeft, ChevronRight, Command, Menu, X, Zap, Crown, CheckSquare, Sparkles, Code2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "../lib/api";
 import { useUser, useClerk } from "@clerk/react";
 import { useAppStore } from "../stores/useAppStore";
 import { usePremium } from "../hooks/usePremium";
@@ -53,38 +51,6 @@ function NavItem({ href, icon: Icon, label, collapsed, mobile, onMobileClose }: 
         )}
       </motion.div>
     </Link>
-  );
-}
-
-function HeaderBuildWidget() {
-  const { isPremium } = usePremium();
-  const { data } = useQuery({
-    queryKey: ["github-build-status"],
-    queryFn: api.getGithubBuildStatus,
-    enabled: isPremium,
-    refetchInterval: 30000,
-  });
-
-  if (!isPremium || !data) return null;
-
-  const isSuccess = data.status === "success";
-
-  return (
-    <div className="hidden lg:flex items-center justify-between border-b border-white/10 bg-black/40 backdrop-blur-md px-6 py-1.5 text-xs font-mono select-none">
-      <div className="flex items-center gap-2">
-        <span className="text-zinc-500 font-semibold">[MAIN:</span>
-        <span className={cn("font-bold tracking-wide", isSuccess ? "text-emerald-400" : "text-rose-400")}>
-          {isSuccess ? "SUCCESS" : "FAILED"}
-        </span>
-        <span className="text-zinc-500 font-semibold">]</span>
-      </div>
-      <div className="flex items-center gap-3 text-[11px] text-zinc-400">
-        <span className="flex items-center gap-1.5">
-          <span className={cn("h-1.5 w-1.5 rounded-full", isSuccess ? "bg-emerald-400 shadow-[0_0_8px_#34d399]" : "bg-rose-400 shadow-[0_0_8px_#f87171]")} />
-          <span>clyven.pages.dev</span>
-        </span>
-      </div>
-    </div>
   );
 }
 
@@ -149,8 +115,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <main className="flex flex-1 flex-col min-w-0 max-w-full overflow-x-hidden overflow-y-hidden relative">
         <SystemBanner />
-        {/* Top Header Widget: Build Status */}
-        <HeaderBuildWidget />
         {/* Mobile top bar */}
         <div className="flex items-center justify-between border-b border-white/10 bg-black/50 backdrop-blur-xl px-4 py-2.5 lg:hidden shadow-lg min-h-[52px]">
           <div className="flex items-center gap-3">

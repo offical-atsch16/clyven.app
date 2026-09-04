@@ -2,14 +2,113 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useClerk } from "@clerk/react";
-import { Sun, Moon, Bell, Timer, LogOut, Save, Check, Shield, GitBranch, ExternalLink } from "lucide-react";
+import { Bell, Timer, LogOut, Save, Check, Shield, GitBranch, ExternalLink, Palette, Lock, Sparkles } from "lucide-react";
 import { api } from "../lib/api";
 import { useAppStore } from "../stores/useAppStore";
+import { usePremium } from "../hooks/usePremium";
 import { cn } from "../lib/utils";
+
+interface ThemeOption {
+  key: string;
+  name: string;
+  isPlus: boolean;
+  desc: string;
+  bgClass: string;
+  borderClass: string;
+  accentClass: string;
+  colors: string[];
+}
+
+const THEME_OPTIONS: ThemeOption[] = [
+  // Free themes
+  {
+    key: "pitch-black",
+    name: "Pitch Black",
+    isPlus: false,
+    desc: "Default deep obsidian dark workspace",
+    bgClass: "bg-[#090A0F]",
+    borderClass: "border-zinc-800",
+    accentClass: "bg-sky-400",
+    colors: ["#090A0F", "#18181B", "#38BDF8"],
+  },
+  {
+    key: "terminal-mono",
+    name: "Terminal Monospace",
+    isPlus: false,
+    desc: "Monochromatic classic terminal console layout",
+    bgClass: "bg-[#0A0D0A]",
+    borderClass: "border-emerald-900/50",
+    accentClass: "bg-emerald-400",
+    colors: ["#0A0D0A", "#122014", "#34D399"],
+  },
+  {
+    key: "subtle-slate",
+    name: "Subtle Slate",
+    isPlus: false,
+    desc: "Muted graphite slate with soft blue undertones",
+    bgClass: "bg-[#0F172A]",
+    borderClass: "border-slate-800",
+    accentClass: "bg-indigo-400",
+    colors: ["#0F172A", "#1E293B", "#818CF8"],
+  },
+
+  // Clyven Plus themes
+  {
+    key: "ascii-matrix",
+    name: "ASCII Matrix",
+    isPlus: true,
+    desc: "Neon phosphor green cyberspace matrix code",
+    bgClass: "bg-[#020D04]",
+    borderClass: "border-emerald-500/30",
+    accentClass: "bg-emerald-400",
+    colors: ["#020D04", "#05290A", "#00FF66"],
+  },
+  {
+    key: "dotted-blueprint",
+    name: "Dotted Blueprint",
+    isPlus: true,
+    desc: "Technical architectural grid with blueprint cyan",
+    bgClass: "bg-[#030A16]",
+    borderClass: "border-cyan-500/30",
+    accentClass: "bg-cyan-400",
+    colors: ["#030A16", "#0B1E3A", "#00F2FE"],
+  },
+  {
+    key: "oled-contrast",
+    name: "OLED Contrast",
+    isPlus: true,
+    desc: "True pure #000000 dark mode for battery saving",
+    bgClass: "bg-[#000000]",
+    borderClass: "border-white/20",
+    accentClass: "bg-white",
+    colors: ["#000000", "#121212", "#FFFFFF"],
+  },
+  {
+    key: "warm-charcoal",
+    name: "Warm Charcoal",
+    isPlus: true,
+    desc: "Rich espresso charcoal tones with copper highlights",
+    bgClass: "bg-[#120E0C]",
+    borderClass: "border-orange-950/60",
+    accentClass: "bg-amber-500",
+    colors: ["#120E0C", "#261B16", "#F59E0B"],
+  },
+  {
+    key: "cyber-amber",
+    name: "Cyber Amber",
+    isPlus: true,
+    desc: "High contrast vintage amber CRT monochrome interface",
+    bgClass: "bg-[#140D00]",
+    borderClass: "border-amber-500/30",
+    accentClass: "bg-amber-400",
+    colors: ["#140D00", "#2B1A00", "#FBBF24"],
+  },
+];
 
 export function Settings() {
   const { signOut } = useClerk();
   const { theme, setTheme } = useAppStore();
+  const { isPremium, openUpgrade } = usePremium();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: api.getSettings, retry: 1 });
   const { data: githubStatus } = useQuery({ queryKey: ["github-status"], queryFn: api.getGithubStatus });
   const saveSettings = useMutation({ mutationFn: api.saveSettings });
@@ -33,13 +132,35 @@ export function Settings() {
 
   useEffect(() => {
     if (settings) {
+      if (settings.theme) {
+        setTheme(settings.theme);
+      }
       setFocusGoal(settings.dailyFocusGoal ?? 120);
       setNotifications(settings.notificationsEnabled ?? true);
       setTaskEmails(settings.emailReminders ?? settings.taskEmailsEnabled ?? true);
       setJournalReminders(settings.emailJournal ?? settings.journalRemindersEnabled ?? true);
       setStreakAlerts(settings.emailStreaks ?? settings.streakAlertsEnabled ?? true);
     }
-  }, [settings]);
+  }, [settings, setTheme]);
+
+  const handleSelectTheme = (item: ThemeOption) => {
+    if (item.isPlus && !isPremium) {
+      openUpgrade();
+      return;
+    }
+    setTheme(item.key);
+    saveSettings.mutate({
+      theme: item.key,
+      dailyFocusGoal: focusGoal,
+      notificationsEnabled: notifications,
+      taskEmailsEnabled: taskEmails,
+      journalRemindersEnabled: journalReminders,
+      streakAlertsEnabled: streakAlerts,
+      emailReminders: taskEmails,
+      emailJournal: journalReminders,
+      emailStreaks: streakAlerts,
+    });
+  };
 
   const save = async () => {
     await saveSettings.mutateAsync({
@@ -98,22 +219,76 @@ export function Settings() {
             </div>
           </motion.div>
 
-          {/* Theme */}
+          {/* Workspace Theme Selector Card */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl border border-white/[0.07] bg-[#111111] p-5">
-            <p className="mb-1 text-sm font-medium text-white/70">Appearance</p>
-            <p className="mb-4 text-xs text-white/30">Choose between Dark and Light Mode.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setTheme("dark")}
-                className={cn("flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all",
-                  theme === "dark" ? "border-white/20 bg-white/[0.08] text-white" : "border-white/[0.08] text-white/40 hover:text-white/70")}>
-                <Moon className="h-4 w-4" /> Dark
-              </button>
-              <button onClick={() => setTheme("light")}
-                className={cn("flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all",
-                  theme === "light" ? "border-white/20 bg-white/[0.08] text-white" : "border-white/[0.08] text-white/40 hover:text-white/70")}>
-                <Sun className="h-4 w-4" /> Light
-              </button>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-cyan-400" />
+                <p className="text-sm font-medium text-white">Workspace Theme</p>
+              </div>
+              <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">
+                Active: {THEME_OPTIONS.find((t) => t.key === theme)?.name || theme}
+              </span>
+            </div>
+            <p className="mb-5 text-xs text-white/40">Select a theme for your workspace interface and ambient design.</p>
+
+            {/* Theme Visual Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {THEME_OPTIONS.map((item) => {
+                const isActive = theme === item.key || (theme === "dark" && item.key === "pitch-black") || (theme === "light" && item.key === "subtle-slate");
+                const isLocked = item.isPlus && !isPremium;
+
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => handleSelectTheme(item)}
+                    className={cn(
+                      "group relative flex flex-col text-left rounded-xl p-3 border transition-all cursor-pointer overflow-hidden",
+                      isActive
+                        ? "border-cyan-400/80 bg-white/[0.06] shadow-[0_0_15px_rgba(56,189,248,0.15)] ring-1 ring-cyan-400/50"
+                        : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/20"
+                    )}
+                  >
+                    {/* Header: Title + Badge */}
+                    <div className="flex items-center justify-between gap-2 mb-2 w-full">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-xs font-semibold text-white truncate">{item.name}</span>
+                        {isActive && (
+                          <span className="flex h-2 w-2 shrink-0 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]" />
+                        )}
+                      </div>
+
+                      {/* Badges */}
+                      {item.isPlus ? (
+                        <span className="shrink-0 flex items-center gap-1 rounded-md bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 text-[9px] font-mono font-bold text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]">
+                          {isLocked ? <Lock className="h-2.5 w-2.5" /> : <Sparkles className="h-2.5 w-2.5" />}
+                          [PLUS]
+                        </span>
+                      ) : (
+                        <span className="shrink-0 rounded-md bg-zinc-800/80 border border-zinc-700/50 px-1.5 py-0.5 text-[9px] font-mono font-medium text-zinc-400">
+                          [FREE]
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Color Swatch Preview Bar */}
+                    <div className="flex items-center gap-1.5 mb-2.5 w-full rounded-lg bg-black/40 border border-white/5 p-1.5">
+                      {item.colors.map((c, idx) => (
+                        <div
+                          key={idx}
+                          className="h-4 flex-1 rounded-md border border-white/10"
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-[11px] text-white/40 leading-snug">{item.desc}</p>
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
 
