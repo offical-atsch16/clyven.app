@@ -166,8 +166,10 @@ function ClerkQueryClientCacheInvalidator() {
 function ThemeInitializer() {
   const { theme } = useAppStore();
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.classList.toggle("light", theme === "light");
+    const activeKey = theme === "dark" ? "pitch-black" : theme === "light" ? "subtle-slate" : theme || "pitch-black";
+    document.documentElement.setAttribute("data-theme", activeKey);
+    document.body.setAttribute("data-theme", activeKey);
+    document.documentElement.classList.add("dark");
   }, [theme]);
   return null;
 }
