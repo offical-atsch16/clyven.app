@@ -9,6 +9,7 @@ import { usePlanSync } from "../hooks/usePlanSync";
 import { PlanBadge } from "./PlanBadge";
 import { SystemBanner } from "./SystemBanner";
 import { ClyvenAISidebar } from "./ClyvenAISidebar";
+import { AdBanner } from "./AdBanner";
 import { cn } from "../lib/utils";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -115,6 +116,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <main className="flex flex-1 flex-col min-w-0 max-w-full overflow-x-hidden overflow-y-hidden relative">
         <SystemBanner />
+        <AdBanner className="mx-4 max-w-[calc(100%-2rem)] shrink-0" />
         {/* Mobile top bar */}
         <div className="flex items-center justify-between border-b border-white/10 bg-black/50 backdrop-blur-xl px-4 py-2.5 lg:hidden shadow-lg min-h-[52px]">
           <div className="flex items-center gap-3">
