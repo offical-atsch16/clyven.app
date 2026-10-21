@@ -165,13 +165,13 @@ importers:
         version: 3.1115.0
       '@clerk/express':
         specifier: ^2.1.30
-        version: 2.1.30(express@5.2.1)
+        version: 2.1.30(express@5.2.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@clerk/shared':
         specifier: ^4.20.0
         version: 4.20.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@prisma/client':
         specifier: ^7.8.0
-        version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3)
+        version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3)
       '@supabase/supabase-js':
         specifier: ^2.110.7
         version: 2.110.7
@@ -195,7 +195,7 @@ importers:
         version: 2.8.6
       drizzle-orm:
         specifier: 'catalog:'
-        version: 0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3))
+        version: 0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -647,7 +647,7 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: 'catalog:'
-        version: 0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3))
+        version: 0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))
       drizzle-zod:
         specifier: ^0.8.3
         version: 0.8.3(drizzle-orm@0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3)))(zod@3.25.76)
@@ -2847,8 +2847,8 @@ packages:
     resolution: {integrity: sha512-NXYBzinNrblfraPGyrbPoD19C1h9lfI/1mzgWYvXUTe414Gz/X1FD2XBZSZM7rRTrMA8JL3OtAaGifrIKhQ5yQ==}
     engines: {node: '>= 12.0.0'}
 
-  linkify-it@5.0.0:
-    resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
+  linkify-it@5.0.2:
+    resolution: {integrity: sha512-ONTm2jCMAVZjgQa/Fy1kScXsuOoF5NPTsoFBdE1KVIZ2vAh/r9+Bqo+0jINCBYnavTPQZz38QzFTme79ENoN3Q==}
 
   locate-path@8.0.0:
     resolution: {integrity: sha512-XT9ewWAC43tiAV7xDAPflMkG0qOPn2QjHqlgX8FOqmWa/rxnyYDulF9T0F7tRy1u+TVTmK/M//6VIOye+2zDXg==}
@@ -2903,8 +2903,8 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-  markdown-it@14.1.1:
-    resolution: {integrity: sha512-BuU2qnTti9YKgK5N+IeMubp14ZUKUUw7yeJbkjtosvHiP0AZ5c8IAgEMk79D0eC8F23r4Ac/q8cAIFdm2FtyoA==}
+  markdown-it@14.3.3:
+    resolution: {integrity: sha512-L//tDAkjTjJCU6pBUSBTgs3Kg4InVaZuUZog/b6V12UKhcDQ7S78877ibbCanRExwPuYP1CZD7Gd2dxSy1GXRg==}
     hasBin: true
 
   math-intrinsics@1.1.0:
@@ -4031,7 +4031,7 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@clerk/backend@3.8.2':
+  '@clerk/backend@3.8.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@clerk/shared': 4.20.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       standardwebhooks: 1.0.0
@@ -4040,9 +4040,9 @@ snapshots:
       - react
       - react-dom
 
-  '@clerk/express@2.1.30(express@5.2.1)':
+  '@clerk/express@2.1.30(express@5.2.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@clerk/backend': 3.8.2
+      '@clerk/backend': 3.8.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@clerk/shared': 4.20.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       express: 5.2.1
       tslib: 2.8.1
@@ -4287,7 +4287,7 @@ snapshots:
 
   '@prisma/client-runtime-utils@7.8.0': {}
 
-  '@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3)':
+  '@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
       '@prisma/client-runtime-utils': 7.8.0
     optionalDependencies:
@@ -5639,10 +5639,10 @@ snapshots:
       esbuild: 0.27.3
       tsx: 4.21.0
 
-  drizzle-orm@0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3)):
+  drizzle-orm@0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3)):
     optionalDependencies:
       '@electric-sql/pglite': 0.4.1
-      '@prisma/client': 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3)
+      '@prisma/client': 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3)
       '@types/pg': 8.20.0
       mysql2: 3.15.3
       pg: 8.20.0
@@ -5651,7 +5651,7 @@ snapshots:
 
   drizzle-zod@0.8.3(drizzle-orm@0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3)))(zod@3.25.76):
     dependencies:
-      drizzle-orm: 0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react@19.1.0)(typescript@5.9.3))
+      drizzle-orm: 0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.9.3))
       zod: 3.25.76
 
   dunder-proto@1.0.1:
@@ -6070,7 +6070,7 @@ snapshots:
     optionalDependencies:
       lightningcss-linux-x64-gnu: 1.32.0
 
-  linkify-it@5.0.0:
+  linkify-it@5.0.2:
     dependencies:
       uc.micro: 2.1.0
 
@@ -6116,11 +6116,11 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  markdown-it@14.1.1:
+  markdown-it@14.3.3:
     dependencies:
       argparse: 2.0.1
       entities: 4.5.0
-      linkify-it: 5.0.0
+      linkify-it: 5.0.2
       mdurl: 2.0.0
       punycode.js: 2.3.1
       uc.micro: 2.1.0
@@ -6779,7 +6779,7 @@ snapshots:
     dependencies:
       '@gerrit0/mini-shiki': 3.23.0
       lunr: 2.3.9
-      markdown-it: 14.1.1
+      markdown-it: 14.3.3
       minimatch: 10.2.5
       typescript: 5.9.3
       yaml: 2.8.4
